@@ -107,8 +107,8 @@ npx supabase functions deploy function-name
 - Xung đột migrations.
 
 **Khắc phục**:
-1. Tạo dự án mới trên Supabase web.
-2. Xóa và khởi tạo lại dự án local:
+1. Xung đột schema: Tạo dự án mới trên Supabase web.
+2. Xung đột migrations: Xóa và khởi tạo lại dự án local:
    ```bash
    rm -rf supabase
    npx supabase init
@@ -126,31 +126,4 @@ npx supabase functions deploy function-name
    ```bash
    npx supabase stop
    npx supabase start
-   ```
-
-### Lỗi Email Không Hợp Lệ
-
-**Lỗi**: `Email address "alice.jones@example.com" is invalid`
-
-**Nguyên nhân**:
-- Supabase Auth từ chối domain `example.com`.
-- Cấu hình email confirmation hoặc SMTP sai.
-
-**Khắc phục**:
-1. Sử dụng email domain khác (e.g., `test.com`):
-   ```bash
-   curl -X POST http://localhost:54321/functions/v1/function-name -H "Content-Type: application/json" -d '{"email": "alice.jones@test.com", "password": "securePassword123", "full_name": "Alice Jones"}'
-   ```
-2. Tắt email confirmation trong `docker-compose.yml`:
-   ```yaml
-   services:
-     auth:
-       environment:
-         GOTRUE_EMAILS_ENABLED: "false"
-         GOTRUE_EMAIL_AUTOCONFIRM: "true"
-   ```
-3. Khởi động lại Docker:
-   ```bash
-   docker-compose down
-   docker-compose up -d
    ```

@@ -1,53 +1,156 @@
-# Tải thư viện nvm và npx
+# Hướng Dẫn Thiết Lập và Vận Hành Dự Án Supabase với Deno
 
-<!-- Libraries -->
+## Cài Đặt Thư Viện
 
-nvm install 20
-nvm use 20 -> success
+### Cài đặt nvm và Node.js
 
-# Cài Deno
+1. Cài đặt Node.js phiên bản 20:
+   ```bash
+   nvm install 20
+   ```
 
-<!-- Start up -->
-<!-- Deno start up -->
+2. Sử dụng Node.js phiên bản 20:
+   ```bash
+   nvm use 20
+   ```
 
-VSCode -> Extension -> Deno
-Search bar in VSCode -> >Deno Initialize Workspace
+## Cài Đặt Deno
 
-# Khởi chạy dự án đầu tiên
+1. Cài đặt Deno Extension trong VSCode:
+   - Mở VSCode, vào Extensions (Ctrl+Shift+X).
+   - Tìm và cài đặt Deno (bởi denoland).
 
-<!-- Project start up -->
+2. Khởi tạo không gian làm việc cho Deno:
+   - Nhấn Ctrl+Shift+P, gõ `> Deno: Initialize Workspace`, nhấn Enter.
+   - Chấp nhận cấu hình mặc định.
 
-npx supabase init -> Tạo dự án
-npx supabase start -> activate supabase -> Xem trong Docker Desktop click và tên trùng với tên thu mục gốc của dự án hiện xanh hoặc supabase*db*[Tên-folder] đang chạy là được
-npx supabase stop -> stop supabase
-npx supabase db push -> lần đầu tiêntiên push database len web supabase
-npx supabase db pull -> lấy db từ web vềề
-npx supabase db reset -> chạy lại file migration khởi tạo lại database (đã có từ trước ở db push)
-npx supabase functions new function-name -> tạo edge function  
-npx supabase migrations new migration-name -> tạo migration
+## Khởi Chạy Dự Án
 
-# Link dự án local vào project chính
+### Khởi Tạo Dự Án Supabase
 
-Khi tạo như mục Khởi chạy dự án, dự án chỉ mới chạy local có tên miền: http://127.0.0.1:54321
-Cần link để đưa lên public project
+1. Khởi tạo dự án Supabase local:
+   ```bash
+   npx supabase init
+   ```
 
-npx supabase login (nó mở browser tự điền code đê)
-npx supabase link --project-ref [project-link] -> [lấy từ https://supabase.com/dashboard/project/[project-link]]
--> Nhập pass: 12345 (pass khi mới tạo project)
+2. Khởi động Supabase:
+   ```bash
+   npx supabase start
+   ```
+   - Kiểm tra trong Docker Desktop: Container trùng tên thư mục dự án hoặc `supabase_db_[Tên-folder]` phải ở trạng thái chạy (màu xanh).
 
-<!-- Deploy functions to supabase web -->
+3. Dừng Supabase:
+   ```bash
+   npx supabase stop
+   ```
 
+### Quản Lý Database
+
+1. Push database lên Supabase cloud (lần đầu):
+   ```bash
+   npx supabase db push
+   ```
+
+2. Pull database từ Supabase cloud về local:
+   ```bash
+   npx supabase db pull
+   ```
+
+3. Reset database (chạy lại migrations):
+   ```bash
+   npx supabase db reset
+   ```
+
+### Tạo Edge Functions và Migrations
+
+1. Tạo edge function:
+   ```bash
+   npx supabase functions new function-name
+   ```
+
+2. Tạo migration:
+   ```bash
+   npx supabase migrations new migration-name
+   ```
+
+## Liên Kết Dự Án Local với Dự Án Supabase Cloud
+
+Dự án local chạy trên `http://127.0.0.1:54321`. Để đưa lên Supabase cloud:
+
+1. Đăng nhập Supabase CLI:
+   ```bash
+   npx supabase login
+   ```
+
+2. Liên kết dự án local với dự án cloud:
+   ```bash
+   npx supabase link --project-ref [project-link]
+   ```
+   - Lấy `[project-link]` từ https://supabase.com/dashboard/project/[project-link].
+   - Nhập mật khẩu dự án (mặc định: `12345`).
+
+## Triển Khai Edge Functions
+
+Triển khai edge function lên Supabase cloud:
+```bash
 npx supabase functions deploy function-name
+```
 
-# Gặp bug thì đọc ở đây
+## Xử Lý Lỗi Thường Gặp
 
-<!-- Unhealthy Supabase_db_[name] Container -->
-<!-- log: supabase_db_testFolder container is not ready: unhealthy -->
+### Container `supabase_db_[name]` Unhealthy
 
-by: database schema conflict => create new project trong supabase web
-by: migrations conflict => rm -rf supabase -> quay lại mục Khởi chạy dự án đầu tiên
+**Lỗi**: `supabase_db_testFolder container is not ready: unhealthy`
 
-<!-- Docker bug -->
-<!-- Supabase exited || Supabase unhealthy: hot standby -->
+**Nguyên nhân**:
+- Xung đột schema database.
+- Xung đột migrations.
 
-Open Docker -> Settings -> Generals -> Tick chon Expose daemon on tcp://localhost:2375 without TLS
+**Khắc phục**:
+1. Tạo dự án mới trên Supabase web.
+2. Xóa và khởi tạo lại dự án local:
+   ```bash
+   rm -rf supabase
+   npx supabase init
+   npx supabase start
+   ```
+
+### Lỗi Docker
+
+**Lỗi**: `Supabase exited` hoặc `Supabase unhealthy: hot standby`
+
+**Khắc phục**:
+1. Mở Docker Desktop > Settings > General.
+2. Tích chọn `Expose daemon on tcp://localhost:2375 without TLS`.
+3. Khởi động lại Supabase:
+   ```bash
+   npx supabase stop
+   npx supabase start
+   ```
+
+### Lỗi Email Không Hợp Lệ
+
+**Lỗi**: `Email address "alice.jones@example.com" is invalid`
+
+**Nguyên nhân**:
+- Supabase Auth từ chối domain `example.com`.
+- Cấu hình email confirmation hoặc SMTP sai.
+
+**Khắc phục**:
+1. Sử dụng email domain khác (e.g., `test.com`):
+   ```bash
+   curl -X POST http://localhost:54321/functions/v1/function-name -H "Content-Type: application/json" -d '{"email": "alice.jones@test.com", "password": "securePassword123", "full_name": "Alice Jones"}'
+   ```
+2. Tắt email confirmation trong `docker-compose.yml`:
+   ```yaml
+   services:
+     auth:
+       environment:
+         GOTRUE_EMAILS_ENABLED: "false"
+         GOTRUE_EMAIL_AUTOCONFIRM: "true"
+   ```
+3. Khởi động lại Docker:
+   ```bash
+   docker-compose down
+   docker-compose up -d
+   ```

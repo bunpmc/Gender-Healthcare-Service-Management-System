@@ -3,8 +3,20 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Define ENUMs
 CREATE TYPE role_enum AS ENUM ('doctor', 'manager', 'advisor');
-CREATE TYPE department_enum AS ENUM ('cardiology', 'neurology', 'pediatrics', 'orthopedics', 'general');
-CREATE TYPE speciality_enum AS ENUM ('cardiologist', 'neurologist', 'pediatrician', 'orthopedic_surgeon', 'general_practitioner');
+CREATE TYPE department_enum AS ENUM (
+    'reproductive_health',
+    'gynecology',
+    'urology',
+    'transgender_care',
+    'sexual_health'
+);
+CREATE TYPE speciality_enum AS ENUM (
+    'gynecologist',
+    'urologist',
+    'endocrinologist',
+    'reproductive_specialist',
+    'sexual_health_specialist'
+);
 CREATE TYPE record_status AS ENUM ('draft', 'active', 'archived');
 CREATE TYPE process_status AS ENUM ('pending', 'in_progress', 'completed', 'cancelled');
 CREATE TYPE report_status AS ENUM ('pending', 'reviewed', 'resolved');

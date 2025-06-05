@@ -1,230 +1,211 @@
-CREATE TABLE customer (
-  customer_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  full_name TEXT,
-  sex_identify VARCHAR(100),
-  login_type VARCHAR(100),
-  status VARCHAR(50) DEFAULT 'active',
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  CONSTRAINT fk_customer_auth_id FOREIGN KEY (customer_id) REFERENCES auth.users(id) ON DELETE CASCADE
+-- Enable UUID extension for Supabase
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- Define ENUMs
+CREATE TYPE role_enum AS ENUM ('doctor', 'manager', 'advisor');
+CREATE TYPE department_enum AS ENUM ('cardiology', 'neurology', 'pediatrics', 'orthopedics', 'general');
+CREATE TYPE speciality_enum AS ENUM ('cardiologist', 'neurologist', 'pediatrician', 'orthopedic_surgeon', 'general_practitioner');
+CREATE TYPE record_status AS ENUM ('draft', 'active', 'archived');
+CREATE TYPE process_status AS ENUM ('pending', 'in_progress', 'completed', 'cancelled');
+CREATE TYPE report_status AS ENUM ('pending', 'reviewed', 'resolved');
+CREATE TYPE blog_status AS ENUM ('draft', 'published', 'archived');
+
+-- Create patients table
+CREATE TABLE public.patients (
+    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    allergies JSONB,
+    chronic_conditions JSONB,
+    past_surgeries JSONB,
+    vaccination_status JSONB,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE refreshtoken (
-  refreshtoken_id SERIAL PRIMARY KEY,
-  customer_id UUID NOT NULL,
-  token TEXT,
-  expires_at TIMESTAMP WITH TIME ZONE,
-  is_revoked BOOLEAN DEFAULT FALSE,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  CONSTRAINT fk_refreshtoken_customer_id FOREIGN KEY (customer_id) REFERENCES customer(customer_id) ON DELETE CASCADE
+-- Create staff_members table
+CREATE TABLE public.staff_members (
+    staff_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    full_name VARCHAR(100) NOT NULL,
+    working_email VARCHAR(255) NOT NULL UNIQUE,
+    role role_enum NOT NULL,
+    years_experience INTEGER CHECK (years_experience >= 0),
+    hired_at DATE NOT NULL,
+    is_available BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Main user table (replaces customer table - handles all user types)
-CREATE TABLE app_users (
-  user_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  full_name TEXT,
-  email VARCHAR(100),
-  phone VARCHAR(15),
-  sex_identify VARCHAR(100),
-  login_type VARCHAR(100),
-  avatar_url TEXT,
-  date_of_birth DATE,
-  address TEXT,
-  emergency_contact_name VARCHAR(100),
-  emergency_contact_phone VARCHAR(15),
-  user_status VARCHAR(50) DEFAULT 'active',
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  CONSTRAINT fk_app_user_auth_id FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE
+-- Create doctor_details table
+CREATE TABLE public.doctor_details (
+    doctor_id UUID PRIMARY KEY REFERENCES public.staff_members(staff_id) ON DELETE CASCADE,
+    department department_enum NOT NULL,
+    speciality speciality_enum NOT NULL,
+    license_no VARCHAR(50) NOT NULL UNIQUE
 );
 
--- Refresh token table (references user table)
-CREATE TABLE refresh_tokens (
-  refresh_token_id SERIAL PRIMARY KEY,
-  user_id UUID NOT NULL,
-  token_value TEXT,
-  expires_at TIMESTAMP WITH TIME ZONE,
-  is_revoked BOOLEAN DEFAULT FALSE,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  CONSTRAINT fk_refresh_token_user_id FOREIGN KEY (user_id) REFERENCES app_users(user_id) ON DELETE CASCADE
+-- Create staff_schedules table
+CREATE TABLE public.staff_schedules (
+    schedule_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    staff_id UUID NOT NULL REFERENCES public.staff_members(staff_id) ON DELETE CASCADE,
+    start_time TIMESTAMP WITH TIME ZONE NOT NULL,
+    end_time TIMESTAMP WITH TIME ZONE NOT NULL,
+    is_recurring BOOLEAN NOT NULL DEFAULT FALSE,
+    recurrence_rule TEXT,
+    CHECK (end_time > start_time)
 );
 
--- Role table
-CREATE TABLE user_roles (
-  role_id SERIAL PRIMARY KEY,
-  role_name VARCHAR(50) NOT NULL UNIQUE,
-  role_description TEXT
+-- Create staff_certifications table
+CREATE TABLE public.staff_certifications (
+    certification_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    staff_id UUID NOT NULL REFERENCES public.staff_members(staff_id) ON DELETE CASCADE,
+    certification_name TEXT NOT NULL,
+    issue_date DATE NOT NULL,
+    expiry_date DATE,
+    CHECK (expiry_date IS NULL OR expiry_date > issue_date)
 );
 
--- Staff table (for doctors, nurses, admins, etc.)
-CREATE TABLE staff_members (
-  staff_id SERIAL PRIMARY KEY,
-  user_id UUID NOT NULL, -- References user table
-  role_id INTEGER NOT NULL,
-  working_email VARCHAR(100) UNIQUE,
-  employee_id VARCHAR(50) UNIQUE,
-  department VARCHAR(100),
-  hire_date DATE,
-  staff_status VARCHAR(50) DEFAULT 'active',
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  CONSTRAINT fk_staff_user_id FOREIGN KEY (user_id) REFERENCES app_users(user_id) ON DELETE CASCADE,
-  CONSTRAINT fk_staff_role_id FOREIGN KEY (role_id) REFERENCES user_roles(role_id)
+-- Create staff_history table
+CREATE TABLE public.staff_history (
+    history_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    staff_id UUID NOT NULL REFERENCES public.staff_members(staff_id) ON DELETE CASCADE,
+    changed_by UUID NOT NULL REFERENCES public.staff_members(staff_id),
+    changed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    field_name TEXT NOT NULL CHECK (field_name IN ('full_name', 'working_email', 'role', 'years_experience', 'hired_at', 'is_available', 'department', 'speciality', 'license_no')),
+    old_value JSONB,
+    new_value JSONB,
+    change_reason TEXT
 );
 
--- Doctor table (extends staff with medical-specific fields)
-CREATE TABLE doctors (
-  doctor_id INTEGER PRIMARY KEY,
-  specialty VARCHAR(100),
-  license_no VARCHAR(50) UNIQUE,
-  bio TEXT,
-  years_experience INTEGER,
-  consultation_fee DECIMAL(10,2),
-  is_available BOOLEAN DEFAULT TRUE,
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  CONSTRAINT fk_doctor_staff_id FOREIGN KEY (doctor_id) REFERENCES staff_members(staff_id) ON DELETE CASCADE
+-- Create visit_types table
+CREATE TABLE public.visit_types (
+    visit_type_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    type_name TEXT NOT NULL UNIQUE CHECK (type_name IN ('consultation', 'follow-up', 'emergency', 'routine'))
 );
 
--- Patient profiles (references user table directly)
-CREATE TABLE patients (
-  patient_id SERIAL PRIMARY KEY,
-  user_id UUID NOT NULL, -- References user table
-  patient_name TEXT, -- Can be different from user full_name if needed
-  sex_biology VARCHAR(50),
-  sex_identity VARCHAR(50),
-  health_insurance VARCHAR(100),
-  allergies TEXT,
-  chronic_conditions TEXT,
-  past_surgeries TEXT,
-  family_medical_history TEXT,
-  vaccination_status TEXT,
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  CONSTRAINT fk_patient_user_id FOREIGN KEY (user_id) REFERENCES app_users(user_id) ON DELETE CASCADE
+-- Create receipts table
+CREATE TABLE public.receipts (
+    receipt_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    patient_id UUID NOT NULL REFERENCES public.patients(id) ON DELETE CASCADE,
+    amount NUMERIC(10,2) CHECK (amount >= 0),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Period tracking (references user table)
-CREATE TABLE period_tracking (
-  period_id SERIAL PRIMARY KEY,
-  user_id UUID NOT NULL, -- References user table
-  start_date TIMESTAMP WITH TIME ZONE,
-  end_date TIMESTAMP WITH TIME ZONE,
-  estimated_date TIMESTAMP WITH TIME ZONE,
-  estimated_period VARCHAR(50),
-  flow_intensity VARCHAR(20), -- light, normal, heavy
-  symptoms TEXT,
-  period_description TEXT,
-  predictions TEXT,
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  CONSTRAINT fk_period_user_id FOREIGN KEY (user_id) REFERENCES app_users(user_id) ON DELETE CASCADE
+-- Create health_records table
+CREATE TABLE public.health_records (
+    health_record_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    patient_id UUID NOT NULL REFERENCES public.patients(id) ON DELETE CASCADE,
+    visit_date DATE NOT NULL,
+    doctor_id UUID NOT NULL REFERENCES public.staff_members(staff_id),
+    visit_type_id UUID NOT NULL REFERENCES public.visit_types(visit_type_id),
+    symptoms TEXT,
+    diagnosis TEXT,
+    prescription JSONB,
+    follow_up_date DATE,
+    receipt_id UUID REFERENCES public.receipts(receipt_id),
+    record_status record_status NOT NULL DEFAULT 'draft',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CHECK (doctor_id != patient_id)
 );
 
--- Guest users (for anonymous reports/consultations)
-CREATE TABLE guest_users (
-  guest_id SERIAL PRIMARY KEY,
-  phone VARCHAR(15) UNIQUE,
-  is_phone_verified BOOLEAN DEFAULT FALSE,
-  sex_identify VARCHAR(50),
-  guest_message TEXT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+-- Create health_record_histories table
+CREATE TABLE public.health_record_histories (
+    history_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    health_record_id UUID NOT NULL REFERENCES public.health_records(health_record_id) ON DELETE CASCADE,
+    patient_id UUID NOT NULL REFERENCES public.patients(id),
+    changed_by UUID NOT NULL REFERENCES public.staff_members(staff_id),
+    changed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    field_name TEXT NOT NULL CHECK (field_name IN ('symptoms', 'diagnosis', 'prescription', 'follow_up_date', 'record_status')),
+    old_value JSONB,
+    new_value JSONB,
+    change_reason TEXT
 );
 
--- Reports from guests
-CREATE TABLE guest_reports (
-  report_id SERIAL PRIMARY KEY,
-  guest_id INTEGER,
-  report_content TEXT,
-  report_description TEXT,
-  staff_id INTEGER, -- Who handles the report
-  report_status VARCHAR(50) DEFAULT 'pending',
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  CONSTRAINT fk_report_guest_id FOREIGN KEY (guest_id) REFERENCES guest_users(guest_id) ON DELETE CASCADE,
-  CONSTRAINT fk_report_staff_id FOREIGN KEY (staff_id) REFERENCES staff_members(staff_id)
+-- Create period_tracking table
+CREATE TABLE public.period_tracking (
+    period_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    patient_id UUID NOT NULL REFERENCES public.patients(id) ON DELETE CASCADE,
+    start_date TIMESTAMP WITH TIME ZONE NOT NULL,
+    end_date TIMESTAMP WITH TIME ZONE,
+    estimated_next_date TIMESTAMP WITH TIME ZONE,
+    cycle_length INTEGER CHECK (cycle_length > 0),
+    flow_intensity TEXT CHECK (flow_intensity IN ('light', 'medium', 'heavy')),
+    symptoms JSONB,
+    period_description TEXT,
+    predictions JSONB,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Service categories
-CREATE TABLE service_categories (
-  category_id SERIAL PRIMARY KEY,
-  category_name VARCHAR(100) NOT NULL UNIQUE,
-  category_description TEXT
+-- Create service_categories table
+CREATE TABLE public.service_categories (
+    category_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    category_name TEXT NOT NULL UNIQUE,
+    category_description TEXT
 );
 
--- Medical services
-CREATE TABLE medical_services (
-  service_id SERIAL PRIMARY KEY,
-  category_id INTEGER NOT NULL,
-  service_name TEXT NOT NULL,
-  service_description TEXT,
-  service_cost DECIMAL(10,2),
-  duration_minutes INTEGER, -- Estimated service duration
-  is_active BOOLEAN DEFAULT TRUE,
-  CONSTRAINT fk_service_category_id FOREIGN KEY (category_id) REFERENCES service_categories(category_id)
+-- Create medical_services table
+CREATE TABLE public.medical_services (
+    service_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    category_id UUID NOT NULL REFERENCES public.service_categories(category_id) ON DELETE CASCADE,
+    service_name TEXT NOT NULL,
+    service_description TEXT,
+    service_cost NUMERIC CHECK (service_cost >= 0),
+    duration_minutes INTEGER CHECK (duration_minutes > 0),
+    is_active BOOLEAN DEFAULT TRUE
 );
 
--- Health records/consultations
-CREATE TABLE health_records (
-  health_record_id SERIAL PRIMARY KEY,
-  patient_id INTEGER NOT NULL,
-  visit_date TIMESTAMP WITH TIME ZONE,
-  doctor_id INTEGER NOT NULL, -- References doctor table
-  visit_type VARCHAR(50), -- consultation, follow-up, emergency
-  symptoms TEXT,
-  diagnosis TEXT,
-  prescription TEXT,
-  follow_up_date TIMESTAMP WITH TIME ZONE,
-  receipt_id INTEGER, -- For billing reference
-  record_status VARCHAR(100) DEFAULT 'active',
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  CONSTRAINT fk_health_record_patient_id FOREIGN KEY (patient_id) REFERENCES patients(patient_id) ON DELETE CASCADE,
-  CONSTRAINT fk_health_record_doctor_id FOREIGN KEY (doctor_id) REFERENCES doctors(doctor_id)
+-- Create health_record_services table
+CREATE TABLE public.health_record_services (
+    health_record_service_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    health_record_id UUID NOT NULL REFERENCES public.health_records(health_record_id) ON DELETE CASCADE,
+    service_id UUID NOT NULL REFERENCES public.medical_services(service_id),
+    unit_cost NUMERIC CHECK (unit_cost >= 0),
+    quantity INTEGER CHECK (quantity > 0) DEFAULT 1,
+    service_notes TEXT
 );
 
--- Junction table for health records and services
-CREATE TABLE health_record_services (
-  health_record_service_id SERIAL PRIMARY KEY,
-  health_record_id INTEGER NOT NULL,
-  service_id INTEGER NOT NULL,
-  quantity INTEGER DEFAULT 1,
-  unit_cost DECIMAL(10,2), -- Cost at time of service
-  service_notes TEXT,
-  CONSTRAINT fk_hrs_health_record_id FOREIGN KEY (health_record_id) REFERENCES health_records(health_record_id) ON DELETE CASCADE,
-  CONSTRAINT fk_hrs_service_id FOREIGN KEY (service_id) REFERENCES medical_services(service_id)
+-- Create service_process_logs table
+CREATE TABLE public.service_process_logs (
+    service_process_log_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    health_record_service_id UUID NOT NULL REFERENCES public.health_record_services(health_record_service_id) ON DELETE CASCADE,
+    process_status process_status NOT NULL,
+    process_notes TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Service process tracking
-CREATE TABLE service_process_logs (
-  service_process_log_id SERIAL PRIMARY KEY,
-  health_record_service_id INTEGER NOT NULL,
-  process_status VARCHAR(100) NOT NULL, -- pending, in_progress, completed, cancelled
-  process_notes TEXT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  CONSTRAINT fk_spl_hrs_id FOREIGN KEY (health_record_service_id) REFERENCES health_record_services(health_record_service_id) ON DELETE CASCADE
+-- Create blog_posts table
+CREATE TABLE public.blog_posts (
+    blog_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    doctor_id UUID NOT NULL REFERENCES public.staff_members(staff_id),
+    blog_title TEXT NOT NULL,
+    blog_content TEXT NOT NULL,
+    excerpt TEXT,
+    featured_image_url TEXT,
+    blog_tags JSONB,
+    published_at TIMESTAMP WITH TIME ZONE,
+    blog_status blog_status DEFAULT 'draft',
+    view_count INTEGER DEFAULT 0 CHECK (view_count >= 0),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CHECK (blog_status = 'published' AND published_at IS NOT NULL OR blog_status != 'published')
 );
 
--- Blog posts (1 doctor can have many blogs, 1 blog belongs to 1 doctor)
-CREATE TABLE blog_posts (
-  blog_id SERIAL PRIMARY KEY,
-  doctor_id INTEGER NOT NULL, -- References doctor table
-  blog_title TEXT NOT NULL,
-  blog_content TEXT,
-  excerpt TEXT, -- Short summary for previews
-  featured_image_url TEXT,
-  blog_tags TEXT[], -- Array of tags
-  published_at TIMESTAMP WITH TIME ZONE,
-  blog_status VARCHAR(50) DEFAULT 'draft', -- draft, published, archived
-  view_count INTEGER DEFAULT 0,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  CONSTRAINT fk_blog_doctor_id FOREIGN KEY (doctor_id) REFERENCES doctors(doctor_id) ON DELETE CASCADE
+-- Create patient_reports table (replacing guest_reports)
+CREATE TABLE public.patient_reports (
+    report_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    patient_id UUID REFERENCES public.patients(id) ON DELETE CASCADE,
+    report_content TEXT NOT NULL,
+    report_description TEXT,
+    staff_id UUID REFERENCES public.staff_members(staff_id),
+    report_status report_status DEFAULT 'pending',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE OR REPLACE FUNCTION create_staff_member(
   full_name_input TEXT,
-  email_input VARCHAR(100),
   role_name_input VARCHAR(50),
   working_email_input VARCHAR(100),
   department_input VARCHAR(100) DEFAULT NULL,

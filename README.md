@@ -16,18 +16,46 @@ nvm use 20
 2. Khởi tạo không gian làm việc cho Deno:
    - Mở thanh tìm kiếm trong VSCode (Ctrl+Shift+P) → Gõ ">Deno Initialize Workspace" → Enter.
 
+## Cài đặt Supabase CLI trên Windows
+
+1. Tải scoop cho Windows: `https://scoop.sh/`
+2. Kiểm tra phiên bản trong Powershell (chạy thường) :
+
+```
+scoop --version
+```
+
+3. Tải supabase CLI
+
+```
+scoop bucket add supabase https://github.com/supabase/scoop-bucket.git
+scoop install supabase
+```
+
+4. Update supabase CLI (optional)
+
+```
+scoop update supabase
+```
+
+5. Kiểm tra supabase CLI version trong Powershell terminnal của Visual Studio Code
+
+```
+supabase --version 
+```
+
 ## Khởi chạy dự án đầu tiên
 
 1. Khởi tạo dự án Supabase:
 
 ```
-npx supabase init
+supabase init
 ```
 
 2. Khởi động Supabase:
 
 ```
-npx supabase start
+supabase start
 ```
 
 - Kiểm tra trong Docker Desktop, tìm container có tên trùng với thư mục dự án hoặc dạng `supabase_db_[tên-thư-mục]`. Nếu trạng thái hiển thị màu xanh, container đang chạy đúng.

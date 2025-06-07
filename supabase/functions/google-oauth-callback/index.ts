@@ -6,8 +6,8 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 // Utility functions for consistent responses
-function createErrorResponse(error, status = 400, details = null) {
-  const response = {
+function createErrorResponse(error: string, status = 400, details?: Record<string, unknown> | null) {
+  const response: Record<string, unknown> = {
     error
   };
   if (details) response.details = details;

@@ -38,10 +38,10 @@ scoop install supabase
 scoop update supabase
 ```
 
-5. Kiểm tra supabase CLI version trong Powershell terminnal của Visual Studio Code
+5. Kiểm tra supabase CLI version trong Powershell terminal của Visual Studio Code
 
 ```
-supabase --version 
+supabase --version
 ```
 
 ## Khởi chạy dự án đầu tiên

@@ -2,7 +2,6 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Define ENUMs
-CREATE TYPE role_enum AS ENUM ('doctor', 'manager', 'advisor');
 CREATE TYPE department_enum AS ENUM (
     'reproductive_health',
     'gynecology',
@@ -21,15 +20,22 @@ CREATE TYPE record_status AS ENUM ('draft', 'active', 'archived');
 CREATE TYPE process_status AS ENUM ('pending', 'in_progress', 'completed', 'cancelled');
 CREATE TYPE report_status AS ENUM ('pending', 'reviewed', 'resolved');
 CREATE TYPE blog_status AS ENUM ('draft', 'published', 'archived');
+CREATE TYPE patient_status AS ENUM ('active', 'inactive', 'archived');
+CREATE TYPE staff_status AS ENUM ('active', 'inactive', 'on_leave', 'terminated');
+CREATE TYPE gender_enum AS ENUM ('male', 'female', 'other');
+CREATE TYPE visit_type_enum AS ENUM ('consultation', 'follow-up', 'emergency', 'routine');
+CREATE TYPE staff_role_enum AS ENUM ('doctor', 'consultant', 'receptionist', 'administrator');
 
--- Create patients table
 CREATE TABLE public.patients (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-    name TEXT NOT NULL,
+    full_name TEXT NOT NULL,
+    date_of_birth DATE NOT NULL,
+    gender gender_enum NOT NULL,
     allergies JSONB,
     chronic_conditions JSONB,
     past_surgeries JSONB,
     vaccination_status JSONB,
+    patient_status patient_status NOT NULL DEFAULT 'active'
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -39,11 +45,11 @@ CREATE TABLE public.staff_members (
     staff_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     full_name VARCHAR(100) NOT NULL,
     working_email VARCHAR(255) NOT NULL UNIQUE,
-    role role_enum NOT NULL,
+    role staff_role_enum NOT NULL,
     years_experience INTEGER CHECK (years_experience >= 0),
     hired_at DATE NOT NULL,
     is_available BOOLEAN NOT NULL DEFAULT TRUE,
-    staff_status VARCHAR(20) NOT NULL DEFAULT 'active',
+    staff_status staff_status DEFAULT 'active',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );

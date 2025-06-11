@@ -24,18 +24,21 @@ CREATE TYPE patient_status AS ENUM ('active', 'inactive', 'archived');
 CREATE TYPE staff_status AS ENUM ('active', 'inactive', 'on_leave', 'terminated');
 CREATE TYPE gender_enum AS ENUM ('male', 'female', 'other');
 CREATE TYPE visit_type_enum AS ENUM ('consultation', 'follow-up', 'emergency', 'routine');
+CREATE TYPE vaccination_status_enum AS ENUM ('not_vaccinated', 'partially_vaccinated', 'fully_vaccinated');
 CREATE TYPE staff_role_enum AS ENUM ('doctor', 'consultant', 'receptionist', 'administrator');
-
+CREATE TYPE notification_type_enum AS ENUM ('appointment_reminder', 'new_appointment', 'appointment_update', 'general');
 CREATE TABLE public.patients (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     full_name TEXT NOT NULL,
+    phone TEXT NOT NULL UNIQUE,
+    email VARCHAR(255) NOT NULL UNIQUE,
     date_of_birth DATE NOT NULL,
     gender gender_enum NOT NULL,
-    allergies JSONB,
-    chronic_conditions JSONB,
-    past_surgeries JSONB,
-    vaccination_status JSONB,
-    patient_status patient_status NOT NULL DEFAULT 'active'
+    allergies JSON,
+    chronic_conditions JSON,
+    past_surgeries JSON,
+    vaccination_status vaccination_status_enum NOT NULL DEFAULT 'not_vaccinated',
+    patient_status patient_status NOT NULL DEFAULT 'active',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -59,6 +62,7 @@ CREATE TABLE public.doctor_details (
     doctor_id UUID PRIMARY KEY REFERENCES public.staff_members(staff_id) ON DELETE CASCADE,
     department department_enum NOT NULL,
     speciality speciality_enum NOT NULL,
+    about_me JSON,
     license_no VARCHAR(50) NOT NULL UNIQUE
 );
 
@@ -68,8 +72,7 @@ CREATE TABLE public.staff_schedules (
     staff_id UUID NOT NULL REFERENCES public.staff_members(staff_id) ON DELETE CASCADE,
     start_time TIMESTAMP WITH TIME ZONE NOT NULL,
     end_time TIMESTAMP WITH TIME ZONE NOT NULL,
-    is_recurring BOOLEAN NOT NULL DEFAULT FALSE,
-    recurrence_rule TEXT,
+    timetable JSON,
     CHECK (end_time > start_time)
 );
 
@@ -90,15 +93,9 @@ CREATE TABLE public.staff_history (
     changed_by UUID NOT NULL REFERENCES public.staff_members(staff_id),
     changed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     field_name TEXT NOT NULL CHECK (field_name IN ('full_name', 'working_email', 'role', 'years_experience', 'hired_at', 'is_available', 'department', 'speciality', 'license_no')),
-    old_value JSONB,
-    new_value JSONB,
+    old_value JSON,
+    new_value JSON,
     change_reason TEXT
-);
-
--- Create visit_types table
-CREATE TABLE public.visit_types (
-    visit_type_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    type_name TEXT NOT NULL UNIQUE CHECK (type_name IN ('consultation', 'follow-up', 'emergency', 'routine'))
 );
 
 -- Create receipts table
@@ -107,37 +104,6 @@ CREATE TABLE public.receipts (
     patient_id UUID NOT NULL REFERENCES public.patients(id) ON DELETE CASCADE,
     amount NUMERIC(10,2) CHECK (amount >= 0),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
--- Create health_records table
-CREATE TABLE public.health_records (
-    health_record_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    patient_id UUID NOT NULL REFERENCES public.patients(id) ON DELETE CASCADE,
-    visit_date DATE NOT NULL,
-    doctor_id UUID NOT NULL REFERENCES public.staff_members(staff_id),
-    visit_type_id UUID NOT NULL REFERENCES public.visit_types(visit_type_id),
-    symptoms TEXT,
-    diagnosis TEXT,
-    prescription JSONB,
-    follow_up_date DATE,
-    receipt_id UUID REFERENCES public.receipts(receipt_id),
-    record_status record_status NOT NULL DEFAULT 'draft',
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    CHECK (doctor_id != patient_id)
-);
-
--- Create health_record_histories table
-CREATE TABLE public.health_record_histories (
-    history_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    health_record_id UUID NOT NULL REFERENCES public.health_records(health_record_id) ON DELETE CASCADE,
-    patient_id UUID NOT NULL REFERENCES public.patients(id),
-    changed_by UUID NOT NULL REFERENCES public.staff_members(staff_id),
-    changed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    field_name TEXT NOT NULL CHECK (field_name IN ('symptoms', 'diagnosis', 'prescription', 'follow_up_date', 'record_status')),
-    old_value JSONB,
-    new_value JSONB,
-    change_reason TEXT
 );
 
 -- Create period_tracking table
@@ -149,9 +115,9 @@ CREATE TABLE public.period_tracking (
     estimated_next_date TIMESTAMP WITH TIME ZONE,
     cycle_length INTEGER CHECK (cycle_length > 0),
     flow_intensity TEXT CHECK (flow_intensity IN ('light', 'medium', 'heavy')),
-    symptoms JSONB,
+    symptoms JSON,
     period_description TEXT,
-    predictions JSONB,
+    predictions JSON,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -174,26 +140,6 @@ CREATE TABLE public.medical_services (
     is_active BOOLEAN DEFAULT TRUE
 );
 
--- Create health_record_services table
-CREATE TABLE public.health_record_services (
-    health_record_service_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    health_record_id UUID NOT NULL REFERENCES public.health_records(health_record_id) ON DELETE CASCADE,
-    service_id UUID NOT NULL REFERENCES public.medical_services(service_id),
-    unit_cost NUMERIC CHECK (unit_cost >= 0),
-    quantity INTEGER CHECK (quantity > 0) DEFAULT 1,
-    service_notes TEXT
-);
-
--- Create service_process_logs table
-CREATE TABLE public.service_process_logs (
-    service_process_log_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    health_record_service_id UUID NOT NULL REFERENCES public.health_record_services(health_record_service_id) ON DELETE CASCADE,
-    process_status process_status NOT NULL,
-    process_notes TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
 -- Create blog_posts table
 CREATE TABLE public.blog_posts (
     blog_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -202,7 +148,7 @@ CREATE TABLE public.blog_posts (
     blog_content TEXT NOT NULL,
     excerpt TEXT,
     featured_image_url TEXT,
-    blog_tags JSONB,
+    blog_tags JSON,
     published_at TIMESTAMP WITH TIME ZONE,
     blog_status blog_status DEFAULT 'draft',
     view_count INTEGER DEFAULT 0 CHECK (view_count >= 0),
@@ -221,4 +167,24 @@ CREATE TABLE public.patient_reports (
     report_status report_status DEFAULT 'pending',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE public.appointments (
+    appointment_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    patient_id UUID NOT NULL REFERENCES public.patients(id) ON DELETE CASCADE,
+    phone TEXT NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    visit_type visit_type_enum NOT NULL,
+    appointment_status process_status DEFAULT 'pending',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Each staff = a notification
+CREATE TABLE public.notifications (
+    notification_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    appointment_id UUID REFERENCES public.appointments(appointment_id) ON DELETE CASCADE,
+    staff_id UUID REFERENCES public.staff_members(staff_id) ON DELETE CASCADE,
+    notification_type notification_type_enum NOT NULL,
+    sent_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );

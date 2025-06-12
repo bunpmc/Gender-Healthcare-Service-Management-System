@@ -174,7 +174,8 @@ CREATE TABLE public.appointments (
     patient_id UUID NOT NULL REFERENCES public.patients(id) ON DELETE CASCADE,
     phone TEXT NOT NULL,
     email VARCHAR(255) NOT NULL,
-    visit_type visit_type_enum NOT NULL,
+    message TEXT,
+    time_call TIMESTAMP WITH TIME ZONE NOT NULL,
     appointment_status process_status DEFAULT 'pending',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
@@ -187,4 +188,13 @@ CREATE TABLE public.notifications (
     staff_id UUID REFERENCES public.staff_members(staff_id) ON DELETE CASCADE,
     notification_type notification_type_enum NOT NULL,
     sent_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE public.refreshtoken (
+  refreshtoken_id serial primary key,
+  patient_id uuid not null REFERENCES public.patients(id) ON DELETE CASCADE,
+  token text not null,
+  expires_at timestamptz not null,
+  is_revoked boolean default false,
+  created_at timestamptz default now()
 );

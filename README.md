@@ -63,37 +63,37 @@ supabase start
 3. Dừng Supabase:
 
 ```
-npx supabase stop
+supabase stop
 ```
 
 4. Đẩy database lên Supabase web lần đầu:
 
 ```
-npx supabase db push
+supabase db push
 ```
 
 5. Lấy database từ Supabase web về local:
 
 ```
-npx supabase db pull
+supabase db pull
 ```
 
-6. Đặt lại database theo file migration:
+6. Đặt lại database theo file migration nhưng chỉ reset trên local:
 
 ```
-npx supabase db reset
+supabase db reset
 ```
 
 7. Tạo edge function:
 
 ```
-npx supabase functions new [tên-function]
+supabase functions new [tên-function]
 ```
 
 8. Tạo migration mới:
 
 ```
-npx supabase migrations new [tên-migration]
+supabase migrations new [tên-migration]
 ```
 
 ## Liên kết dự án local với dự án Supabase trên web
@@ -103,7 +103,7 @@ Dự án local ban đầu chỉ chạy trên `http://127.0.0.1:54321`. Để li�
 1. Đăng nhập Supabase:
 
 ```
-npx supabase login
+supabase login
 ```
 
 - Trình duyệt sẽ mở, tự động yêu cầu nhập code xác thực.
@@ -111,7 +111,7 @@ npx supabase login
 2. Liên kết dự án:
 
 ```
-npx supabase link --project-ref [project-link]
+supabase link --project-ref [project-link]
 ```
 
 - Lấy `[project-link]` từ URL: `https://supabase.com/dashboard/project/[project-link]`.
@@ -120,7 +120,7 @@ npx supabase link --project-ref [project-link]
 ## Triển khai edge function lên Supabase web
 
 ```
-npx supabase functions deploy [tên-function]
+supabase functions deploy [tên-function]
 ```
 
 ## Xử lý lỗi thường gặp

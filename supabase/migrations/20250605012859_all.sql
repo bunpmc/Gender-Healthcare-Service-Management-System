@@ -35,6 +35,7 @@ CREATE TABLE public.patients (
     date_of_birth DATE NOT NULL,
     gender gender_enum NOT NULL,
     image_link TEXT,
+    bio TEXT,
     allergies JSON,
     chronic_conditions JSON,
     past_surgeries JSON,

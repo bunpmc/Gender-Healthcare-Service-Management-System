@@ -4,8 +4,10 @@ CREATE OR REPLACE FUNCTION update_medical_service(
   p_service_name TEXT DEFAULT NULL,
   p_service_description TEXT DEFAULT NULL,
   p_service_cost NUMERIC DEFAULT NULL,
-  p_duration_minutes INT DEFAULT NULL
-  
+  p_duration_minutes INT DEFAULT NULL,
+  p_image_link TEXT DEFAULT NULL,
+  p_description JSON DEFAULT NULL,
+  p_overall TEXT DEFAULT NULL
 )
 RETURNS BOOLEAN AS $$
 
@@ -16,13 +18,13 @@ BEGIN
     service_name = COALESCE(p_service_name, service_name),
     service_description = COALESCE(p_service_description, service_description),
     service_cost = COALESCE(p_service_cost, service_cost),
-    duration_minutes = COALESCE(p_duration_minutes, duration_minutes)
-    
-    
+    duration_minutes = COALESCE(p_duration_minutes, duration_minutes),
+    image_link = COALESCE(p_image_link, image_link),
+    description = COALESCE(p_description, description),
+    overall = COALESCE(p_overall, overall)
+  WHERE service_id = p_service_id AND is_active = false;
 
-  WHERE service_id = p_service_id and is_active = false;
-
-  RETURN FOUND;  
+  RETURN FOUND;
 END;
 $$ LANGUAGE plpgsql;
 ---
@@ -57,32 +59,37 @@ END;
 $$ LANGUAGE plpgsql;
 ---- 
 CREATE OR REPLACE FUNCTION create_medical_service(
- 
-  p_category_id UUID ,
-  p_service_name TEXT ,
+  p_category_id UUID,
+  p_service_name TEXT,
   p_service_description TEXT DEFAULT NULL,
   p_service_cost NUMERIC DEFAULT NULL,
-  p_duration_minutes INT DEFAULT NULL
+  p_duration_minutes INT DEFAULT NULL,
+  p_image_link TEXT DEFAULT NULL,
+  p_description JSON DEFAULT NULL,
+  p_overall TEXT DEFAULT NULL
 )
 RETURNS BOOLEAN AS $$
 BEGIN
   INSERT INTO medical_services (
-   
     category_id,
     service_name,
     service_description,
     service_cost,
     duration_minutes,
+    image_link,
+    description,
+    overall,
     is_active
-   
   ) VALUES (
-   
     p_category_id,
     p_service_name,
     p_service_description,
     p_service_cost,
     p_duration_minutes,
-    TRUE,            
+    p_image_link,
+    p_description,
+    p_overall,
+    TRUE
   );
 
   RETURN TRUE;

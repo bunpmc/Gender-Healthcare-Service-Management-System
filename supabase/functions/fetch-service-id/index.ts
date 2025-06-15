@@ -1,13 +1,10 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-function createErrorResponse(
-  error: string,
-  status = 400,
-  details: string | null = null,
-) {
-  const response: any = { error };
+function createErrorResponse(error, status = 400, details = null) {
+  const response = {
+    error,
+  };
   if (details) response.details = details;
   return new Response(JSON.stringify(response), {
     status,
@@ -17,8 +14,7 @@ function createErrorResponse(
     },
   });
 }
-
-function createSuccessResponse(data: any, status = 200) {
+function createSuccessResponse(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
     headers: {
@@ -27,7 +23,6 @@ function createSuccessResponse(data: any, status = 200) {
     },
   });
 }
-
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", {
@@ -39,31 +34,19 @@ serve(async (req) => {
       },
     });
   }
-
   if (req.method !== "GET") {
     return createErrorResponse("Method not allowed", 405);
   }
-
-  const url = new URL(req.url);
-  const serviceId = url.searchParams.get("service_id");
-
-  if (!serviceId) {
-    return createErrorResponse("Missing service_id parameter", 400);
-  }
-
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-
   if (!supabaseUrl || !supabaseServiceRoleKey) {
     return createErrorResponse("Server configuration error", 500);
   }
-
   const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
-
   try {
-    const { data: serviceData, error: serviceError } = await supabase
-      .from("medical_services")
-      .select(`
+    const { data: serviceData, error: serviceError } = await supabase.from(
+      "medical_services",
+    ).select(`
         service_id,
         service_name,
         overall,
@@ -71,40 +54,37 @@ serve(async (req) => {
         service_cost,
         duration_minutes,
         image_link
-      `)
-      .eq("service_id", serviceId)
-      .single();
-
+        )
+      `);
     if (serviceError) {
-      return createErrorResponse(serviceError.message, 500);
+      return createErrorResponse(
+        serviceError.message,
+        500,
+      );
     }
-
     if (!serviceData) {
-      return createSuccessResponse(null, 404);
+      return createSuccessResponse([]);
     }
-
-    let imageUrl = null;
-    if (serviceData.image_link) {
-      const { data: publicData } = supabase.storage.from("service-uploads")
-        .getPublicUrl(serviceData.image_link);
-      imageUrl = publicData.publicUrl;
-    }
-
-    const responseData = {
-      id: serviceData.service_id,
-      name: serviceData.service_name,
-      overall: serviceData.overall,
-      price: serviceData.service_cost,
-      duration: serviceData.duration_minutes,
-      image_link: imageUrl,
-    };
-
+    const responseData = await Promise.all(serviceData.map(async (service) => {
+      let imageUrl = null;
+      if (service?.image_link) {
+        const { data: publicData } = await supabase.storage.from(
+          "service-uploads",
+        )
+          .getPublicUrl(service.image_link);
+        imageUrl = publicData.publicUrl;
+      }
+      return {
+        id: service.service_id,
+        name: service.service_name,
+        overall: service.overall,
+        price: service.service_cost,
+        duration: service.duration_minutes,
+        image_link: imageUrl,
+      };
+    }));
     return createSuccessResponse(responseData);
   } catch (error) {
-    return createErrorResponse(
-      "Internal server error",
-      500,
-      (error as Error).message,
-    );
+    return createErrorResponse("Internal server error", 500, error.message);
   }
 });

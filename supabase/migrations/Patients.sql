@@ -147,3 +147,42 @@ BEGIN
   RETURN appt_count;
 END;
 $$ LANGUAGE plpgsql;
+----
+CREATE OR REPLACE FUNCTION search_patients_by_keyword(
+  p_keyword TEXT DEFAULT NULL
+)
+RETURNS TABLE (
+  id UUID,
+  full_name TEXT,
+  phone TEXT,
+  email VARCHAR,
+  date_of_birth DATE,
+  gender gender_enum,
+  allergies JSON,
+  chronic_conditions JSON,
+  past_surgeries JSON,
+  vaccination_status vaccination_status_enum,
+  patient_status patient_status,
+  created_at TIMESTAMPTZ,
+  updated_at TIMESTAMPTZ,
+  image_link TEXT,
+  bio TEXT
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    p.id, p.full_name, p.phone, p.email,
+    p.date_of_birth, p.gender, p.allergies,
+    p.chronic_conditions, p.past_surgeries,
+    p.vaccination_status, p.patient_status,
+    p.created_at, p.updated_at,
+    p.image_link, p.bio
+  FROM 
+    patients p
+  WHERE 
+    p_keyword IS NULL
+    OR p.full_name ILIKE '%' || p_keyword || '%'
+    OR p.phone ILIKE '%' || p_keyword || '%'
+    OR p.email ILIKE '%' || p_keyword || '%';
+END;
+$$ LANGUAGE plpgsql;

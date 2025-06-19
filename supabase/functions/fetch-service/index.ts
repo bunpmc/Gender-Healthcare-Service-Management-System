@@ -4,6 +4,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 function createErrorResponse(error, status = 400, details = null) {
   const response = {
     error,
+    details,
   };
   if (details) response.details = details;
   return new Response(JSON.stringify(response), {

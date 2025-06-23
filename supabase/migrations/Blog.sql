@@ -71,3 +71,46 @@ BEGIN
   RETURN FOUND;
 END;
 $$ LANGUAGE plpgsql;
+----
+create or replace function increment_view_and_fetch_blog(input_blog_id uuid)
+returns table (
+  blog_id uuid,
+  blog_title text,
+  blog_content text,
+  excerpt text,
+  image_link text,
+  blog_tags json, -- dùng json nếu cột là json
+  blog_status text,
+  created_at timestamptz,
+  updated_at timestamptz,
+  doctor_details json
+)
+language plpgsql
+as $$
+begin
+  update blog_posts
+  set view_count = view_count + 1,
+      updated_at = now()
+  where blog_posts.blog_id = input_blog_id;
+
+  return query
+    select
+      b.blog_id,
+      b.blog_title,
+      b.blog_content,
+      b.excerpt,
+      b.image_link,
+      b.blog_tags,
+      b.blog_status,
+      b.created_at,
+      b.updated_at,
+      json_build_object(
+        'staff_id', s.staff_id,
+        'full_name', s.full_name,
+        'image_link', s.image_link
+      ) as doctor_details
+    from blog_posts b
+    join staff_members s on s.staff_id = b.doctor_id
+    where b.blog_id = input_blog_id;
+end;
+$$;

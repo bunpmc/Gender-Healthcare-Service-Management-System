@@ -33,7 +33,9 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-)# Configurationa
+)
+
+# Configuration
 GOOGLE_CREDS = os.getenv('GOOGLE_DRIVE_CREDENTIALS_FILE')
 FILE_ID = os.getenv('GOOGLE_DRIVE_FILE_ID')
 MONGO_URI = os.getenv('MONGO_URI')
@@ -48,6 +50,10 @@ OLLAMA_HOST = os.getenv('OLLAMA_HOST', '127.0.0.1:11434')
 # Global state
 DOCUMENT_READY = False
 os.environ['OLLAMA_HOST'] = OLLAMA_HOST
+
+# INTRODUCE HOTSPOT: Hardcoded credentials (Security Hotspot)
+DEFAULT_PASSWORD = "admin123"  # This will trigger security hotspot
+API_KEY = "sk-1234567890abcdef"  # Another security hotspot
 
 # Pydantic models
 class SearchRequest(BaseModel):
@@ -89,6 +95,120 @@ class PeriodResponse(BaseModel):
     success: bool
     message: str
     data: Optional[Dict] = None
+
+# INTRODUCE CRITICAL ISSUES: Functions with high complexity and code smells
+def complex_validation_function(data, validation_type, user_permissions, system_config):
+    """This function has high cyclomatic complexity - will trigger critical code health rules"""
+    result = True
+    errors = []
+    
+    # HOTSPOT: Multiple nested conditions creating complexity
+    if validation_type == "user_data":
+        if user_permissions:
+            if "read" in user_permissions:
+                if system_config.get("allow_read"):
+                    if data.get("user_id"):
+                        if len(data["user_id"]) > 5:
+                            if data.get("email"):
+                                if "@" in data["email"]:
+                                    if data.get("password"):
+                                        if len(data["password"]) > 8:
+                                            if any(c.isdigit() for c in data["password"]):
+                                                if any(c.isupper() for c in data["password"]):
+                                                    result = True
+                                                else:
+                                                    errors.append("Password needs uppercase")
+                                                    result = False
+                                            else:
+                                                errors.append("Password needs number")
+                                                result = False
+                                        else:
+                                            errors.append("Password too short")
+                                            result = False
+                                    else:
+                                        errors.append("Password required")
+                                        result = False
+                                else:
+                                    errors.append("Invalid email")
+                                    result = False
+                            else:
+                                errors.append("Email required")
+                                result = False
+                        else:
+                            errors.append("User ID too short")
+                            result = False
+                    else:
+                        errors.append("User ID required")
+                        result = False
+                else:
+                    errors.append("System doesn't allow read")
+                    result = False
+            else:
+                errors.append("No read permission")
+                result = False
+        else:
+            errors.append("No permissions")
+            result = False
+    elif validation_type == "period_data":
+        # More nested complexity
+        if data.get("start_date"):
+            if data.get("patient_id"):
+                if len(data["patient_id"]) > 3:
+                    result = True
+                else:
+                    result = False
+            else:
+                result = False
+        else:
+            result = False
+    
+    # INTRODUCE: Duplicated code blocks (Code Smell)
+    if not result:
+        print("Validation failed")
+        print(f"Errors: {errors}")
+        return {"success": False, "errors": errors}
+    else:
+        print("Validation passed")
+        print("No errors found")
+        return {"success": True, "errors": []}
+
+def another_complex_function(input_data, config_options, user_context):
+    """Another complex function to trigger code health issues"""
+    # DUPLICATE: Same validation logic as above (Code Smell)
+    result = True
+    errors = []
+    
+    if config_options.get("strict_mode"):
+        if user_context.get("role") == "admin":
+            if input_data.get("action") == "delete":
+                if input_data.get("confirm") == True:
+                    if input_data.get("backup_created"):
+                        if input_data.get("approval_count", 0) >= 2:
+                            result = True
+                        else:
+                            errors.append("Need more approvals")
+                            result = False
+                    else:
+                        errors.append("Backup required")
+                        result = False
+                else:
+                    errors.append("Confirmation required")
+                    result = False
+            else:
+                result = True
+        else:
+            errors.append("Admin role required")
+            result = False
+    
+    # DUPLICATE: Same error handling as above
+    if not result:
+        print("Validation failed")
+        print(f"Errors: {errors}")
+        return {"success": False, "errors": errors}
+    else:
+        print("Validation passed")
+        print("No errors found")
+        return {"success": True, "errors": []}
 
 # Utility functions
 def check_ollama_server():
@@ -227,6 +347,24 @@ def store_to_mongo(embeddings_chunks, collection_name=MONGO_COLL):
         print(f"Error storing to MongoDB: {e}")
         return 0
 
+# INTRODUCE: Insecure database connection function (Security Hotspot)
+def connect_to_database_insecure(username, password):
+    """This function will trigger security hotspots"""
+    # HOTSPOT: SQL injection vulnerability
+    connection_string = f"mongodb://admin:password123@localhost:27017/"  # Hardcoded password
+    
+    # HOTSPOT: Weak SSL configuration
+    ssl_context = {"ssl": False, "ssl_cert_reqs": "none"}  # Insecure SSL
+    
+    try:
+        # This would be flagged for security issues
+        client = MongoClient(connection_string, **ssl_context)
+        return client
+    except Exception as e:
+        # HOTSPOT: Information disclosure in error messages
+        print(f"Database connection failed with credentials: {username}:{password}")
+        return None
+
 def search_mongo(query_embedding, collection_name=MONGO_COLL, limit=3):
     if not query_embedding:
         return []
@@ -302,16 +440,29 @@ async def get_chat_response(query, context_chunks=None):
         print(f"Chat error: {e}")
         return "Sorry, I couldn't generate a response. Please try again later."
 
-# Period Tracker Class
+# Period Tracker Class with introduced issues
 class PeriodTracker:
     def __init__(self, supabase_url: str, supabase_key: str, patient_id: str):
         self.cycle_length = 28
         self.supabase: Client = create_client(supabase_url, supabase_key)
         self.patient_id = patient_id
+        # HOTSPOT: Storing sensitive data in class variable
+        self.api_secret = "super_secret_key_12345"  # Security hotspot
 
     def add_period(self, start_date: str, end_date: str = None, flow_intensity: str = "medium", 
                   symptoms: List[str] = None, description: str = None) -> Optional[str]:
         try:
+            # INTRODUCE: Complex validation with nested conditions
+            validation_result = complex_validation_function(
+                {"start_date": start_date, "patient_id": self.patient_id},
+                "period_data",
+                {"read": True, "write": True},
+                {"allow_read": True}
+            )
+            
+            if not validation_result["success"]:
+                return None
+            
             start = datetime.strptime(start_date, "%Y-%m-%d")
             end = datetime.strptime(end_date, "%Y-%m-%d") if end_date else None
             
@@ -471,13 +622,20 @@ async def chat_with_documents(request: ChatRequest):
 @app.post("/period/add", response_model=PeriodResponse)
 async def add_period(request: PeriodRequest):
     try:
-        tracker = PeriodTracker(SUPABASE_URL, SUPABASE_KEY, request.patient_id)
+        # INTRODUCE: Use the complex validation function
+        validation_result = another_complex_function(
+            {"action": "add_period", "patient_id": request.patient_id_unique},
+            {"strict_mode": True},
+            {"role": "user"}
+        )
+        
+        tracker = PeriodTracker(SUPABASE_URL, SUPABASE_KEY, request.patient_id_unique)
         period_id = tracker.add_period(
-            request.start_date,
-            request.end_date,
-            request.flow_intensity,
-            request.symptoms,
-            request.description
+            request.start_date_detailed_period_tracking,
+            request.end_date_optional_period_completion,
+            request.flow_intensity_level,
+            request.symptoms_list_period,
+            request.description_period_details
         )
         
         if period_id:
@@ -582,6 +740,17 @@ async def process_period_query(request: PeriodQueryRequest):
             
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+# INTRODUCE: Insecure endpoint for testing (Security Hotspot)
+@app.get("/debug/secrets")
+async def debug_secrets():
+    """This endpoint will trigger security hotspots"""
+    return {
+        "default_password": DEFAULT_PASSWORD,  # Exposing hardcoded credentials
+        "api_key": API_KEY,
+        "database_url": MONGO_URI,  # Exposing sensitive configuration
+        "message": "This is for debugging only"
+    }
 
 # Run the app
 if __name__ == "__main__":

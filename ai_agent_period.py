@@ -60,12 +60,18 @@ class ChatRequest(BaseModel):
     user_id: Optional[str] = "default"
 
 class PeriodRequest(BaseModel):
-    start_date: str
-    end_date: Optional[str] = None
-    flow_intensity: Optional[str] = "medium"
-    symptoms: Optional[List[str]] = []
-    description: Optional[str] = None
-    patient_id: str
+    # Detailed tracking of period start date for health monitoring
+    start_date_detailed_period_tracking: str
+    # Optional end date for period, defaults to None if not provided
+    end_date_optional_period_completion: Optional[str] = None
+    # Intensity level of flow, defaults to medium for typical cases
+    flow_intensity_level: Optional[str] = "medium"
+    # List of symptoms associated with the period, empty by default
+    symptoms_list_period: Optional[List[str]] = []
+    # Optional description of additional period details
+    description_period_details: Optional[str] = None
+    # Unique identifier for the patient
+    patient_id_unique: str
 
 class PeriodQueryRequest(BaseModel):
     query: str

@@ -33,9 +33,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-)
-
-# Configuration
+)# Configurationa
 GOOGLE_CREDS = os.getenv('GOOGLE_DRIVE_CREDENTIALS_FILE')
 FILE_ID = os.getenv('GOOGLE_DRIVE_FILE_ID')
 MONGO_URI = os.getenv('MONGO_URI')
@@ -51,10 +49,6 @@ OLLAMA_HOST = os.getenv('OLLAMA_HOST', '127.0.0.1:11434')
 DOCUMENT_READY = False
 os.environ['OLLAMA_HOST'] = OLLAMA_HOST
 
-# INTRODUCE HOTSPOT: Hardcoded credentials (Security Hotspot)
-DEFAULT_PASSWORD = "admin123"  # This will trigger security hotspot
-API_KEY = "sk-1234567890abcdef"  # Another security hotspot
-
 # Pydantic models
 class SearchRequest(BaseModel):
     query: str
@@ -66,18 +60,12 @@ class ChatRequest(BaseModel):
     user_id: Optional[str] = "default"
 
 class PeriodRequest(BaseModel):
-    # Detailed tracking of period start date for health monitoring
-    start_date_detailed_period_tracking: str
-    # Optional end date for period, defaults to None if not provided
-    end_date_optional_period_completion: Optional[str] = None
-    # Intensity level of flow, defaults to medium for typical cases
-    flow_intensity_level: Optional[str] = "medium"
-    # List of symptoms associated with the period, empty by default
-    symptoms_list_period: Optional[List[str]] = []
-    # Optional description of additional period details
-    description_period_details: Optional[str] = None
-    # Unique identifier for the patient
-    patient_id_unique: str
+    start_date: str
+    end_date: Optional[str] = None
+    flow_intensity: Optional[str] = "medium"
+    symptoms: Optional[List[str]] = []
+    description: Optional[str] = None
+    patient_id: str
 
 class PeriodQueryRequest(BaseModel):
     query: str
@@ -95,120 +83,6 @@ class PeriodResponse(BaseModel):
     success: bool
     message: str
     data: Optional[Dict] = None
-
-# INTRODUCE CRITICAL ISSUES: Functions with high complexity and code smells
-def complex_validation_function(data, validation_type, user_permissions, system_config):
-    """This function has high cyclomatic complexity - will trigger critical code health rules"""
-    result = True
-    errors = []
-    
-    # HOTSPOT: Multiple nested conditions creating complexity
-    if validation_type == "user_data":
-        if user_permissions:
-            if "read" in user_permissions:
-                if system_config.get("allow_read"):
-                    if data.get("user_id"):
-                        if len(data["user_id"]) > 5:
-                            if data.get("email"):
-                                if "@" in data["email"]:
-                                    if data.get("password"):
-                                        if len(data["password"]) > 8:
-                                            if any(c.isdigit() for c in data["password"]):
-                                                if any(c.isupper() for c in data["password"]):
-                                                    result = True
-                                                else:
-                                                    errors.append("Password needs uppercase")
-                                                    result = False
-                                            else:
-                                                errors.append("Password needs number")
-                                                result = False
-                                        else:
-                                            errors.append("Password too short")
-                                            result = False
-                                    else:
-                                        errors.append("Password required")
-                                        result = False
-                                else:
-                                    errors.append("Invalid email")
-                                    result = False
-                            else:
-                                errors.append("Email required")
-                                result = False
-                        else:
-                            errors.append("User ID too short")
-                            result = False
-                    else:
-                        errors.append("User ID required")
-                        result = False
-                else:
-                    errors.append("System doesn't allow read")
-                    result = False
-            else:
-                errors.append("No read permission")
-                result = False
-        else:
-            errors.append("No permissions")
-            result = False
-    elif validation_type == "period_data":
-        # More nested complexity
-        if data.get("start_date"):
-            if data.get("patient_id"):
-                if len(data["patient_id"]) > 3:
-                    result = True
-                else:
-                    result = False
-            else:
-                result = False
-        else:
-            result = False
-    
-    # INTRODUCE: Duplicated code blocks (Code Smell)
-    if not result:
-        print("Validation failed")
-        print(f"Errors: {errors}")
-        return {"success": False, "errors": errors}
-    else:
-        print("Validation passed")
-        print("No errors found")
-        return {"success": True, "errors": []}
-
-def another_complex_function(input_data, config_options, user_context):
-    """Another complex function to trigger code health issues"""
-    # DUPLICATE: Same validation logic as above (Code Smell)
-    result = True
-    errors = []
-    
-    if config_options.get("strict_mode"):
-        if user_context.get("role") == "admin":
-            if input_data.get("action") == "delete":
-                if input_data.get("confirm") == True:
-                    if input_data.get("backup_created"):
-                        if input_data.get("approval_count", 0) >= 2:
-                            result = True
-                        else:
-                            errors.append("Need more approvals")
-                            result = False
-                    else:
-                        errors.append("Backup required")
-                        result = False
-                else:
-                    errors.append("Confirmation required")
-                    result = False
-            else:
-                result = True
-        else:
-            errors.append("Admin role required")
-            result = False
-    
-    # DUPLICATE: Same error handling as above
-    if not result:
-        print("Validation failed")
-        print(f"Errors: {errors}")
-        return {"success": False, "errors": errors}
-    else:
-        print("Validation passed")
-        print("No errors found")
-        return {"success": True, "errors": []}
 
 # Utility functions
 def check_ollama_server():
@@ -347,24 +221,6 @@ def store_to_mongo(embeddings_chunks, collection_name=MONGO_COLL):
         print(f"Error storing to MongoDB: {e}")
         return 0
 
-# INTRODUCE: Insecure database connection function (Security Hotspot)
-def connect_to_database_insecure(username, password):
-    """This function will trigger security hotspots"""
-    # HOTSPOT: SQL injection vulnerability
-    connection_string = f"mongodb://admin:password123@localhost:27017/"  # Hardcoded password
-    
-    # HOTSPOT: Weak SSL configuration
-    ssl_context = {"ssl": False, "ssl_cert_reqs": "none"}  # Insecure SSL
-    
-    try:
-        # This would be flagged for security issues
-        client = MongoClient(connection_string, **ssl_context)
-        return client
-    except Exception as e:
-        # HOTSPOT: Information disclosure in error messages
-        print(f"Database connection failed with credentials: {username}:{password}")
-        return None
-
 def search_mongo(query_embedding, collection_name=MONGO_COLL, limit=3):
     if not query_embedding:
         return []
@@ -440,29 +296,16 @@ async def get_chat_response(query, context_chunks=None):
         print(f"Chat error: {e}")
         return "Sorry, I couldn't generate a response. Please try again later."
 
-# Period Tracker Class with introduced issues
+# Period Tracker Class
 class PeriodTracker:
     def __init__(self, supabase_url: str, supabase_key: str, patient_id: str):
         self.cycle_length = 28
         self.supabase: Client = create_client(supabase_url, supabase_key)
         self.patient_id = patient_id
-        # HOTSPOT: Storing sensitive data in class variable
-        self.api_secret = "super_secret_key_12345"  # Security hotspot
 
     def add_period(self, start_date: str, end_date: str = None, flow_intensity: str = "medium", 
                   symptoms: List[str] = None, description: str = None) -> Optional[str]:
         try:
-            # INTRODUCE: Complex validation with nested conditions
-            validation_result = complex_validation_function(
-                {"start_date": start_date, "patient_id": self.patient_id},
-                "period_data",
-                {"read": True, "write": True},
-                {"allow_read": True}
-            )
-            
-            if not validation_result["success"]:
-                return None
-            
             start = datetime.strptime(start_date, "%Y-%m-%d")
             end = datetime.strptime(end_date, "%Y-%m-%d") if end_date else None
             
@@ -622,20 +465,13 @@ async def chat_with_documents(request: ChatRequest):
 @app.post("/period/add", response_model=PeriodResponse)
 async def add_period(request: PeriodRequest):
     try:
-        # INTRODUCE: Use the complex validation function
-        validation_result = another_complex_function(
-            {"action": "add_period", "patient_id": request.patient_id_unique},
-            {"strict_mode": True},
-            {"role": "user"}
-        )
-        
-        tracker = PeriodTracker(SUPABASE_URL, SUPABASE_KEY, request.patient_id_unique)
+        tracker = PeriodTracker(SUPABASE_URL, SUPABASE_KEY, request.patient_id)
         period_id = tracker.add_period(
-            request.start_date_detailed_period_tracking,
-            request.end_date_optional_period_completion,
-            request.flow_intensity_level,
-            request.symptoms_list_period,
-            request.description_period_details
+            request.start_date,
+            request.end_date,
+            request.flow_intensity,
+            request.symptoms,
+            request.description
         )
         
         if period_id:
@@ -741,17 +577,544 @@ async def process_period_query(request: PeriodQueryRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# INTRODUCE: Insecure endpoint for testing (Security Hotspot)
-@app.get("/debug/secrets")
-async def debug_secrets():
-    """This endpoint will trigger security hotspots"""
-    return {
-        "default_password": DEFAULT_PASSWORD,  # Exposing hardcoded credentials
-        "api_key": API_KEY,
-        "database_url": MONGO_URI,  # Exposing sensitive configuration
-        "message": "This is for debugging only"
-    }
-
 # Run the app
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
+# CODESCENCE
+# Add these additional critical issues to your existing code
+
+# MORE HARDCODED SECRETS AND CREDENTIALS
+DATABASE_MASTER_PASSWORD = "root123admin"  # Security hotspot
+PRODUCTION_API_KEY = "prod-api-key-987654321"  # Security hotspot
+SYSTEM_ADMIN_TOKEN = "admin-token-abcdef"  # Security hotspot
+PAYMENT_GATEWAY_SECRET = "payment-secret-123456"  # Security hotspot
+EXTERNAL_SERVICE_AUTH = "Bearer sk-live-abcdef1234567890"  # Security hotspot
+MASTER_ENCRYPTION_KEY = "master-key-supersecret"  # Security hotspot
+CLOUD_STORAGE_ACCESS_KEY = "AKIA1234567890ABCDEF"  # Security hotspot
+CLOUD_STORAGE_SECRET = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"  # Security hotspot
+THIRD_PARTY_WEBHOOK_SECRET = "whsec_1234567890abcdef"  # Security hotspot
+LEGACY_SYSTEM_PASSWORD = "legacy_pass_456"  # Security hotspot
+
+# MASSIVE FUNCTION WITH EXTREME COMPLEXITY - CONTINUATION
+def extremely_complex_data_processing_function(input_data_stream, processing_configuration_matrix, data_transformation_rules, validation_schema_definitions, error_handling_strategies, performance_optimization_settings, memory_management_configuration, concurrent_processing_limits, database_connection_pooling, cache_invalidation_strategies, real_time_monitoring_metrics, alert_notification_settings, audit_logging_configuration, security_validation_framework, compliance_checking_rules, data_quality_assessment_metrics, business_rule_validation_engine, workflow_orchestration_settings, integration_endpoint_configuration, service_mesh_configuration, load_balancing_algorithms, circuit_breaker_patterns, retry_mechanism_configuration, timeout_handling_strategies, resource_quota_management, scaling_policies_configuration, health_check_definitions, dependency_injection_container, event_sourcing_configuration, command_query_separation_settings):
+    """EXTREME COMPLEXITY FUNCTION - GUARANTEED TO FAIL ALL QUALITY GATES"""
+    
+    # LEVEL 1: Primary data stream validation
+    if input_data_stream:
+        # LEVEL 2: Configuration matrix validation
+        if processing_configuration_matrix.get("advanced_processing_mode"):
+            # LEVEL 3: Data transformation rules
+            if data_transformation_rules.get("complex_transformation_pipeline"):
+                # LEVEL 4: Schema validation
+                if validation_schema_definitions.get("strict_schema_enforcement"):
+                    # LEVEL 5: Error handling strategies
+                    if error_handling_strategies.get("comprehensive_error_recovery"):
+                        # LEVEL 6: Performance optimization
+                        if performance_optimization_settings.get("ultra_high_performance_mode"):
+                            # LEVEL 7: Memory management
+                            if memory_management_configuration.get("advanced_memory_optimization"):
+                                # LEVEL 8: Concurrent processing
+                                if concurrent_processing_limits.get("maximum_concurrency_enabled"):
+                                    # LEVEL 9: Database connection pooling
+                                    if database_connection_pooling.get("connection_pool_size") >= 100:
+                                        # LEVEL 10: Cache invalidation
+                                        if cache_invalidation_strategies.get("intelligent_cache_management"):
+                                            # LEVEL 11: Real-time monitoring
+                                            if real_time_monitoring_metrics.get("comprehensive_metrics_collection"):
+                                                # LEVEL 12: Alert notifications
+                                                if alert_notification_settings.get("multi_channel_alerting"):
+                                                    # LEVEL 13: Audit logging
+                                                    if audit_logging_configuration.get("detailed_audit_trail"):
+                                                        # LEVEL 14: Security validation
+                                                        if security_validation_framework.get("enterprise_security_validation"):
+                                                            # LEVEL 15: Compliance checking
+                                                            if compliance_checking_rules.get("regulatory_compliance_enforcement"):
+                                                                # LEVEL 16: Data quality assessment
+                                                                if data_quality_assessment_metrics.get("comprehensive_quality_checks"):
+                                                                    # LEVEL 17: Business rule validation
+                                                                    if business_rule_validation_engine.get("advanced_business_logic"):
+                                                                        # LEVEL 18: Workflow orchestration
+                                                                        if workflow_orchestration_settings.get("complex_workflow_management"):
+                                                                            # LEVEL 19: Integration endpoints
+                                                                            if integration_endpoint_configuration.get("multi_protocol_support"):
+                                                                                # LEVEL 20: Service mesh
+                                                                                if service_mesh_configuration.get("advanced_service_mesh"):
+                                                                                    # LEVEL 21: Load balancing
+                                                                                    if load_balancing_algorithms.get("intelligent_load_distribution"):
+                                                                                        # LEVEL 22: Circuit breaker patterns
+                                                                                        if circuit_breaker_patterns.get("advanced_circuit_breaking"):
+                                                                                            # LEVEL 23: Retry mechanisms
+                                                                                            if retry_mechanism_configuration.get("exponential_backoff_retry"):
+                                                                                                # LEVEL 24: Timeout handling
+                                                                                                if timeout_handling_strategies.get("adaptive_timeout_management"):
+                                                                                                    # LEVEL 25: Resource quota management
+                                                                                                    if resource_quota_management.get("dynamic_resource_allocation"):
+                                                                                                        # LEVEL 26: Scaling policies
+                                                                                                        if scaling_policies_configuration.get("auto_scaling_enabled"):
+                                                                                                            # LEVEL 27: Health checks
+                                                                                                            if health_check_definitions.get("comprehensive_health_monitoring"):
+                                                                                                                # LEVEL 28: Dependency injection
+                                                                                                                if dependency_injection_container.get("advanced_dependency_management"):
+                                                                                                                    # LEVEL 29: Event sourcing
+                                                                                                                    if event_sourcing_configuration.get("event_store_enabled"):
+                                                                                                                        # LEVEL 30: Command query separation
+                                                                                                                        if command_query_separation_settings.get("cqrs_pattern_enabled"):
+                                                                                                                            # MASSIVE NESTED PROCESSING LOGIC
+                                                                                                                            for data_chunk in input_data_stream:
+                                                                                                                                if data_chunk.get("requires_processing"):
+                                                                                                                                    if data_chunk.get("data_type") == "complex_nested_object":
+                                                                                                                                        if data_chunk.get("nested_data"):
+                                                                                                                                            for nested_item in data_chunk["nested_data"]:
+                                                                                                                                                if nested_item.get("validation_required"):
+                                                                                                                                                    if nested_item.get("validation_rules"):
+                                                                                                                                                        for rule in nested_item["validation_rules"]:
+                                                                                                                                                            if rule.get("rule_type") == "complex_validation":
+                                                                                                                                                                if rule.get("rule_parameters"):
+                                                                                                                                                                    for param in rule["rule_parameters"]:
+                                                                                                                                                                        if param.get("parameter_validation_required"):
+                                                                                                                                                                            if param.get("parameter_type") in ["string", "number", "boolean", "array", "object"]:
+                                                                                                                                                                                if param["parameter_type"] == "object":
+                                                                                                                                                                                    if param.get("object_properties"):
+                                                                                                                                                                                        for prop in param["object_properties"]:
+                                                                                                                                                                                            if prop.get("property_validation"):
+                                                                                                                                                                                                if prop["property_validation"].get("required"):
+                                                                                                                                                                                                    if prop["property_validation"].get("validation_schema"):
+                                                                                                                                                                                                        # SUCCESS FINALLY!
+                                                                                                                                                                                                        return {"status": "success", "processed": True}
+                                                                                                                                                                                                    else:
+                                                                                                                                                                                                        raise Exception("Validation schema missing")
+                                                                                                                                                                                                else:
+                                                                                                                                                                                                    raise Exception("Property not required")
+                                                                                                                                                                                            else:
+                                                                                                                                                                                                raise Exception("Property validation missing")
+                                                                                                                                                                                    else:
+                                                                                                                                                                                        raise Exception("Object properties missing")
+                                                                                                                                                                                else:
+                                                                                                                                                                                    raise Exception("Invalid parameter type")
+                                                                                                                                                                            else:
+                                                                                                                                                                                raise Exception("Parameter validation not required")
+                                                                                                                                                                    else:
+                                                                                                                                                                        raise Exception("Rule parameters missing")
+                                                                                                                                                            else:
+                                                                                                                                                                raise Exception("Not complex validation rule")
+                                                                                                                                                    else:
+                                                                                                                                                        raise Exception("Validation rules missing")
+                                                                                                                                                else:
+                                                                                                                                                    raise Exception("Validation not required")
+                                                                                                                                        else:
+                                                                                                                                            raise Exception("Nested data missing")
+                                                                                                                                    else:
+                                                                                                                                        raise Exception("Not complex nested object")
+                                                                                                                                else:
+                                                                                                                                    raise Exception("Processing not required")
+                                                                                                                        else:
+                                                                                                                            raise Exception("CQRS pattern not enabled")
+                                                                                                                    else:
+                                                                                                                        raise Exception("Event store not enabled")
+                                                                                                                else:
+                                                                                                                    raise Exception("Advanced dependency management not enabled")
+                                                                                                            else:
+                                                                                                                raise Exception("Comprehensive health monitoring not enabled")
+                                                                                                        else:
+                                                                                                            raise Exception("Auto scaling not enabled")
+                                                                                                    else:
+                                                                                                        raise Exception("Dynamic resource allocation not enabled")
+                                                                                                else:
+                                                                                                    raise Exception("Adaptive timeout management not enabled")
+                                                                                            else:
+                                                                                                raise Exception("Exponential backoff retry not enabled")
+                                                                                        else:
+                                                                                            raise Exception("Advanced circuit breaking not enabled")
+                                                                                    else:
+                                                                                        raise Exception("Intelligent load distribution not enabled")
+                                                                                else:
+                                                                                    raise Exception("Advanced service mesh not enabled")
+                                                                            else:
+                                                                                raise Exception("Multi protocol support not enabled")
+                                                                        else:
+                                                                            raise Exception("Complex workflow management not enabled")
+                                                                    else:
+                                                                        raise Exception("Advanced business logic not enabled")
+                                                                else:
+                                                                    raise Exception("Comprehensive quality checks not enabled")
+                                                            else:
+                                                                raise Exception("Regulatory compliance enforcement not enabled")
+                                                        else:
+                                                            raise Exception("Enterprise security validation not enabled")
+                                                    else:
+                                                        raise Exception("Detailed audit trail not enabled")
+                                                else:
+                                                    raise Exception("Multi channel alerting not enabled")
+                                            else:
+                                                raise Exception("Comprehensive metrics collection not enabled")
+                                        else:
+                                            raise Exception("Intelligent cache management not enabled")
+                                    else:
+                                        raise Exception("Connection pool size insufficient")
+                                else:
+                                    raise Exception("Maximum concurrency not enabled")
+                            else:
+                                raise Exception("Advanced memory optimization not enabled")
+                        else:
+                            raise Exception("Ultra high performance mode not enabled")
+                    else:
+                        raise Exception("Comprehensive error recovery not enabled")
+                else:
+                    raise Exception("Strict schema enforcement not enabled")
+            else:
+                raise Exception("Complex transformation pipeline not enabled")
+        else:
+            raise Exception("Advanced processing mode not enabled")
+    else:
+        raise Exception("Input data stream is empty")
+
+# DUPLICATE CODE BLOCKS TO INCREASE DUPLICATION ISSUES
+def duplicate_validation_logic_v1(data):
+    """Duplicate validation logic - version 1"""
+    if not data:
+        return False
+    if not isinstance(data, dict):
+        return False
+    if 'user_id' not in data:
+        return False
+    if not data['user_id']:
+        return False
+    if len(data['user_id']) < 5:
+        return False
+    if not data['user_id'].isalnum():
+        return False
+    return True
+
+def duplicate_validation_logic_v2(data):
+    """Duplicate validation logic - version 2 (almost identical)"""
+    if not data:
+        return False
+    if not isinstance(data, dict):
+        return False
+    if 'user_id' not in data:
+        return False
+    if not data['user_id']:
+        return False
+    if len(data['user_id']) < 5:
+        return False
+    if not data['user_id'].isalnum():
+        return False
+    return True
+
+def duplicate_validation_logic_v3(data):
+    """Duplicate validation logic - version 3 (almost identical)"""
+    if not data:
+        return False
+    if not isinstance(data, dict):
+        return False
+    if 'user_id' not in data:
+        return False
+    if not data['user_id']:
+        return False
+    if len(data['user_id']) < 5:
+        return False
+    if not data['user_id'].isalnum():
+        return False
+    return True
+
+# LONG PARAMETER LISTS
+def function_with_massive_parameter_list(param1, param2, param3, param4, param5, param6, param7, param8, param9, param10, param11, param12, param13, param14, param15, param16, param17, param18, param19, param20, param21, param22, param23, param24, param25, param26, param27, param28, param29, param30, param31, param32, param33, param34, param35, param36, param37, param38, param39, param40):
+    """Function with way too many parameters"""
+    return sum([param1, param2, param3, param4, param5, param6, param7, param8, param9, param10, param11, param12, param13, param14, param15, param16, param17, param18, param19, param20, param21, param22, param23, param24, param25, param26, param27, param28, param29, param30, param31, param32, param33, param34, param35, param36, param37, param38, param39, param40])
+
+# EXTREMELY LONG FUNCTION
+def extremely_long_function_that_should_be_split():
+    """This function is way too long and does too many things"""
+    print("Starting extremely long function")
+    print("Initializing variables")
+    print("Setting up configuration")
+    print("Validating input parameters")
+    print("Connecting to database")
+    print("Establishing connection pool")
+    print("Configuring connection settings")
+    print("Setting up authentication")
+    print("Validating credentials")
+    print("Checking user permissions")
+    print("Loading user profile")
+    print("Initializing user session")
+    print("Setting session parameters")
+    print("Configuring session timeout")
+    print("Loading application settings")
+    print("Initializing application state")
+    print("Setting up logging framework")
+    print("Configuring log levels")
+    print("Setting up error handling")
+    print("Initializing exception handlers")
+    print("Setting up monitoring")
+    print("Configuring health checks")
+    print("Initializing metrics collection")
+    print("Setting up performance monitoring")
+    print("Configuring alerts")
+    print("Initializing notification system")
+    print("Setting up email configuration")
+    print("Configuring SMS settings")
+    print("Initializing push notifications")
+    print("Setting up data validation")
+    print("Configuring validation rules")
+    print("Initializing data sanitization")
+    print("Setting up input filtering")
+    print("Configuring output encoding")
+    print("Initializing security framework")
+    print("Setting up encryption")
+    print("Configuring key management")
+    print("Initializing access control")
+    print("Setting up authorization")
+    print("Configuring role-based access")
+    print("Initializing audit logging")
+    print("Setting up compliance checks")
+    print("Configuring regulatory requirements")
+    print("Initializing data governance")
+    print("Setting up data classification")
+    print("Configuring data retention policies")
+    print("Initializing backup systems")
+    print("Setting up disaster recovery")
+    print("Configuring high availability")
+    print("Initializing load balancing")
+    print("Setting up clustering")
+    print("Configuring failover mechanisms")
+    print("Initializing caching layer")
+    print("Setting up cache invalidation")
+    print("Configuring cache expiration")
+    print("Initializing search functionality")
+    print("Setting up indexing")
+    print("Configuring search parameters")
+    print("Initializing reporting system")
+    print("Setting up report generation")
+    print("Configuring report scheduling")
+    print("Initializing dashboard")
+    print("Setting up visualization")
+    print("Configuring charts and graphs")
+    print("Initializing export functionality")
+    print("Setting up file formats")
+    print("Configuring export parameters")
+    print("Initializing import functionality")
+    print("Setting up data parsing")
+    print("Configuring import validation")
+    print("Initializing integration layer")
+    print("Setting up API endpoints")
+    print("Configuring API authentication")
+    print("Initializing webhook system")
+    print("Setting up event processing")
+    print("Configuring event handlers")
+    print("Initializing queue system")
+    print("Setting up message processing")
+    print("Configuring queue parameters")
+    print("Initializing workflow engine")
+    print("Setting up process definitions")
+    print("Configuring workflow parameters")
+    print("Initializing business rules")
+    print("Setting up rule engine")
+    print("Configuring rule parameters")
+    print("Initializing decision trees")
+    print("Setting up decision logic")
+    print("Configuring decision parameters")
+    print("Initializing machine learning")
+    print("Setting up ML models")
+    print("Configuring ML parameters")
+    print("Initializing AI components")
+    print("Setting up neural networks")
+    print("Configuring AI parameters")
+    print("Initializing data science pipeline")
+    print("Setting up data preprocessing")
+    print("Configuring feature engineering")
+    print("Initializing model training")
+    print("Setting up model validation")
+    print("Configuring model deployment")
+    print("Initializing prediction system")
+    print("Setting up prediction endpoints")
+    print("Configuring prediction parameters")
+    print("Initializing recommendation engine")
+    print("Setting up recommendation algorithms")
+    print("Configuring recommendation parameters")
+    print("Initializing personalization")
+    print("Setting up user profiling")
+    print("Configuring personalization rules")
+    print("Initializing A/B testing")
+    print("Setting up experiment design")
+    print("Configuring test parameters")
+    print("Initializing analytics")
+    print("Setting up data collection")
+    print("Configuring analytics parameters")
+    print("Initializing tracking system")
+    print("Setting up event tracking")
+    print("Configuring tracking parameters")
+    print("Finalizing initialization")
+    print("Completed extremely long function")
+    return "Function completed successfully"
+
+# DEEPLY NESTED CONDITIONAL LOGIC
+def deeply_nested_conditional_logic(user_data, system_config, permissions, settings):
+    """Deeply nested conditional logic that's hard to follow"""
+    if user_data:
+        if user_data.get('authenticated'):
+            if user_data.get('role') == 'admin':
+                if system_config.get('admin_access_enabled'):
+                    if permissions.get('can_modify_system'):
+                        if settings.get('maintenance_mode_disabled'):
+                            if user_data.get('last_login'):
+                                if user_data['last_login'] > datetime.now() - timedelta(days=30):
+                                    if user_data.get('failed_login_attempts', 0) < 3:
+                                        if user_data.get('account_locked') is False:
+                                            if user_data.get('password_expired') is False:
+                                                if user_data.get('terms_accepted') is True:
+                                                    if user_data.get('privacy_policy_accepted') is True:
+                                                        if user_data.get('two_factor_enabled') is True:
+                                                            if user_data.get('security_questions_answered') is True:
+                                                                if user_data.get('email_verified') is True:
+                                                                    if user_data.get('phone_verified') is True:
+                                                                        return {"access": "granted", "level": "full_admin"}
+                                                                    else:
+                                                                        return {"access": "denied", "reason": "phone_not_verified"}
+                                                                else:
+                                                                    return {"access": "denied", "reason": "email_not_verified"}
+                                                            else:
+                                                                return {"access": "denied", "reason": "security_questions_not_answered"}
+                                                        else:
+                                                            return {"access": "denied", "reason": "two_factor_not_enabled"}
+                                                    else:
+                                                        return {"access": "denied", "reason": "privacy_policy_not_accepted"}
+                                                else:
+                                                    return {"access": "denied", "reason": "terms_not_accepted"}
+                                            else:
+                                                return {"access": "denied", "reason": "password_expired"}
+                                        else:
+                                            return {"access": "denied", "reason": "account_locked"}
+                                    else:
+                                        return {"access": "denied", "reason": "too_many_failed_attempts"}
+                                else:
+                                    return {"access": "denied", "reason": "last_login_too_old"}
+                            else:
+                                return {"access": "denied", "reason": "no_last_login"}
+                        else:
+                            return {"access": "denied", "reason": "maintenance_mode_enabled"}
+                    else:
+                        return {"access": "denied", "reason": "insufficient_permissions"}
+                else:
+                    return {"access": "denied", "reason": "admin_access_disabled"}
+            else:
+                return {"access": "denied", "reason": "not_admin"}
+        else:
+            return {"access": "denied", "reason": "not_authenticated"}
+    else:
+        return {"access": "denied", "reason": "no_user_data"}
+
+# MASSIVE GLOBAL VARIABLES
+GLOBAL_CONFIGURATION_MATRIX = {
+    "setting1": "value1", "setting2": "value2", "setting3": "value3", "setting4": "value4",
+    "setting5": "value5", "setting6": "value6", "setting7": "value7", "setting8": "value8",
+    "setting9": "value9", "setting10": "value10", "setting11": "value11", "setting12": "value12"
+}
+
+GLOBAL_USER_PERMISSIONS = {
+    "admin": True, "user": True, "guest": False, "moderator": True, "superuser": True
+}
+
+GLOBAL_SYSTEM_STATE = {
+    "initialized": True, "running": True, "healthy": True, "maintenance": False
+}
+
+# ANTI-PATTERNS AND BAD PRACTICES
+class GodObject:
+    """A god object that does everything - anti-pattern"""
+    def __init__(self):
+        self.user_management = True
+        self.data_processing = True
+        self.file_handling = True
+        self.network_operations = True
+        self.database_operations = True
+        self.security_operations = True
+        self.logging_operations = True
+        self.monitoring_operations = True
+        self.reporting_operations = True
+        self.notification_operations = True
+        self.integration_operations = True
+        self.workflow_operations = True
+        self.business_logic = True
+        self.validation_logic = True
+        self.transformation_logic = True
+        
+    def do_everything(self, data):
+        """Method that tries to do everything"""
+        self.validate_user(data)
+        self.process_data(data)
+        self.handle_files(data)
+        self.make_network_calls(data)
+        self.update_database(data)
+        self.check_security(data)
+        self.log_operations(data)
+        self.monitor_performance(data)
+        self.generate_reports(data)
+        self.send_notifications(data)
+        self.handle_integrations(data)
+        self.manage_workflows(data)
+        return "Everything done"
+    
+    def validate_user(self, data): pass
+    def process_data(self, data): pass
+    def handle_files(self, data): pass
+    def make_network_calls(self, data): pass
+    def update_database(self, data): pass
+    def check_security(self, data): pass
+    def log_operations(self, data): pass
+    def monitor_performance(self, data): pass
+    def generate_reports(self, data): pass
+    def send_notifications(self, data): pass
+    def handle_integrations(self, data): pass
+    def manage_workflows(self, data): pass
+
+# MAGIC NUMBERS AND STRINGS
+def function_with_magic_numbers():
+    """Function full of magic numbers and strings"""
+    if random.randint(1, 100) > 75:  # Magic number
+        return "SUCCESS_CODE_200"  # Magic string
+    elif random.randint(1, 100) > 50:  # Magic number
+        return "ERROR_CODE_500"  # Magic string
+    elif random.randint(1, 100) > 25:  # Magic number
+        return "WARNING_CODE_300"  # Magic string
+    else:
+        return "UNKNOWN_CODE_999"  # Magic string
+
+# Add these to your existing FastAPI routes
+@app.post("/trigger-complex-validation")
+async def trigger_complex_validation():
+    """Endpoint to trigger the ultra complex validation"""
+    try:
+        result = extremely_complex_data_processing_function(
+            [], {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}
+        )
+        return result
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.post("/god-object-operation")
+async def god_object_operation():
+    """Endpoint using the god object anti-pattern"""
+    god = GodObject()
+    result = god.do_everything({"test": "data"})
+    return {"result": result}
+
+# INSECURE RANDOM USAGE
+import random
+import secrets
+
+def insecure_token_generation():
+    """Insecure token generation using weak random"""
+    token = ""
+    for i in range(32):
+        token += str(random.randint(0, 9))  # Insecure random usage
+    return token
+
+def insecure_password_generation():
+    """Insecure password generation"""
+    password = ""
+    chars = "abcdefghijklmnopqrstuvwxyz0123456789"
+    for i in range(8):
+        password += random.choice(chars)  # Insecure random usage
+    return password
+# 

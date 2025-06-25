@@ -51,6 +51,7 @@ serve(async (req)=>{
     // Get query param
     const url = new URL(req.url);
     const blogId = url.searchParams.get("blog_id");
+    
     // Call RPC to increment and fetch blog atomically
     const { data, error } = await supabase.rpc("increment_view_and_fetch_blog", {
       input_blog_id: blogId

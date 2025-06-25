@@ -15,15 +15,7 @@ serve(async (req)=>{
         status: 400
       });
     }
-    // Validate UUID format for doctor_id
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    if (!uuidRegex.test(doctor_id)) {
-      return new Response(JSON.stringify({
-        error: "Invalid doctor_id UUID."
-      }), {
-        status: 400
-      });
-    }
+
     // Validate blog_tags
     if (!Array.isArray(blog_tags) || !blog_tags.every((tag)=>typeof tag === "string")) {
       return new Response(JSON.stringify({

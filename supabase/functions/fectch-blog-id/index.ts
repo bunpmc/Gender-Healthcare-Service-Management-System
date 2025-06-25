@@ -51,11 +51,6 @@ serve(async (req)=>{
     // Get query param
     const url = new URL(req.url);
     const blogId = url.searchParams.get("blog_id");
-    // Validate UUID format
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    if (!blogId || !uuidRegex.test(blogId)) {
-      return createErrorResponse("Invalid or missing blog_id.");
-    }
     // Call RPC to increment and fetch blog atomically
     const { data, error } = await supabase.rpc("increment_view_and_fetch_blog", {
       input_blog_id: blogId

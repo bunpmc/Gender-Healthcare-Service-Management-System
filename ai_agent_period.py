@@ -1,7 +1,8 @@
-import sys
-sys.path.insert(0, r'D:RAG\RAG\lib')
+from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from typing import List, Dict, Optional
 import ollama
-import redis
 import json
 import os
 import re
@@ -9,20 +10,30 @@ from pymongo import MongoClient
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
 from google.oauth2 import service_account
-import discord
-from discord.ext import commands
 import io
-import asyncio
-from dotenv import load_dotenv
-import fitz  # Using PyMuPDF as primary PDF library
+import fitz  # PyMuPDF
 import time
 import requests
 from datetime import datetime, timedelta
-from typing import List, Dict, Optional
 from supabase import create_client, Client
+from dotenv import load_dotenv
+import asyncio
+import uvicorn
 
 # Load environment
 load_dotenv()
+
+# FastAPI app
+app = FastAPI(title="RAG and Period Tracking API", version="1.0.0")
+
+# CORS middleware for Angular
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:4200", "http://localhost:3000"],  # Add your Angular app URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Configuration
 GOOGLE_CREDS = os.getenv('GOOGLE_DRIVE_CREDENTIALS_FILE')
@@ -30,42 +41,59 @@ FILE_ID = os.getenv('GOOGLE_DRIVE_FILE_ID')
 MONGO_URI = os.getenv('MONGO_URI')
 MONGO_DB = os.getenv('MONGO_DB', 'angler')
 MONGO_COLL = os.getenv('MONGO_COLLECTION', 'Vector')
-REDIS_HOST = os.getenv('REDIS_HOST', 'localhost')
-REDIS_PORT = int(os.getenv('REDIS_PORT', 6379))
-REDIS_PASS = os.getenv('REDIS_PASSWORD', '')
-DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
-DISCORD_CHANNEL = int(os.getenv('DISCORD_CHANNEL', 0))
-MODEL = os.getenv('EMBEDDING_MODEL', 'nomic-embed-text')  # Ensures 768D embeddings
-LANGUAGE_MODEL = os.getenv('LANGUAGE_MODEL', 'mistral')  # Default for chat
+MODEL = os.getenv('EMBEDDING_MODEL', 'nomic-embed-text')
+LANGUAGE_MODEL = os.getenv('LANGUAGE_MODEL', 'mistral')
 SUPABASE_URL = os.getenv('SUPABASE_URL')
 SUPABASE_KEY = os.getenv('SUPABASE_SERVICE_ROLE_KEY')
-DOCUMENT_READY = False
-
-# Set Ollama host
 OLLAMA_HOST = os.getenv('OLLAMA_HOST', '127.0.0.1:11434')
+
+# Global state
+DOCUMENT_READY = False
 os.environ['OLLAMA_HOST'] = OLLAMA_HOST
-print(f"Using Ollama host: {OLLAMA_HOST}")
-print(f"{GOOGLE_CREDS=}, {FILE_ID=}, {MONGO_URI=}, {MONGO_DB=}, {MONGO_COLL=}, {DISCORD_TOKEN=}, {DISCORD_CHANNEL=}, {REDIS_HOST=}, {SUPABASE_URL=}, {SUPABASE_KEY=}")
 
-# Validate environment variables
-if not all([GOOGLE_CREDS, FILE_ID, MONGO_URI, MONGO_DB, DISCORD_TOKEN, DISCORD_CHANNEL, REDIS_HOST, SUPABASE_URL, SUPABASE_KEY]):
-    raise ValueError("Missing required environment variables")
+# Pydantic models
+class SearchRequest(BaseModel):
+    query: str
+    user_id: Optional[str] = "default"
+    limit: Optional[int] = 3
 
-# Helper function to check Ollama server status
+class ChatRequest(BaseModel):
+    query: str
+    user_id: Optional[str] = "default"
+
+class PeriodRequest(BaseModel):
+    start_date: str
+    end_date: Optional[str] = None
+    flow_intensity: Optional[str] = "medium"
+    symptoms: Optional[List[str]] = []
+    description: Optional[str] = None
+    patient_id: str
+
+class PeriodQueryRequest(BaseModel):
+    query: str
+    patient_id: str
+
+class DocumentResponse(BaseModel):
+    text: str
+    similarity: float
+
+class ChatResponse(BaseModel):
+    response: str
+    context_used: bool
+
+class PeriodResponse(BaseModel):
+    success: bool
+    message: str
+    data: Optional[Dict] = None
+
+# Utility functions
 def check_ollama_server():
     try:
         response = requests.get(f"http://{OLLAMA_HOST}/api/tags", timeout=5)
-        if response.status_code == 200:
-            print(f"Ollama server is running at {OLLAMA_HOST}")
-            return True
-        else:
-            print(f"Ollama server returned status {response.status_code}")
-            return False
-    except Exception as e:
-        print(f"Failed to connect to Ollama server at {OLLAMA_HOST}: {e}")
+        return response.status_code == 200
+    except:
         return False
 
-# 1. Google Drive download
 def download_from_drive(file_id):
     try:
         creds = service_account.Credentials.from_service_account_file(
@@ -74,10 +102,7 @@ def download_from_drive(file_id):
         service = build('drive', 'v3', credentials=creds)
         
         file_metadata = service.files().get(fileId=file_id).execute()
-        file_name = file_metadata.get('name', '')
         mime_type = file_metadata.get('mimeType', '')
-        
-        print(f"Downloading file: {file_name} (MIME: {mime_type})")
         
         if mime_type == 'application/pdf':
             request = service.files().get_media(fileId=file_id)
@@ -98,35 +123,30 @@ def download_from_drive(file_id):
             while not done:
                 _, done = downloader.next_chunk()
             return fh.getvalue().decode('utf-8', errors='ignore')
-        else:
-            print(f"Unsupported file type: {mime_type}")
-            return None
+        return None
     except Exception as e:
         print(f"Error downloading file: {e}")
         return None
 
-# 1.2. PDF text extraction
 def extract_text_from_pdf(pdf_bytes):
     try:
         doc = fitz.open(stream=pdf_bytes, filetype="pdf")
         text = ""
         for page_num in range(doc.page_count):
             page = doc[page_num]
-            text += page.get_text()
-            text += "\n\n"
+            text += page.get_text() + "\n\n"
         doc.close()
         return text
     except Exception as e:
         print(f"Error extracting PDF text: {e}")
         return None
 
-# 1.3. Improved text splitting
 def split_text(text, chunk_size=1000, overlap=200):
     if not text:
         return []
     
     text = text.strip()
-    text = ' '.join(text.split())  # Normalize whitespace
+    text = ' '.join(text.split())
     
     if len(text) <= chunk_size:
         return [text]
@@ -155,126 +175,58 @@ def split_text(text, chunk_size=1000, overlap=200):
     
     return [chunk for chunk in chunks if chunk.strip()]
 
-# 1.4. Generate embeddings with retry
-def get_embedding(text, max_retries=3, retry_delay=2):
+def get_embedding(text, max_retries=3):
     try:
-        text = text.strip()
-        if not text:
+        if not text.strip():
             return None
         
         for attempt in range(max_retries):
             try:
                 if not check_ollama_server():
-                    print(f"Ollama server not available, attempt {attempt + 1}/{max_retries}")
                     if attempt < max_retries - 1:
-                        time.sleep(retry_delay)
+                        time.sleep(2)
                         continue
                     return None
                 
                 response = ollama.embeddings(model=MODEL, prompt=text)
                 embedding = response.get('embedding') or response.get('embeddings')
                 
-                if not embedding:
-                    raise ValueError(f"Model '{MODEL}' returned no embedding data")
-                
-                if len(embedding) != 768:
-                    print(f"Warning: Expected 768 dimensions, got {len(embedding)} for model {MODEL}")
+                if embedding:
                     return embedding
                 
-                return embedding
-            
             except Exception as e:
-                print(f"Embedding attempt {attempt + 1} failed: {e}")
                 if attempt < max_retries - 1:
-                    time.sleep(retry_delay)
+                    time.sleep(2)
                 else:
                     raise
         return None
     except Exception as e:
-        print(f"Error generating embedding after {max_retries} attempts: {e}")
+        print(f"Error generating embedding: {e}")
         return None
 
-# 1.5. Store to MongoDB
 def store_to_mongo(embeddings_chunks, collection_name=MONGO_COLL):
-    client = None
     try:
         client = MongoClient(MONGO_URI)
         db = client[MONGO_DB]
         collection = db[collection_name]
         collection.delete_many({})
+        
         successful_inserts = 0
         for chunk, vector in embeddings_chunks:
             if vector and chunk.strip():
                 collection.insert_one({"text": chunk, "embedding": vector})
                 successful_inserts += 1
-        print(f"Stored {successful_inserts} documents to MongoDB")
+        
+        client.close()
+        return successful_inserts
     except Exception as e:
         print(f"Error storing to MongoDB: {e}")
-    finally:
-        if client:
-            client.close()
+        return 0
 
-# 1.6. Initialize document
-async def initialize_document():
-    global DOCUMENT_READY
-    if DOCUMENT_READY:
-        return
-
-    print("Initializing document...")
-
-    text = download_from_drive(FILE_ID)
-    if not text:
-        print("Failed to download/extract document.")
-        return
-
-    print(f"Extracted {len(text)} characters")
-
-    chunks = split_text(text)
-    embeddings_chunks = []
-    
-    for i, chunk in enumerate(chunks):
-        embedding = get_embedding(chunk)
-        if embedding:
-            embeddings_chunks.append((chunk, embedding))
-        if (i + 1) % 10 == 0 or i + 1 == len(chunks):
-            print(f"Processed {i + 1}/{len(chunks)} chunks")
-
-    print(f"Generated {len(embeddings_chunks)} embeddings")
-    store_to_mongo(embeddings_chunks)
-    DOCUMENT_READY = True
-    print("Document initialization complete!")
-
-# 6. Check search index
-def check_search_index(collection_name=MONGO_COLL, index_name='default'):
-    client = None
-    try:
-        client = MongoClient(MONGO_URI)
-        db = client[MONGO_DB]
-        collection = db[collection_name]
-        
-        search_indexes = list(collection.aggregate([{"$listSearchIndexes": {}}]))
-        for index in search_indexes:
-            if index['name'] == index_name and index['type'] == 'vectorSearch':
-                return True
-        
-        print(f"Vector search index '{index_name}' not found.")
-        return False
-    except Exception as e:
-        print(f"Error checking index: {e}")
-        return False
-    finally:
-        if client:
-            client.close()
-
-# 7. Search MongoDB
-def search_mongo(query_embedding, collection_name=MONGO_COLL, index_name='default', field_name='embedding', limit=3):
+def search_mongo(query_embedding, collection_name=MONGO_COLL, limit=3):
     if not query_embedding:
         return []
-    if not check_search_index(collection_name, index_name):
-        print(f"Vector search index '{index_name}' not configured.")
-        return []
     
-    client = None
     try:
         client = MongoClient(MONGO_URI)
         db = client[MONGO_DB]
@@ -283,8 +235,8 @@ def search_mongo(query_embedding, collection_name=MONGO_COLL, index_name='defaul
         pipeline = [
             {
                 '$vectorSearch': {
-                    'index': index_name,
-                    'path': field_name,
+                    'index': 'default',
+                    'path': 'embedding',
                     'queryVector': query_embedding,
                     'numCandidates': 50,
                     'limit': limit
@@ -292,80 +244,32 @@ def search_mongo(query_embedding, collection_name=MONGO_COLL, index_name='defaul
             }
         ]
         results = list(collection.aggregate(pipeline))
+        client.close()
         return results
     except Exception as e:
         print(f"Error searching MongoDB: {e}")
         return []
-    finally:
-        if client:
-            client.close()
 
-# 8. Cosine similarity
 def cosine_similarity(a, b):
     try:
         dot_product = sum(x * y for x, y in zip(a, b))
         norm_a = sum(x ** 2 for x in a) ** 0.5
         norm_b = sum(x ** 2 for x in b) ** 0.5
         return dot_product / (norm_a * norm_b) if norm_a and norm_b else 0
-    except Exception as e:
-        print(f"Error calculating similarity: {e}")
+    except:
         return 0
 
-# 9. Redis storage
-def store_to_redis(key, value, ttl=300):
-    r = None
-    try:
-        r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, password=REDIS_PASS, decode_responses=True)
-        r.setex(key, ttl, json.dumps(value, default=str))
-        print(f"Stored in Redis - Key: {key}, TTL: {ttl}")
-    except Exception as e:
-        print(f"Error storing to Redis: {e}")
-    finally:
-        if r:
-            r.close()
-
-# 10. Document processing
-async def process_document(file_id, query, user_id):
-    print(f"Processing query: {query}")
-    
-    if not DOCUMENT_READY:
-        return [{"text": "Document not ready.", "similarity": 0}]
-    
-    query_embedding = get_embedding(query)
-    if not query_embedding:
-        return [{"text": "Failed to generate query embedding", "similarity": 0}]
-    
-    results = search_mongo(query_embedding, limit=3)
-    similarities = [
-        {"text": r['text'], "similarity": cosine_similarity(query_embedding, r['embedding'])}
-        for r in results if 'embedding' in r
-    ]
-    
-    similarities.sort(key=lambda x: x['similarity'], reverse=True)
-    
-    high_similarities = [s for s in similarities if s['similarity'] > 0.3]
-    if high_similarities:
-        store_to_redis(f"chat:{user_id}", high_similarities)
-    
-    return high_similarities if high_similarities else similarities[:3]
-
-# 10.1 Chat response with retry
-async def get_chat_response(query, context_chunks=None, user_id=None):
-    max_retries = 3
-    retry_delay = 2
+async def get_chat_response(query, context_chunks=None):
     try:
         instruction_prompt = (
             "You are a helpful assistant that answers questions based on provided document context. "
             "Use the following context to provide accurate and concise answers. If the answer is not in the context, "
-            "state 'The document does not contain this information' and provide a general answer if possible. "
-            "Summarize the context and make a clear and concise answer with a clear explanation or evaluation. "
-            "Do not mention anything about the context or similarity scores in your final answer.\n\n"
+            "state 'The document does not contain this information' and provide a general answer if possible.\n\n"
             "Context:\n"
         )
         
         if context_chunks:
             for i, chunk in enumerate(context_chunks, 1):
-                similarity = chunk.get('similarity', 0)
                 text_preview = chunk['text'][:800] if len(chunk['text']) > 800 else chunk['text']
                 instruction_prompt += f"Chunk {i}:\n{text_preview}\n\n"
         else:
@@ -373,49 +277,26 @@ async def get_chat_response(query, context_chunks=None, user_id=None):
         
         instruction_prompt += f"User Query: {query}\n\nAnswer:"
         
-        for attempt in range(max_retries):
-            try:
-                if not check_ollama_server():
-                    print(f"Ollama server not available, attempt {attempt + 1}/{max_retries}")
-                    if attempt < max_retries - 1:
-                        await asyncio.sleep(retry_delay)
-                        continue
-                    return "Ollama server is not available. Please try again later."
-                
-                print(f"Sending chat request to Ollama at {OLLAMA_HOST}, attempt {attempt + 1}")
-                
-                response = ollama.chat(
-                    model=LANGUAGE_MODEL,
-                    messages=[
-                        {'role': 'system', 'content': instruction_prompt},
-                        {'role': 'user', 'content': query},
-                    ],
-                    stream=False,
-                )
-                
-                if response and 'message' in response and 'content' in response['message']:
-                    answer = response['message']['content'].strip()
-                    
-                    if user_id:
-                        store_to_redis(f"chat:{user_id}", [{"text": answer, "similarity": 0}])
-                    
-                    return answer if answer else "No response generated by the model."
-                else:
-                    print(f"Unexpected response structure: {response}")
-                    return "Unexpected response from the model."
-                    
-            except Exception as e:
-                print(f"Chat attempt {attempt + 1} failed: {type(e).__name__}: {e}")
-                if attempt < max_retries - 1:
-                    await asyncio.sleep(retry_delay)
-                else:
-                    raise
+        if not check_ollama_server():
+            return "Ollama server is not available. Please try again later."
         
-        return "Failed to get response after multiple attempts."
+        response = ollama.chat(
+            model=LANGUAGE_MODEL,
+            messages=[
+                {'role': 'system', 'content': instruction_prompt},
+                {'role': 'user', 'content': query},
+            ],
+            stream=False,
+        )
         
+        if response and 'message' in response and 'content' in response['message']:
+            return response['message']['content'].strip()
+        else:
+            return "No response generated by the model."
+            
     except Exception as e:
-        print(f"Ollama chat error after {max_retries} attempts: {type(e).__name__}: {e}")
-        return "Sorry, I couldn't generate a response due to a server connection issue. Please try again later."
+        print(f"Chat error: {e}")
+        return "Sorry, I couldn't generate a response. Please try again later."
 
 # Period Tracker Class
 class PeriodTracker:
@@ -429,11 +310,12 @@ class PeriodTracker:
         try:
             start = datetime.strptime(start_date, "%Y-%m-%d")
             end = datetime.strptime(end_date, "%Y-%m-%d") if end_date else None
+            
             if end and end < start:
                 return None
 
             if flow_intensity not in ["light", "medium", "heavy"]:
-                return None
+                flow_intensity = "medium"
 
             estimated_next = start + timedelta(days=self.cycle_length)
             cycle_length = self.average_cycle_length() or self.cycle_length
@@ -447,246 +329,256 @@ class PeriodTracker:
                 "cycle_length": cycle_length,
                 "flow_intensity": flow_intensity,
                 "symptoms": symptoms_json,
-                "period_description": description
+                "period_description": description,
+                "created_at": datetime.now().isoformat(),
+                "updated_at": datetime.now().isoformat()
             }).execute()
 
             return response.data[0]["period_id"] if response.data else None
-        except (ValueError, Exception):
+        except Exception as e:
+            print(f"Error adding period: {e}")
             return None
 
     def get_periods(self) -> List[Dict]:
-        response = self.supabase.table("period_tracking").select("*").eq("patient_id", self.patient_id).execute()
-        return response.data
+        try:
+            response = self.supabase.table("period_tracking").select("*").eq("patient_id", self.patient_id).execute()
+            return response.data
+        except:
+            return []
 
     def average_cycle_length(self) -> Optional[int]:
-        periods = sorted(
-            [(datetime.fromisoformat(p["start_date"]), p["cycle_length"]) for p in self.get_periods()],
-            key=lambda x: x[0]
-        )
+        periods = self.get_periods()
         if len(periods) < 2:
             return None
-        cycles = [(periods[i][0] - periods[i-1][0]).days for i in range(1, len(periods))]
+        
+        periods_sorted = sorted(
+            [(datetime.fromisoformat(p["start_date"]), p["cycle_length"]) for p in periods],
+            key=lambda x: x[0]
+        )
+        
+        cycles = [(periods_sorted[i][0] - periods_sorted[i-1][0]).days for i in range(1, len(periods_sorted))]
         return sum(cycles) // len(cycles) if cycles else self.cycle_length
 
     def predict_next_period(self) -> Optional[datetime]:
         periods = self.get_periods()
         if not periods:
             return None
+        
         last_period = max([datetime.fromisoformat(p["start_date"]) for p in periods])
         cycle_length = self.average_cycle_length() or self.cycle_length
         return last_period + timedelta(days=cycle_length)
 
-    def update_predictions(self, period_id: str, predictions: Dict):
-        try:
-            self.supabase.table("period_tracking").update({
-                "predictions": json.dumps(predictions),
-                "updated_at": datetime.utcnow().isoformat()
-            }).eq("period_id", period_id).eq("patient_id", self.patient_id).execute()
-            return True
-        except Exception:
-            return False
+# Initialize document on startup
+async def initialize_document():
+    global DOCUMENT_READY
+    if DOCUMENT_READY:
+        return
 
-# AI Agent for period tracking
-async def process_period_query(query: str, patient_id: str) -> str:
-    tracker = PeriodTracker(SUPABASE_URL, SUPABASE_KEY, patient_id)
+    print("Initializing document...")
     
-    instruction_prompt = (
-        "You are a period tracking AI assistant. Interpret the user's query and provide appropriate responses "
-        "based on period tracking data. Use clear, empathetic, and professional language. "
-        "Do not mention internal system details or processes.\n\n"
-        "User Query: {query}\n\n"
-        "Available actions:\n"
-        "- Add period: expects start_date (YYYY-MM-DD), optional end_date, flow_intensity (light/medium/heavy), symptoms, description\n"
-        "- Get periods: retrieve period history\n"
-        "- Predict next period: estimate next period date\n"
-        "- Get average cycle length: calculate average cycle duration\n\n"
-        "Answer:"
-    ).format(query=query)
+    if not all([GOOGLE_CREDS, FILE_ID, MONGO_URI]):
+        print("Missing required environment variables")
+        return
 
-    try:
-        if not check_ollama_server():
-            return "Sorry, I'm unable to process your request right now. Please try again later."
+    text = download_from_drive(FILE_ID)
+    if not text:
+        print("Failed to download/extract document.")
+        return
 
-        response = ollama.chat(
-            model=LANGUAGE_MODEL,
-            messages=[
-                {'role': 'system', 'content': instruction_prompt},
-                {'role': 'user', 'content': query},
-            ],
-            stream=False
-        )
+    chunks = split_text(text)
+    embeddings_chunks = []
+    
+    for chunk in chunks:
+        embedding = get_embedding(chunk)
+        if embedding:
+            embeddings_chunks.append((chunk, embedding))
 
-        answer = response['message']['content'].strip() if response and 'message' in response else "No response generated."
+    stored_count = store_to_mongo(embeddings_chunks)
+    DOCUMENT_READY = stored_count > 0
+    print(f"Document initialization complete! Stored {stored_count} chunks")
 
-        if "add period" in query.lower():
-            start_date_match = re.search(r'\d{4}-\d{2}-\d{2}', query)
-            start_date = start_date_match.group(0) if start_date_match else None
-            flow_intensity = "medium"
-            if "light" in query.lower():
-                flow_intensity = "light"
-            elif "heavy" in query.lower():
-                flow_intensity = "heavy"
-            
-            symptoms = []
-            if "symptoms" in query.lower():
-                symptoms = [s.strip() for s in query.lower().split("symptoms")[1].split(",") if s.strip()]
-            
-            if start_date:
-                period_id = tracker.add_period(start_date, flow_intensity=flow_intensity, symptoms=symptoms)
-                return f"Period added successfully for {start_date}. ID: {period_id}" if period_id else "Failed to add period. Please check the date format (YYYY-MM-DD)."
-            else:
-                return "Please provide a start date in YYYY-MM-DD format."
-
-        elif "predict next" in query.lower():
-            next_period = tracker.predict_next_period()
-            return f"Your next period is predicted to start around {next_period.strftime('%Y-%m-%d')}" if next_period else "No period data available to predict."
-
-        elif "history" in query.lower() or "get periods" in query.lower():
-            periods = tracker.get_periods()
-            if not periods:
-                return "No period history found."
-            response = "Period History:\n"
-            for period in periods[:5]:
-                start = datetime.fromisoformat(period['start_date']).strftime('%Y-%m-%d')
-                end = datetime.fromisoformat(period['end_date']).strftime('%Y-%m-%d') if period['end_date'] else "N/A"
-                response += f"Start: {start}, End: {end}, Flow: {period['flow_intensity']}, Symptoms: {period['symptoms']}\n"
-            return response
-
-        elif "average cycle" in query.lower():
-            avg_cycle = tracker.average_cycle_length()
-            return f"Your average cycle length is {avg_cycle} days." if avg_cycle else "Not enough data to calculate average cycle length."
-
-        return answer
-
-    except Exception as e:
-        return f"Error processing request: {str(e)}"
-
-# 11. Discord bot
-intents = discord.Intents.default()
-intents.message_content = True
-bot = commands.Bot(command_prefix='!', intents=intents)
-
-@bot.event
-async def on_ready():
-    print(f'Logged in as {bot.user}')
+# API Endpoints
+@app.on_event("startup")
+async def startup_event():
     if check_ollama_server():
         await initialize_document()
     else:
-        print("Ollama server not available, skipping document initialization.")
+        print("Ollama server not available")
 
-@bot.command(name='search')
-async def search_command(ctx, *, query):
-    if ctx.channel.id != DISCORD_CHANNEL:
-        return
-    
-    await ctx.send(f"Searching for: '{query}'...")
-    
+@app.get("/")
+async def root():
+    return {"message": "RAG and Period Tracking API", "status": "running"}
+
+@app.get("/health")
+async def health_check():
+    return {
+        "status": "healthy",
+        "document_ready": DOCUMENT_READY,
+        "ollama_server": check_ollama_server(),
+        "timestamp": datetime.now().isoformat()
+    }
+
+@app.post("/search", response_model=List[DocumentResponse])
+async def search_documents(request: SearchRequest):
     if not DOCUMENT_READY:
-        await ctx.send("Document not ready. Please wait for initialization to complete.")
-        return
+        raise HTTPException(status_code=503, detail="Document not ready")
+    
+    query_embedding = get_embedding(request.query)
+    if not query_embedding:
+        raise HTTPException(status_code=500, detail="Failed to generate query embedding")
+    
+    results = search_mongo(query_embedding, limit=request.limit)
+    similarities = [
+        DocumentResponse(
+            text=r['text'], 
+            similarity=cosine_similarity(query_embedding, r['embedding'])
+        )
+        for r in results if 'embedding' in r
+    ]
+    
+    similarities.sort(key=lambda x: x.similarity, reverse=True)
+    return similarities
 
-    try:
-        similarities = await process_document(FILE_ID, query, str(ctx.author.id))
-    
-        if similarities and similarities[0]['similarity'] > 0.2:
-            response = f"**Top Results for: '{query}'**\n\n"
-            for i, result in enumerate(similarities[:3], 1):
-                similarity_score = result['similarity']
-                text_preview = result['text'][:500] + "..." if len(result['text']) > 500 else result['text']
-                response += f"**{i}. Match (Similarity: {similarity_score:.3f})**\n{text_preview}\n\n"
-        else:
-            response = "No results found with sufficient similarity."
-        
-        if len(response) > 2000:
-            response = response[:1997] + "..."
-        
-        await ctx.send(response)
-        
-    except Exception as e:
-        await ctx.send(f"Error processing request: {str(e)}")
-
-@bot.command(name='chat')
-async def chat_command(ctx, *, query):
-    if ctx.channel.id != DISCORD_CHANNEL:
-        return
-    
-    await ctx.send(f"Processing query: '{query}'...")
-    
+@app.post("/chat", response_model=ChatResponse)
+async def chat_with_documents(request: ChatRequest):
     if not DOCUMENT_READY:
-        await ctx.send("Document not ready. Please wait for initialization to complete.")
-        return
-
-    try:
-        similarities = await process_document(FILE_ID, query, str(ctx.author.id))
-        ollama_response = await get_chat_response(query, similarities[:3], str(ctx.author.id))
-        
-        if len(ollama_response) > 2000:
-            for i in range(0, len(ollama_response), 2000):
-                chunk = ollama_response[i:i+2000]
-                await ctx.send(chunk)
-        else:
-            await ctx.send(ollama_response)
-        
-    except Exception as e:
-        await ctx.send(f"Error processing chat request: {str(e)}")
-
-@bot.command(name='period')
-async def period_command(ctx, *, query):
-    if ctx.channel.id != DISCORD_CHANNEL:
-        return
-
-    await ctx.send(f"Processing period tracking request: '{query}'...")
-
-    try:
-        response = await process_period_query(query, str(ctx.author.id))
-        
-        if len(response) > 2000:
-            for i in range(0, len(response), 2000):
-                await ctx.send(response[i:i+2000])
-        else:
-            await ctx.send(response)
-            
-    except Exception as e:
-        await ctx.send(f"Error processing period tracking request: {str(e)}")
-
-@bot.command(name='info')
-async def info_command(ctx):
-    if ctx.channel.id != DISCORD_CHANNEL:
-        return
+        raise HTTPException(status_code=503, detail="Document not ready")
     
-    status = "Ready" if DOCUMENT_READY else "Not Ready"
-    server_status = "Online" if check_ollama_server() else "Offline"
+    # Get relevant context
+    query_embedding = get_embedding(request.query)
+    if query_embedding:
+        results = search_mongo(query_embedding, limit=3)
+        context_chunks = [
+            {"text": r['text'], "similarity": cosine_similarity(query_embedding, r['embedding'])}
+            for r in results if 'embedding' in r
+        ]
+        context_chunks.sort(key=lambda x: x['similarity'], reverse=True)
+    else:
+        context_chunks = []
     
-    await ctx.send(
-        f"**PDF Search and Period Tracking Bot**\n"
-        f"Document Status: {status}\n"
-        f"Ollama Server: {server_status}\n"
-        f"Commands: `!search <query>`, `!chat <query>`, `!period <query>`, `!info`, `!stop`\n"
-        f"Using {MODEL} for embeddings and {LANGUAGE_MODEL} for chat\n"
-        f"Period Examples:\n"
-        f"- `!period add period 2025-06-01 heavy symptoms cramps, fatigue`\n"
-        f"- `!period predict next`\n"
-        f"- `!period get periods`\n"
-        f"- `!period average cycle`"
+    # Generate response
+    response = await get_chat_response(request.query, context_chunks[:3])
+    
+    return ChatResponse(
+        response=response,
+        context_used=len(context_chunks) > 0
     )
 
-@bot.command(name='stop')
-async def stop_command(ctx):
-    if ctx.channel.id != DISCORD_CHANNEL:
-        return
-    
-    await ctx.send("Shutting down the bot...")
+@app.post("/period/add", response_model=PeriodResponse)
+async def add_period(request: PeriodRequest):
     try:
-        await bot.close()
-        print(f"Bot stopped by {ctx.author.name}")
+        tracker = PeriodTracker(SUPABASE_URL, SUPABASE_KEY, request.patient_id)
+        period_id = tracker.add_period(
+            request.start_date,
+            request.end_date,
+            request.flow_intensity,
+            request.symptoms,
+            request.description
+        )
+        
+        if period_id:
+            return PeriodResponse(
+                success=True,
+                message="Period added successfully",
+                data={"period_id": period_id}
+            )
+        else:
+            return PeriodResponse(
+                success=False,
+                message="Failed to add period. Please check the date format (YYYY-MM-DD)"
+            )
     except Exception as e:
-        await ctx.send(f"Error stopping the bot: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
-# Main
-if __name__ == "__main__":
+@app.get("/period/{patient_id}/history")
+async def get_period_history(patient_id: str):
     try:
-        bot.run(DISCORD_TOKEN)
-    except KeyboardInterrupt:
-        print("\nBot stopped by user")
+        tracker = PeriodTracker(SUPABASE_URL, SUPABASE_KEY, patient_id)
+        periods = tracker.get_periods()
+        return {"success": True, "data": periods}
     except Exception as e:
-        print(f"Bot crashed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/period/{patient_id}/predict")
+async def predict_next_period(patient_id: str):
+    try:
+        tracker = PeriodTracker(SUPABASE_URL, SUPABASE_KEY, patient_id)
+        next_period = tracker.predict_next_period()
+        
+        if next_period:
+            return {
+                "success": True,
+                "data": {
+                    "predicted_date": next_period.strftime('%Y-%m-%d'),
+                    "days_until": (next_period - datetime.now()).days
+                }
+            }
+        else:
+            return {"success": False, "message": "No period data available to predict"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/period/{patient_id}/cycle-length")
+async def get_average_cycle_length(patient_id: str):
+    try:
+        tracker = PeriodTracker(SUPABASE_URL, SUPABASE_KEY, patient_id)
+        avg_cycle = tracker.average_cycle_length()
+        
+        if avg_cycle:
+            return {"success": True, "data": {"average_cycle_length": avg_cycle}}
+        else:
+            return {"success": False, "message": "Not enough data to calculate average cycle length"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/period/query", response_model=PeriodResponse)
+async def process_period_query(request: PeriodQueryRequest):
+    try:
+        # Simple query processing based on keywords
+        query_lower = request.query.lower()
+        
+        if "predict" in query_lower or "next" in query_lower:
+            tracker = PeriodTracker(SUPABASE_URL, SUPABASE_KEY, request.patient_id)
+            next_period = tracker.predict_next_period()
+            
+            if next_period:
+                message = f"Your next period is predicted to start around {next_period.strftime('%Y-%m-%d')}"
+            else:
+                message = "No period data available to predict"
+                
+            return PeriodResponse(success=True, message=message)
+        
+        elif "history" in query_lower or "periods" in query_lower:
+            tracker = PeriodTracker(SUPABASE_URL, SUPABASE_KEY, request.patient_id)
+            periods = tracker.get_periods()
+            
+            if periods:
+                message = f"Found {len(periods)} period records. Use /period/{request.patient_id}/history for details."
+            else:
+                message = "No period history found."
+                
+            return PeriodResponse(success=True, message=message, data={"count": len(periods)})
+        
+        elif "cycle" in query_lower:
+            tracker = PeriodTracker(SUPABASE_URL, SUPABASE_KEY, request.patient_id)
+            avg_cycle = tracker.average_cycle_length()
+            
+            if avg_cycle:
+                message = f"Your average cycle length is {avg_cycle} days."
+            else:
+                message = "Not enough data to calculate average cycle length."
+                
+            return PeriodResponse(success=True, message=message)
+        
+        else:
+            return PeriodResponse(
+                success=False,
+                message="I can help with: predicting next period, showing history, or calculating cycle length"
+            )
+            
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Run the app
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)

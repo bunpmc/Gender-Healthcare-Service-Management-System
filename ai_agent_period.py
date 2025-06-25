@@ -51,6 +51,10 @@ OLLAMA_HOST = os.getenv('OLLAMA_HOST', '127.0.0.1:11434')
 DOCUMENT_READY = False
 os.environ['OLLAMA_HOST'] = OLLAMA_HOST
 
+# Global state
+DOCUMENT_READY = False
+os.environ['OLLAMA_HOST'] = OLLAMA_HOST
+
 # Pydantic models
 class SearchRequest(BaseModel):
     query: str

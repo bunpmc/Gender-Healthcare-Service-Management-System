@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Any
 import ollama
 import json
 import os
@@ -19,6 +19,7 @@ from supabase import create_client, Client
 from dotenv import load_dotenv
 import asyncio
 import uvicorn
+from collections import Counter, defaultdict
 
 # Load environment
 load_dotenv()
@@ -84,9 +85,387 @@ class ChatResponse(BaseModel):
 class PeriodResponse(BaseModel):
     success: bool
     message: str
-    data: Optional[Dict] = None
+    data: Optional[Dict[str, Any]] = None
 
-# Utility functions
+# Enhanced Period Analytics Class
+class PeriodAnalytics:
+    @staticmethod
+    def analyze_symptoms(periods: List[Dict]) -> Dict[str, Any]:
+        """Analyze symptom patterns across periods"""
+        all_symptoms = []
+        symptom_by_intensity = defaultdict(list)
+        
+        for period in periods:
+            try:
+                symptoms = json.loads(period.get('symptoms', '[]'))
+                flow_intensity = period.get('flow_intensity', 'medium')
+                all_symptoms.extend(symptoms)
+                symptom_by_intensity[flow_intensity].extend(symptoms)
+            except:
+                continue
+        
+        symptom_counter = Counter(all_symptoms)
+        most_common = symptom_counter.most_common(5)
+        
+        return {
+            "total_symptoms_recorded": len(all_symptoms),
+            "unique_symptoms": len(symptom_counter),
+            "most_common_symptoms": [{"symptom": s, "frequency": f} for s, f in most_common],
+            "symptoms_by_flow_intensity": {
+                intensity: Counter(symptoms).most_common(3)
+                for intensity, symptoms in symptom_by_intensity.items()
+            }
+        }
+    
+    @staticmethod
+    def calculate_cycle_statistics(periods: List[Dict]) -> Dict[str, Any]:
+        """Calculate comprehensive cycle statistics"""
+        if len(periods) < 2:
+            return {"error": "Need at least 2 periods for cycle analysis"}
+        
+        sorted_periods = sorted(periods, key=lambda x: x['start_date'])
+        cycles = []
+        
+        for i in range(1, len(sorted_periods)):
+            current_start = datetime.fromisoformat(sorted_periods[i]['start_date'])
+            previous_start = datetime.fromisoformat(sorted_periods[i-1]['start_date'])
+            cycle_length = (current_start - previous_start).days
+            cycles.append(cycle_length)
+        
+        if not cycles:
+            return {"error": "Unable to calculate cycles"}
+        
+        avg_cycle = sum(cycles) / len(cycles)
+        min_cycle = min(cycles)
+        max_cycle = max(cycles)
+        
+        # Cycle regularity assessment
+        variance = sum((c - avg_cycle) ** 2 for c in cycles) / len(cycles)
+        std_dev = variance ** 0.5
+        
+        regularity = "regular" if std_dev <= 3 else "irregular" if std_dev <= 7 else "very irregular"
+        
+        return {
+            "average_cycle_length": round(avg_cycle, 1),
+            "shortest_cycle": min_cycle,
+            "longest_cycle": max_cycle,
+            "cycle_count": len(cycles),
+            "standard_deviation": round(std_dev, 1),
+            "regularity": regularity,
+            "cycles_data": cycles
+        }
+    
+    @staticmethod
+    def analyze_flow_patterns(periods: List[Dict]) -> Dict[str, Any]:
+        """Analyze menstrual flow patterns"""
+        flow_counter = Counter()
+        duration_data = []
+        
+        for period in periods:
+            flow_intensity = period.get('flow_intensity', 'medium')
+            flow_counter[flow_intensity] += 1
+            
+            if period.get('end_date'):
+                start = datetime.fromisoformat(period['start_date'])
+                end = datetime.fromisoformat(period['end_date'])
+                duration = (end - start).days + 1
+                duration_data.append(duration)
+        
+        avg_duration = sum(duration_data) / len(duration_data) if duration_data else None
+        
+        return {
+            "flow_distribution": dict(flow_counter),
+            "most_common_flow": flow_counter.most_common(1)[0] if flow_counter else None,
+            "average_duration_days": round(avg_duration, 1) if avg_duration else None,
+            "duration_range": {
+                "min": min(duration_data) if duration_data else None,
+                "max": max(duration_data) if duration_data else None
+            }
+        }
+
+# Enhanced Query Processor
+class PeriodQueryProcessor:
+    def __init__(self, tracker: PeriodTracker):
+        self.tracker = tracker
+        
+        # Query patterns and their handlers
+        self.query_patterns = {
+            r'(average|avg|mean)\s*(cycle|length)': self._handle_average_cycle,
+            r'symptoms?': self._handle_symptoms,
+            r'(predict|next|when)\s*(period|menstruation)': self._handle_prediction,
+            r'(history|past|previous)\s*(periods?|cycles?)': self._handle_history,
+            r'(flow|intensity|heavy|light|medium)': self._handle_flow_analysis,
+            r'(analysis|overview|summary|report)': self._handle_comprehensive,
+            r'(regular|irregular|consistency)': self._handle_regularity,
+            r'(duration|length|how\s*long)': self._handle_duration,
+            r'(pregnancy|pregnant|conception)': self._handle_pregnancy_info,
+            r'(statistics|stats|numbers)': self._handle_statistics
+        }
+    
+    def process_query(self, query: str) -> Dict[str, Any]:
+        """Process natural language query and return appropriate response"""
+        query_lower = query.lower()
+        
+        # Check for multiple query types
+        matched_handlers = []
+        for pattern, handler in self.query_patterns.items():
+            if re.search(pattern, query_lower):
+                matched_handlers.append(handler)
+        
+        if not matched_handlers:
+            return self._handle_general_help()
+        
+        # If multiple matches, prioritize comprehensive analysis
+        if len(matched_handlers) > 2:
+            return self._handle_comprehensive()
+        
+        # Execute the first matched handler
+        try:
+            return matched_handlers[0]()
+        except Exception as e:
+            return {
+                "success": False,
+                "message": f"Error processing query: {str(e)}",
+                "data": None
+            }
+    
+    def _handle_average_cycle(self) -> Dict[str, Any]:
+        analysis = self.tracker.get_comprehensive_analysis()
+        if "error" in analysis:
+            return {"success": False, "message": analysis["error"]}
+        
+        cycle_stats = analysis.get("cycle_analysis", {})
+        return {
+            "success": True,
+            "message": f"Your average cycle length is {cycle_stats.get('average_cycle_length', 'unknown')} days. "
+                      f"Your cycles are {cycle_stats.get('regularity', 'unknown')} with a range of "
+                      f"{cycle_stats.get('shortest_cycle', 'N/A')}-{cycle_stats.get('longest_cycle', 'N/A')} days.",
+            "data": {"cycle_statistics": cycle_stats}
+        }
+    
+    def _handle_symptoms(self) -> Dict[str, Any]:
+        analysis = self.tracker.get_comprehensive_analysis()
+        if "error" in analysis:
+            return {"success": False, "message": analysis["error"]}
+        
+        symptom_data = analysis.get("symptom_analysis", {})
+        most_common = symptom_data.get("most_common_symptoms", [])
+        
+        if not most_common:
+            message = "No symptoms have been recorded yet."
+        else:
+            symptoms_text = ", ".join([f"{s['symptom']} ({s['frequency']} times)" for s in most_common[:3]])
+            message = f"Your most common symptoms are: {symptoms_text}. "
+            message += f"You've recorded {symptom_data.get('total_symptoms_recorded', 0)} symptoms across all periods."
+        
+        return {
+            "success": True,
+            "message": message,
+            "data": {"symptom_analysis": symptom_data}
+        }
+    
+    def _handle_prediction(self) -> Dict[str, Any]:
+        analysis = self.tracker.get_comprehensive_analysis()
+        if "error" in analysis:
+            return {"success": False, "message": analysis["error"]}
+        
+        prediction = analysis.get("prediction")
+        if not prediction:
+            return {"success": False, "message": "Unable to predict next period - need more data"}
+        
+        days_until = prediction["days_until"]
+        next_date = prediction["next_period_date"]
+        
+        if days_until > 0:
+            message = f"Your next period is predicted to start on {next_date} (in {days_until} days)."
+        elif days_until == 0:
+            message = f"Your period is predicted to start today ({next_date})."
+        else:
+            message = f"Your period was predicted to start on {next_date} ({abs(days_until)} days ago). Consider updating your records."
+        
+        return {
+            "success": True,
+            "message": message,
+            "data": {"prediction": prediction}
+        }
+    
+    def _handle_flow_analysis(self) -> Dict[str, Any]:
+        analysis = self.tracker.get_comprehensive_analysis()
+        if "error" in analysis:
+            return {"success": False, "message": analysis["error"]}
+        
+        flow_data = analysis.get("flow_analysis", {})
+        distribution = flow_data.get("flow_distribution", {})
+        most_common = flow_data.get("most_common_flow")
+        avg_duration = flow_data.get("average_duration_days")
+        
+        message = f"Flow analysis: "
+        if most_common:
+            message += f"Your most common flow intensity is {most_common[0]} ({most_common[1]} times). "
+        if avg_duration:
+            message += f"Average period duration is {avg_duration} days. "
+        
+        message += f"Flow distribution: {', '.join([f'{k}: {v}' for k, v in distribution.items()])}"
+        
+        return {
+            "success": True,
+            "message": message,
+            "data": {"flow_analysis": flow_data}
+        }
+    
+    def _handle_comprehensive(self) -> Dict[str, Any]:
+        analysis = self.tracker.get_comprehensive_analysis()
+        if "error" in analysis:
+            return {"success": False, "message": analysis["error"]}
+        
+        # Create comprehensive summary
+        total_periods = analysis.get("total_periods", 0)
+        cycle_stats = analysis.get("cycle_analysis", {})
+        symptom_stats = analysis.get("symptom_analysis", {})
+        flow_stats = analysis.get("flow_analysis", {})
+        
+        message = f"Comprehensive Period Analysis:\n\n"
+        message += f"📊 Overall: {total_periods} periods tracked\n"
+        
+        if cycle_stats and "error" not in cycle_stats:
+            message += f"🔄 Cycles: Average {cycle_stats.get('average_cycle_length')} days, {cycle_stats.get('regularity')}\n"
+        
+        if symptom_stats.get("most_common_symptoms"):
+            top_symptom = symptom_stats["most_common_symptoms"][0]
+            message += f"🎯 Most common symptom: {top_symptom['symptom']} ({top_symptom['frequency']} times)\n"
+        
+        if flow_stats.get("most_common_flow"):
+            message += f"💧 Typical flow: {flow_stats['most_common_flow'][0]}\n"
+        
+        if analysis.get("prediction"):
+            pred = analysis["prediction"]
+            message += f"🔮 Next period: {pred['next_period_date']} ({pred['days_until']} days)"
+        
+        return {
+            "success": True,
+            "message": message,
+            "data": analysis
+        }
+    
+    def _handle_pregnancy_info(self) -> Dict[str, Any]:
+        analysis = self.tracker.get_comprehensive_analysis()
+        if "error" in analysis:
+            return {"success": False, "message": analysis["error"]}
+        
+        last_periods = self.tracker.get_periods()
+        if not last_periods:
+            return {"success": False, "message": "No period data available for pregnancy assessment"}
+        
+        # Get most recent period
+        latest_period = max(last_periods, key=lambda x: x['start_date'])
+        last_period_date = datetime.fromisoformat(latest_period['start_date'])
+        days_since = (datetime.now() - last_period_date).days
+        
+        cycle_stats = analysis.get("cycle_analysis", {})
+        avg_cycle = cycle_stats.get("average_cycle_length", 28)
+        
+        message = f"Pregnancy-related information:\n\n"
+        message += f"Last period: {latest_period['start_date']} ({days_since} days ago)\n"
+        message += f"Average cycle: {avg_cycle} days\n"
+        
+        if days_since > avg_cycle + 7:
+            message += f"⚠️ Period is {days_since - avg_cycle} days late based on your average cycle.\n"
+            message += "Consider taking a pregnancy test or consulting your healthcare provider."
+        elif days_since > avg_cycle:
+            message += f"Period is {days_since - avg_cycle} days late. Monitor for a few more days."
+        else:
+            message += "Period timing appears normal based on your cycle history."
+        
+        return {
+            "success": True,
+            "message": message,
+            "data": {
+                "last_period_date": latest_period['start_date'],
+                "days_since_last_period": days_since,
+                "average_cycle_length": avg_cycle,
+                "is_late": days_since > avg_cycle
+            }
+        }
+    
+    def _handle_history(self) -> Dict[str, Any]:
+        periods = self.tracker.get_periods()
+        if not periods:
+            return {"success": False, "message": "No period history found"}
+        
+        recent_periods = sorted(periods, key=lambda x: x['start_date'], reverse=True)[:5]
+        
+        message = f"Recent period history ({len(periods)} total periods):\n\n"
+        for i, period in enumerate(recent_periods, 1):
+            start_date = period['start_date']
+            flow = period.get('flow_intensity', 'unknown')
+            symptoms = json.loads(period.get('symptoms', '[]'))
+            symptom_text = f" (symptoms: {', '.join(symptoms)})" if symptoms else ""
+            message += f"{i}. {start_date} - {flow} flow{symptom_text}\n"
+        
+        return {
+            "success": True,
+            "message": message,
+            "data": {"recent_periods": recent_periods, "total_count": len(periods)}
+        }
+    
+    def _handle_regularity(self) -> Dict[str, Any]:
+        analysis = self.tracker.get_comprehensive_analysis()
+        if "error" in analysis:
+            return {"success": False, "message": analysis["error"]}
+        
+        cycle_stats = analysis.get("cycle_analysis", {})
+        regularity = cycle_stats.get("regularity", "unknown")
+        std_dev = cycle_stats.get("standard_deviation", 0)
+        
+        message = f"Cycle regularity: Your cycles are {regularity}. "
+        if regularity == "regular":
+            message += "Your cycles are consistent with low variation."
+        elif regularity == "irregular":
+            message += f"Your cycles vary by about ±{std_dev:.1f} days."
+        else:
+            message += f"Your cycles have high variation (±{std_dev:.1f} days)."
+        
+        return {
+            "success": True,
+            "message": message,
+            "data": {"regularity_analysis": cycle_stats}
+        }
+    
+    def _handle_duration(self) -> Dict[str, Any]:
+        analysis = self.tracker.get_comprehensive_analysis()
+        if "error" in analysis:
+            return {"success": False, "message": analysis["error"]}
+        
+        flow_stats = analysis.get("flow_analysis", {})
+        avg_duration = flow_stats.get("average_duration_days")
+        duration_range = flow_stats.get("duration_range", {})
+        
+        if not avg_duration:
+            return {"success": False, "message": "Duration data not available - need end dates for periods"}
+        
+        message = f"Period duration analysis: Average duration is {avg_duration} days. "
+        if duration_range.get("min") and duration_range.get("max"):
+            message += f"Your periods typically last {duration_range['min']}-{duration_range['max']} days."
+        
+        return {
+            "success": True,
+            "message": message,
+            "data": {"duration_analysis": flow_stats}
+        }
+    
+    def _handle_statistics(self) -> Dict[str, Any]:
+        return self._handle_comprehensive()  # Same as comprehensive analysis
+    
+    def _handle_general_help(self) -> Dict[str, Any]:
+        return {
+            "success": True,
+            "message": "I can help you with: cycle length analysis, symptom tracking, period predictions, "
+                      "flow patterns, regularity assessment, pregnancy-related questions, and comprehensive reports. "
+                      "Try asking about your 'average cycle length', 'symptoms', 'next period', or request a 'full analysis'.",
+            "data": None
+        }
+
+# Utility functions (keeping existing ones)
 def check_ollama_server():
     try:
         response = requests.get(f"http://{OLLAMA_HOST}/api/tags", timeout=5)
@@ -261,20 +640,6 @@ def cosine_similarity(a, b):
 
 async def get_chat_response(query, context_chunks=None):
     try:
-        instruction_prompt = (
-            "You are a helpful assistant that answers questions based on provided document context. "
-            "Use the following context to provide accurate and concise answers. If the answer is not in the context, "
-            "state 'The document does not contain this information' and provide a general answer if possible.\n\n"
-            "Context:\n"
-        )
-        
-        if context_chunks:
-            for i, chunk in enumerate(context_chunks, 1):
-                text_preview = chunk['text'][:800] if len(chunk['text']) > 800 else chunk['text']
-                instruction_prompt += f"Chunk {i}:\n{text_preview}\n\n"
-        else:
-            instruction_prompt += "No relevant document chunks found.\n\n"
-        
         instruction_prompt += f"User Query: {query}\n\nAnswer:"
         
         if not check_ollama_server():
@@ -293,80 +658,10 @@ async def get_chat_response(query, context_chunks=None):
             return response['message']['content'].strip()
         else:
             return "No response generated by the model."
-            
+        
     except Exception as e:
         print(f"Chat error: {e}")
         return "Sorry, I couldn't generate a response. Please try again later."
-
-# Period Tracker Class
-class PeriodTracker:
-    def __init__(self, supabase_url: str, supabase_key: str, patient_id: str):
-        self.cycle_length = 28
-        self.supabase: Client = create_client(supabase_url, supabase_key)
-        self.patient_id = patient_id
-
-    def add_period(self, start_date: str, end_date: str = None, flow_intensity: str = "medium", 
-                  symptoms: List[str] = None, description: str = None) -> Optional[str]:
-        try:
-            start = datetime.strptime(start_date, "%Y-%m-%d")
-            end = datetime.strptime(end_date, "%Y-%m-%d") if end_date else None
-            
-            if end and end < start:
-                return None
-
-            if flow_intensity not in ["light", "medium", "heavy"]:
-                flow_intensity = "medium"
-
-            estimated_next = start + timedelta(days=self.cycle_length)
-            cycle_length = self.average_cycle_length() or self.cycle_length
-            symptoms_json = json.dumps(symptoms or [])
-
-            response = self.supabase.table("period_tracking").insert({
-                "patient_id": self.patient_id,
-                "start_date": start.isoformat(),
-                "end_date": end.isoformat() if end else None,
-                "estimated_next_date": estimated_next.isoformat(),
-                "cycle_length": cycle_length,
-                "flow_intensity": flow_intensity,
-                "symptoms": symptoms_json,
-                "period_description": description,
-                "created_at": datetime.now().isoformat(),
-                "updated_at": datetime.now().isoformat()
-            }).execute()
-
-            return response.data[0]["period_id"] if response.data else None
-        except Exception as e:
-            print(f"Error adding period: {e}")
-            return None
-
-    def get_periods(self) -> List[Dict]:
-        try:
-            response = self.supabase.table("period_tracking").select("*").eq("patient_id", self.patient_id).execute()
-            return response.data
-        except:
-            return []
-
-    def average_cycle_length(self) -> Optional[int]:
-        periods = self.get_periods()
-        if len(periods) < 2:
-            return None
-        
-        periods_sorted = sorted(
-            [(datetime.fromisoformat(p["start_date"]), p["cycle_length"]) for p in periods],
-            key=lambda x: x[0]
-        )
-        
-        cycles = [(periods_sorted[i][0] - periods_sorted[i-1][0]).days for i in range(1, len(periods_sorted))]
-        return sum(cycles) // len(cycles) if cycles else self.cycle_length
-
-    def predict_next_period(self) -> Optional[datetime]:
-        periods = self.get_periods()
-        if not periods:
-            return None
-        
-        last_period = max([datetime.fromisoformat(p["start_date"]) for p in periods])
-        cycle_length = self.average_cycle_length() or self.cycle_length
-        return last_period + timedelta(days=cycle_length)
 
 # Initialize document on startup
 async def initialize_document():
@@ -531,54 +826,183 @@ async def get_average_cycle_length(patient_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/period/{patient_id}/analysis")
+async def get_comprehensive_analysis(patient_id: str):
+    try:
+        tracker = PeriodTracker(SUPABASE_URL, SUPABASE_KEY, patient_id)
+        analysis = tracker.get_comprehensive_analysis()
+        
+        if "error" in analysis:
+            return {"success": False, "message": analysis["error"]}
+        
+        return {"success": True, "data": analysis}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Enhanced period query endpoint
 @app.post("/period/query", response_model=PeriodResponse)
 async def process_period_query(request: PeriodQueryRequest):
     try:
-        # Simple query processing based on keywords
-        query_lower = request.query.lower()
+        tracker = PeriodTracker(SUPABASE_URL, SUPABASE_KEY, request.patient_id)
+        processor = PeriodQueryProcessor(tracker)
         
-        if "predict" in query_lower or "next" in query_lower:
-            tracker = PeriodTracker(SUPABASE_URL, SUPABASE_KEY, request.patient_id)
-            next_period = tracker.predict_next_period()
-            
-            if next_period:
-                message = f"Your next period is predicted to start around {next_period.strftime('%Y-%m-%d')}"
-            else:
-                message = "No period data available to predict"
+        result = processor.process_query(request.query)
+        
+        return PeriodResponse(
+            success=result["success"],
+            message=result["message"],
+            data=result["data"]
+        )
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# New endpoint for AI-powered period insights
+@app.post("/period/ai-insights")
+async def get_ai_period_insights(request: PeriodQueryRequest):
+    """Get AI-powered insights about period data using Ollama"""
+    try:
+        if not check_ollama_server():
+            raise HTTPException(status_code=503, detail="AI service not available")
+        
+        tracker = PeriodTracker(SUPABASE_URL, SUPABASE_KEY, request.patient_id)
+        analysis = tracker.get_comprehensive_analysis()
+        
+        if "error" in analysis:
+            return PeriodResponse(success=False, message=analysis["error"])
+        
+        # Create context for AI
+        context = f"""
+        Patient Period Analysis Data:
+        - Total periods tracked: {analysis.get('total_periods', 0)}
+        - Cycle statistics: {json.dumps(analysis.get('cycle_analysis', {}), indent=2)}
+        - Symptom patterns: {json.dumps(analysis.get('symptom_analysis', {}), indent=2)}
+        - Flow patterns: {json.dumps(analysis.get('flow_analysis', {}), indent=2)}
+        - Prediction data: {json.dumps(analysis.get('prediction', {}), indent=2)}
+        
+        User Question: {request.query}
+        
+        Please provide helpful, accurate medical information based on this period tracking data. 
+        Include relevant insights, patterns, and recommendations where appropriate.
+        If the question relates to serious medical concerns, advise consulting a healthcare provider.
+        """
+        
+        response = ollama.chat(
+            model=LANGUAGE_MODEL,
+            messages=[
+                {
+                    'role': 'system', 
+                    'content': 'You are a helpful assistant specializing in menstrual health and period tracking analysis. Provide informative, supportive responses based on the period data provided.'
+                },
+                {'role': 'user', 'content': context}
+            ],
+            stream=False,
+        )
+        
+        ai_response = response['message']['content'] if response and 'message' in response else "Could not generate AI response"
+        
+        return PeriodResponse(
+            success=True,
+            message=ai_response,
+            data={"analysis_data": analysis, "ai_powered": True}
+        )
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Bulk data import endpoint
+@app.post("/period/bulk-import")
+async def bulk_import_periods(patient_id: str, periods_data: List[Dict[str, Any]]):
+    """Import multiple periods at once"""
+    try:
+        tracker = PeriodTracker(SUPABASE_URL, SUPABASE_KEY, patient_id)
+        imported_count = 0
+        errors = []
+        
+        for i, period_data in enumerate(periods_data):
+            try:
+                period_id = tracker.add_period(
+                    start_date=period_data.get('start_date'),
+                    end_date=period_data.get('end_date'),
+                    flow_intensity=period_data.get('flow_intensity', 'medium'),
+                    symptoms=period_data.get('symptoms', []),
+                    description=period_data.get('description')
+                )
                 
-            return PeriodResponse(success=True, message=message)
+                if period_id:
+                    imported_count += 1
+                else:
+                    errors.append(f"Row {i+1}: Failed to import period")
+                    
+            except Exception as e:
+                errors.append(f"Row {i+1}: {str(e)}")
         
-        elif "history" in query_lower or "periods" in query_lower:
-            tracker = PeriodTracker(SUPABASE_URL, SUPABASE_KEY, request.patient_id)
-            periods = tracker.get_periods()
-            
-            if periods:
-                message = f"Found {len(periods)} period records. Use /period/{request.patient_id}/history for details."
-            else:
-                message = "No period history found."
-                
-            return PeriodResponse(success=True, message=message, data={"count": len(periods)})
+        return {
+            "success": True,
+            "message": f"Successfully imported {imported_count} out of {len(periods_data)} periods",
+            "data": {
+                "imported_count": imported_count,
+                "total_count": len(periods_data),
+                "errors": errors
+            }
+        }
         
-        elif "cycle" in query_lower:
-            tracker = PeriodTracker(SUPABASE_URL, SUPABASE_KEY, request.patient_id)
-            avg_cycle = tracker.average_cycle_length()
-            
-            if avg_cycle:
-                message = f"Your average cycle length is {avg_cycle} days."
-            else:
-                message = "Not enough data to calculate average cycle length."
-                
-            return PeriodResponse(success=True, message=message)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Export data endpoint
+@app.get("/period/{patient_id}/export")
+async def export_period_data(patient_id: str, format: str = "json"):
+    """Export period data in different formats"""
+    try:
+        tracker = PeriodTracker(SUPABASE_URL, SUPABASE_KEY, patient_id)
+        periods = tracker.get_periods()
+        analysis = tracker.get_comprehensive_analysis()
         
-        else:
-            return PeriodResponse(
-                success=False,
-                message="I can help with: predicting next period, showing history, or calculating cycle length"
-            )
-            
+        export_data = {
+            "patient_id": patient_id,
+            "export_date": datetime.now().isoformat(),
+            "periods": periods,
+            "analysis": analysis
+        }
+        
+        if format.lower() == "csv":
+            # Convert to CSV format (simplified)
+            csv_periods = []
+            for period in periods:
+                csv_periods.append({
+                    "start_date": period.get("start_date"),
+                    "end_date": period.get("end_date"),
+                    "flow_intensity": period.get("flow_intensity"),
+                    "symptoms": ", ".join(json.loads(period.get("symptoms", "[]"))),
+                    "description": period.get("period_description", "")
+                })
+            export_data["csv_periods"] = csv_periods
+        
+        return {
+            "success": True,
+            "data": export_data,
+            "format": format
+        }
+        
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 # Run the app
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
+    prompt = (
+            "You are a helpful assistant that answers questions based on provided document context. "
+            "Use the following context to provide accurate and concise answers. If the answer is not in the context, "
+            "state 'The document does not contain this information' and provide a general answer if possible.\n\n"
+            "Context:\n"
+        )
+        
+    if context_chunks:
+        for i, chunk in enumerate(context_chunks, 1):
+            text_preview = chunk['text'][:800] if len(chunk['text']) > 800 else chunk['text']
+            instruction_prompt += f"Chunk {i}:\n{text_preview}\n\n"
+    else:
+        instruction_prompt += "No relevant document chunks found.\n\n"
+        
+    instruction_

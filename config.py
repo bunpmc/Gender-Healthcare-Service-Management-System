@@ -1,7 +1,8 @@
-import sys
-sys.path.insert(0, r'D:RAG\RAG\lib')
+from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from typing import List, Dict, Optional, Any
 import ollama
-import redis
 import json
 import os
 import re
@@ -9,521 +10,670 @@ from pymongo import MongoClient
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
 from google.oauth2 import service_account
-import discord
-from discord.ext import commands
 import io
-import asyncio
-from dotenv import load_dotenv
-import fitz  # Using PyMuPDF as primary PDF library
+import fitz  # PyMuPDF
 import time
 import requests
+from datetime import datetime
+from supabase import create_client, Client
+from dotenv import load_dotenv
+import asyncio
+import uvicorn
+import uuid
+import random
 
 # Load environment
 load_dotenv()
 
+# FastAPI app
+app = FastAPI(title="GenderHealthcare Chatbot API", version="1.0.0")
+
+# CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:4200", "http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # Configuration
 GOOGLE_CREDS = os.getenv('GOOGLE_DRIVE_CREDENTIALS_FILE')
-FILE_ID = os.getenv('GOOGLE_DRIVE_FILE_ID')
+FILE_ID = os.getenv('GOOGLE_DRIVE_FILE_ID_TECHNICAL')
 MONGO_URI = os.getenv('MONGO_URI')
 MONGO_DB = os.getenv('MONGO_DB', 'angler')
 MONGO_COLL = os.getenv('MONGO_COLLECTION', 'Vector')
-REDIS_HOST = os.getenv('REDIS_HOST', 'localhost')
-REDIS_PORT = int(os.getenv('REDIS_PORT', 6379))
-REDIS_PASS = os.getenv('REDIS_PASSWORD', '')
-DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
-DISCORD_CHANNEL = int(os.getenv('DISCORD_CHANNEL', 0))
-MODEL = os.getenv('EMBEDDING_MODEL', 'nomic-embed-text')  # Ensures 768D embeddings
-LANGUAGE_MODEL = os.getenv('LANGUAGE_MODEL', 'mistral')  # Default for chat
-DOCUMENT_READY = False
-
-# Set Ollama host
+MODEL = os.getenv('EMBEDDING_MODEL', 'nomic-embed-text')
+LANGUAGE_MODEL = os.getenv('LANGUAGE_MODEL', 'mistral')
+SUPABASE_URL = os.getenv('SUPABASE_URL')
+SUPABASE_KEY = os.getenv('SUPABASE_SERVICE_ROLE_KEY')
 OLLAMA_HOST = os.getenv('OLLAMA_HOST', '127.0.0.1:11434')
+BASE_PROFILE_URL = "http://localhost:4200/doctor"  # Base URL for doctor profiles
+
+# Global state
+DOCUMENT_READY = False
 os.environ['OLLAMA_HOST'] = OLLAMA_HOST
-print(f"Using Ollama host: {OLLAMA_HOST}")
-print(f"{GOOGLE_CREDS=}, {FILE_ID=}, {MONGO_URI=}, {MONGO_DB=}, {MONGO_COLL=}, {DISCORD_TOKEN=}, {DISCORD_CHANNEL=}, {REDIS_HOST=}")
 
-# Validate environment variables
-if not all([GOOGLE_CREDS, FILE_ID, MONGO_URI, MONGO_DB, DISCORD_TOKEN, DISCORD_CHANNEL, REDIS_HOST]):
-    raise ValueError("Missing required environment variables")
+# Initialize Supabase client
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# Helper function to check Ollama server status
+# Pydantic models
+class SearchRequest(BaseModel):
+    query: str
+    user_id: Optional[str] = "default"
+    limit: Optional[int] = 3
+
+class ChatRequest(BaseModel):
+    query: str
+    user_id: Optional[str] = "default"
+
+class DoctorRequest(BaseModel):
+    name: str
+    specialty: str
+    bio: str
+    contact_email: str
+    phone: Optional[str] = None
+    office_address: Optional[str] = None
+    availability: Optional[Dict[str, Any]] = None
+    image_url: Optional[str] = None
+
+class DoctorSearchRequest(BaseModel):
+    query: str
+    speciality: Optional[str] = None
+    location: Optional[str] = None
+
+class DocumentResponse(BaseModel):
+    text: str
+    similarity: float
+
+class ChatResponse(BaseModel):
+    response: str
+    context_used: bool
+    doctor_recommendations: Optional[List[Dict[str, Any]]] = None
+
+class DoctorResponse(BaseModel):
+    success: bool
+    message: str
+    data: Optional[Dict[str, Any]] = None
+
+# Doctor Management Class
+class DoctorManager:
+    def __init__(self, supabase_client):
+        self.supabase = supabase_client
+        self.table_name = "doctor_details"
+    
+    def add_doctor(self, name: str, specialty: str, bio: str, contact_email: str,
+                   phone: str = None, office_address: str = None, 
+                   availability: Dict = None, image_url: str = None) -> str:
+        try:
+            doctor_data = {
+                "doctor_id": str(uuid.uuid4()),
+                "department": specialty.lower().replace(" ", "_"),
+                "speciality": specialty,
+                "about_me": json.dumps({"description": bio, "experience": bio}),
+                "license_no": f"LIC{random.randint(1000, 9999)}",
+                "bio": bio,
+                "slogan": "Providing expert care",
+                "educations": json.dumps({"degrees": []}),
+                "certifications": json.dumps({"certifications": []})
+            }
+            
+            # Insert into staff_members to satisfy foreign key
+            staff_data = {
+                "staff_id": doctor_data["doctor_id"],
+                "full_name": name,
+                "working_email": contact_email,
+                "role": "doctor",
+                "years_experience": "0",
+                "hired_at": datetime.now().isoformat(),
+                "is_available": True,
+                "staff_status": "active",
+                "created_at": datetime.now().isoformat(),
+                "updated_at": datetime.now().isoformat(),
+                "image_link": image_url or None,
+                "gender": None,
+                "languages": json.dumps(["English"])
+            }
+            self.supabase.table("staff_members").insert(staff_data).execute()
+            
+            result = self.supabase.table(self.table_name).insert(doctor_data).execute()
+            
+            if result.data:
+                return result.data[0]['doctor_id']
+            return None
+            
+        except Exception as e:
+            print(f"Error adding doctor: {e}")
+            return None
+    
+    def get_doctor_by_id(self, doctor_id: str) -> Dict[str, Any]:
+        try:
+            doctor_result = self.supabase.table(self.table_name).select("*").eq("doctor_id", doctor_id).execute()
+            
+            if not doctor_result.data:
+                return None
+            
+            doctor = doctor_result.data[0]
+            
+            staff_result = self.supabase.table("staff_members").select("full_name, working_email").eq("staff_id", doctor_id).execute()
+            name = staff_result.data[0]["full_name"] if staff_result.data else "Unknown"
+            contact_email = staff_result.data[0]["working_email"] if staff_result.data else f"contact_{doctor_id}@example.com"
+            
+            doctor_mapped = {
+                "id": doctor["doctor_id"],
+                "name": name,
+                "specialty": doctor["speciality"],
+                "bio": doctor["bio"],
+                "contact_email": contact_email,
+                "phone": None,
+                "office_address": None,
+                "availability": None,
+                "image_url": None,
+                "created_at": doctor.get("created_at", datetime.now().isoformat()),
+                "profile_link": f"{BASE_PROFILE_URL}/{doctor['doctor_id']}"
+            }
+            return doctor_mapped
+            
+        except Exception as e:
+            print(f"Error getting doctor: {e}")
+            return None
+    
+    def search_doctors(self, specialty: str = None, location: str = None, 
+                      name_query: str = None) -> List[Dict[str, Any]]:
+        try:
+            query = self.supabase.table(self.table_name).select("*")
+            
+            if specialty:
+                query = query.eq("speciality", specialty)
+            
+            result = query.execute()
+            
+            doctors = []
+            for doctor in result.data:
+                staff_result = self.supabase.table("staff_members").select("full_name, working_email").eq("staff_id", doctor["doctor_id"]).execute()
+                name = staff_result.data[0]["full_name"] if staff_result.data else "Unknown"
+                contact_email = staff_result.data[0]["working_email"] if staff_result.data else f"contact_{doctor['doctor_id']}@example.com"
+                
+                doctor_mapped = {
+                    "id": doctor["doctor_id"],
+                    "name": name,
+                    "specialty": doctor["speciality"],
+                    "bio": doctor["bio"],
+                    "contact_email": contact_email,
+                    "phone": None,
+                    "office_address": None,
+                    "availability": None,
+                    "image_url": None,
+                    "created_at": doctor.get("created_at", datetime.now().isoformat()),
+                    "profile_link": f"{BASE_PROFILE_URL}/{doctor['doctor_id']}"
+                }
+                doctors.append(doctor_mapped)
+            
+            return doctors
+            
+        except Exception as e:
+            print(f"Error searching doctors: {e}")
+            return []
+    
+    def get_all_specialties(self) -> List[str]:
+        try:
+            result = self.supabase.table(self.table_name).select("speciality").execute()
+            specialties = list(set([doc['speciality'] for doc in result.data]))
+            return sorted(specialties)
+            
+        except Exception as e:
+            print(f"Error getting specialties: {e}")
+            return []
+
+# Query Processor
+class HealthcareQueryProcessor:
+    def __init__(self, doctor_manager: DoctorManager):
+        self.doctor_manager = doctor_manager
+        self.query_patterns = {
+            r'(doctor|physician|specialist|gynecologist|obgyn)': self._handle_doctor_request,
+            r'(appointment|booking|schedule|consult)': self._handle_appointment_request,
+            r'(emergency|urgent|help|crisis)': self._handle_emergency,
+        }
+    
+    def process_query(self, query: str) -> Dict[str, Any]:
+        query_lower = query.lower()
+        print(f"Processing query: {query_lower}")
+        
+        for pattern, handler in self.query_patterns.items():
+            if re.search(pattern, query_lower):
+                try:
+                    return handler(query)
+                except Exception as e:
+                    print(f"Error in handler for pattern {pattern}: {e}")
+                    return {
+                        "success": False,
+                        "message": f"Error processing query: {str(e)}",
+                        "data": None
+                    }
+        
+        return self._handle_general_help()
+    
+    def _handle_doctor_request(self, query: str = "") -> Dict[str, Any]:
+        query_lower = query.lower()
+        print(f"Handling doctor request: {query_lower}")
+        
+        specialty_keywords = {
+            'gynecologist': 'gynecologist',
+            'obgyn': 'gynecologist',
+            'endocrinologist': 'endocrinologist',
+            'urologist': 'urologist',
+            'reproductive specialist': 'reproductive_specialist',
+            'sexual health specialist': 'sexual_health_specialist'
+        }
+        
+        specialty = None
+        for keyword, spec in specialty_keywords.items():
+            if keyword in query_lower:
+                specialty = spec
+                break
+        
+        if not specialty and any(word in query_lower for word in ['hormone', 'gender']):
+            specialty = 'endocrinologist'
+        
+        print(f"Searching for specialty: {specialty}")
+        doctors = self.doctor_manager.search_doctors(specialty=specialty)
+        
+        if not doctors:
+            print("No doctors found")
+            return {
+                "success": True,
+                "message": f"No doctors found for {specialty or 'your request'}. Please contact our support team for assistance.",
+                "data": {"doctors": [], "specialty_searched": specialty}
+            }
+        
+        doctor_info = []
+        for doc in doctors[:3]:
+            info = {
+                "name": doc['name'],
+                "specialty": doc['specialty'],
+                "bio": doc['bio'][:200] + "..." if len(doc['bio']) > 200 else doc['bio'],
+                "contact_email": doc['contact_email'],
+                "phone": doc.get('phone'),
+                "office_address": doc.get('office_address'),
+                "doctor_id": doc['id'],
+                "profile_link": doc['profile_link']
+            }
+            doctor_info.append(info)
+        
+        message = f"Found {len(doctors)} doctor(s)"
+        if specialty:
+            message += f" specializing in {specialty}"
+        message += ". Here are the top recommendations:\n\n"
+        
+        for i, doc in enumerate(doctor_info, 1):
+            message += f"{i}. Dr. {doc['name']} - {doc['specialty']}\n"
+            message += f"   Email: {doc['contact_email']}\n"
+            if doc['phone']:
+                message += f"   Phone: {doc['phone']}\n"
+            if doc['office_address']:
+                message += f"   Address: {doc['office_address']}\n"
+            message += f"   Bio: {doc['bio']}\n"
+            message += f"   Profile: {doc['profile_link']}\n\n"
+        
+        return {
+            "success": True,
+            "message": message,
+            "data": {"doctors": doctor_info, "specialty_searched": specialty}
+        }
+    
+    def _handle_appointment_request(self) -> Dict[str, Any]:
+        return {
+            "success": True,
+            "message": "To book an appointment, please contact one of our recommended doctors directly using their contact information, or call our main office. Would you like me to show you our available doctors?",
+            "data": {"action_required": "contact_doctor"}
+        }
+    
+    def _handle_emergency(self) -> Dict[str, Any]:
+        return {
+            "success": True,
+            "message": "If this is a medical emergency, please call emergency services (911) immediately or go to your nearest emergency room. For urgent but non-emergency concerns, contact your healthcare provider or our on-call service.",
+            "data": {"emergency_contacts": {
+                "emergency": "911",
+                "nurse_hotline": "1-800-NURSE-HELP"
+            }}
+        }
+    
+    def _handle_general_help(self) -> Dict[str, Any]:
+        return {
+            "success": True,
+            "message": "I can help you with:\n\n"
+                      "Doctor Services: Find specialists, get contact information\n"
+                      "Support: General healthcare questions and guidance\n\n"
+                      "Try asking: 'Find me a gynecologist' or 'I need a specialist'",
+            "data": None
+        }
+
+# Utility functions
 def check_ollama_server():
     try:
         response = requests.get(f"http://{OLLAMA_HOST}/api/tags", timeout=5)
-        if response.status_code == 200:
-            print(f"Ollama server is running at {OLLAMA_HOST}")
-            return True
-        else:
-            print(f"Ollama server returned status {response.status_code}")
-            return False
-    except Exception as e:
-        print(f"Failed to connect to Ollama server at {OLLAMA_HOST}: {e}")
+        return response.status_code == 200
+    except:
         return False
 
-# 1. Google Drive download
-def download_from_drive(file_id):
+def get_embedding(text, max_retries=3):
     try:
-        creds = service_account.Credentials.from_service_account_file(
-            GOOGLE_CREDS, scopes=['https://www.googleapis.com/auth/drive']
-        )
-        service = build('drive', 'v3', credentials=creds)
-        
-        file_metadata = service.files().get(fileId=file_id).execute()
-        file_name = file_metadata.get('name', '')
-        mime_type = file_metadata.get('mimeType', '')
-        
-        print(f"Downloading file: {file_name} (MIME: {mime_type})")
-        
-        if mime_type == 'application/pdf':
-            request = service.files().get_media(fileId=file_id)
-            fh = io.BytesIO()
-            downloader = MediaIoBaseDownload(fh, request)
-            done = False
-            while not done:
-                _, done = downloader.next_chunk()
-            return extract_text_from_pdf(fh.getvalue())
-        elif 'document' in mime_type or 'text' in mime_type:
-            if 'google-apps.document' in mime_type:
-                request = service.files().export_media(fileId=file_id, mimeType='text/plain')
-            else:
-                request = service.files().get_media(fileId=file_id)
-            fh = io.BytesIO()
-            downloader = MediaIoBaseDownload(fh, request)
-            done = False
-            while not done:
-                _, done = downloader.next_chunk()
-            return fh.getvalue().decode('utf-8', errors='ignore')
-        else:
-            print(f"Unsupported file type: {mime_type}")
-            return None
-    except Exception as e:
-        print(f"Error downloading file: {e}")
-        return None
-
-# 1.2. PDF text extraction
-def extract_text_from_pdf(pdf_bytes):
-    try:
-        doc = fitz.open(stream=pdf_bytes, filetype="pdf")
-        text = ""
-        for page_num in range(doc.page_count):
-            page = doc[page_num]
-            text += page.get_text()
-            text += "\n\n"
-        doc.close()
-        return text
-    except Exception as e:
-        print(f"Error extracting PDF text: {e}")
-        return None
-
-# 1.3. Improved text splitting
-def split_text(text, chunk_size=1000, overlap=200):
-    if not text:
-        return []
-    
-    text = text.strip()
-    text = ' '.join(text.split())  # Normalize whitespace
-    
-    if len(text) <= chunk_size:
-        return [text]
-    
-    chunks = []
-    start = 0
-    
-    while start < len(text):
-        end = start + chunk_size
-        if end >= len(text):
-            chunks.append(text[start:])
-            break
-        
-        # Try to break at sentence end
-        break_point = text.rfind('.', start, end)
-        if break_point == -1:
-            # Try to break at word boundary
-            break_point = text.rfind(' ', start, end)
-        if break_point == -1:
-            # Force break at chunk_size
-            break_point = end
-        else:
-            break_point += 1  # Include the delimiter
-        
-        chunks.append(text[start:break_point].strip())
-        start = break_point - overlap
-        if start < 0:
-            start = 0
-    
-    return [chunk for chunk in chunks if chunk.strip()]
-
-# 1.4. Generate embeddings with retry
-def get_embedding(text, max_retries=3, retry_delay=2):
-    try:
-        text = text.strip()
-        if not text:
+        if not text.strip():
             return None
         
         for attempt in range(max_retries):
             try:
                 if not check_ollama_server():
-                    print(f"Ollama server not available, attempt {attempt + 1}/{max_retries}")
                     if attempt < max_retries - 1:
-                        time.sleep(retry_delay)
+                        time.sleep(2)
                         continue
                     return None
                 
                 response = ollama.embeddings(model=MODEL, prompt=text)
                 embedding = response.get('embedding') or response.get('embeddings')
                 
-                if not embedding:
-                    raise ValueError(f"Model '{MODEL}' returned no embedding data")
+                if embedding:
+                    return embedding
                 
-                # Check if it's actually 768 dimensions
-                if len(embedding) != 768:
-                    print(f"Warning: Expected 768 dimensions, got {len(embedding)} for model {MODEL}")
-                    # You might want to adjust this based on your actual model
-                    return embedding  # Return anyway for now
-                
-                return embedding
-            
             except Exception as e:
-                print(f"Embedding attempt {attempt + 1} failed: {e}")
                 if attempt < max_retries - 1:
-                    time.sleep(retry_delay)
+                    time.sleep(2)
                 else:
                     raise
         return None
     except Exception as e:
-        print(f"Error generating embedding after {max_retries} attempts: {e}")
+        print(f"Error generating embedding: {e}")
         return None
 
-# 1.5. Store to MongoDB
-def store_to_mongo(embeddings_chunks, collection_name=MONGO_COLL):
-    client = None
-    try:
-        client = MongoClient(MONGO_URI)
-        db = client[MONGO_DB]
-        collection = db[collection_name]
-        collection.delete_many({})
-        successful_inserts = 0
-        for chunk, vector in embeddings_chunks:
-            if vector and chunk.strip():
-                collection.insert_one({"text": chunk, "embedding": vector})
-                successful_inserts += 1
-        print(f"Stored {successful_inserts} documents to MongoDB")
-    except Exception as e:
-        print(f"Error storing to MongoDB: {e}")
-    finally:
-        if client:
-            client.close()
-
-# 1.6. Initialize document
-async def initialize_document():
-    global DOCUMENT_READY
-    if DOCUMENT_READY:
-        return
-
-    print("Initializing document...")
-
-    text = download_from_drive(FILE_ID)
-    if not text:
-        print("Failed to download/extract document.")
-        return
-
-    print(f"Extracted {len(text)} characters")
-
-    chunks = split_text(text)
-    embeddings_chunks = []
-    
-    for i, chunk in enumerate(chunks):
-        embedding = get_embedding(chunk)
-        if embedding:
-            embeddings_chunks.append((chunk, embedding))
-        if (i + 1) % 10 == 0 or i + 1 == len(chunks):
-            print(f"Processed {i + 1}/{len(chunks)} chunks")
-
-    print(f"Generated {len(embeddings_chunks)} embeddings")
-    store_to_mongo(embeddings_chunks)
-    DOCUMENT_READY = True
-    print("Document initialization complete!")
-
-# 6. Check search index
-def check_search_index(collection_name=MONGO_COLL, index_name='default'):
-    client = None
-    try:
-        client = MongoClient(MONGO_URI)
-        db = client[MONGO_DB]
-        collection = db[collection_name]
-        
-        search_indexes = list(collection.aggregate([{"$listSearchIndexes": {}}]))
-        for index in search_indexes:
-            if index['name'] == index_name and index['type'] == 'vectorSearch':
-                return True
-        
-        print(f"Vector search index '{index_name}' not found.")
-        return False
-    except Exception as e:
-        print(f"Error checking index: {e}")
-        return False
-    finally:
-        if client:
-            client.close()
-
-# 7. Search MongoDB
-def search_mongo(query_embedding, collection_name=MONGO_COLL, index_name='default', field_name='embedding', limit=3):
-    if not query_embedding:
-        return []
-    if not check_search_index(collection_name, index_name):
-        print(f"Vector search index '{index_name}' not configured.")
-        return []
-    
-    client = None
-    try:
-        client = MongoClient(MONGO_URI)
-        db = client[MONGO_DB]
-        collection = db[collection_name]
-        
-        pipeline = [
-            {
-                '$vectorSearch': {
-                    'index': index_name,
-                    'path': field_name,
-                    'queryVector': query_embedding,
-                    'numCandidates': 50,
-                    'limit': limit
-                }
-            }
-        ]
-        results = list(collection.aggregate(pipeline))
-        return results
-    except Exception as e:
-        print(f"Error searching MongoDB: {e}")
-        return []
-    finally:
-        if client:
-            client.close()
-
-# 8. Cosine similarity
-def cosine_similarity(a, b):
-    try:
-        dot_product = sum(x * y for x, y in zip(a, b))
-        norm_a = sum(x ** 2 for x in a) ** 0.5
-        norm_b = sum(x ** 2 for x in b) ** 0.5
-        return dot_product / (norm_a * norm_b) if norm_a and norm_b else 0
-    except Exception as e:
-        print(f"Error calculating similarity: {e}")
-        return 0
-
-# 9. Redis storage
-def store_to_redis(key, value, ttl=300):
-    r = None
-    try:
-        r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, password=REDIS_PASS, decode_responses=True)
-        r.setex(key, ttl, json.dumps(value, default=str))  # Added default=str for serialization
-        print(f"Stored in Redis - Key: {key}, TTL: {ttl}")
-    except Exception as e:
-        print(f"Error storing to Redis: {e}")
-    finally:
-        if r:
-            r.close()
-
-# 10. Document processing
-async def process_document(file_id, query, user_id):
-    print(f"Processing query: {query}")
-    
-    if not DOCUMENT_READY:
-        return [{"text": "Document not ready.", "similarity": 0}]
-    
-    query_embedding = get_embedding(query)
-    if not query_embedding:
-        return [{"text": "Failed to generate query embedding", "similarity": 0}]
-    
-    results = search_mongo(query_embedding, limit=3)
-    similarities = [
-        {"text": r['text'], "similarity": cosine_similarity(query_embedding, r['embedding'])}
-        for r in results if 'embedding' in r
-    ]
-    
-    similarities.sort(key=lambda x: x['similarity'], reverse=True)
-    
-    high_similarities = [s for s in similarities if s['similarity'] > 0.3]  # Lowered threshold
-    if high_similarities:
-        store_to_redis(f"chat:{user_id}", high_similarities)
-    
-    return high_similarities if high_similarities else similarities[:3]  # Return top 3 even if low similarity
-
-# 10.1 Chat response with retry
-async def get_chat_response(query, context_chunks=None, user_id=None):
-    max_retries = 3
-    retry_delay = 2
+async def get_enhanced_chat_response(query, context_chunks=None, doctor_manager=None):
     try:
         instruction_prompt = (
-            "You are a helpful assistant that answers questions based on provided document context. "
-            "Use the following context to provide accurate and concise answers. If the answer is not in the context, "
-            "state 'The document does not contain this information' and provide a general answer if possible. "
-            "Summarize the context and make a clear and concise answer with a clear explanation or evaluation. "
-            "Do not mention anything about the context or similarity scores in your final answer.\n\n"
-            "Context:\n"
+            "You are a helpful healthcare assistant for a gender healthcare website. "
+            "Provide accurate, supportive, and informative responses about health topics. "
+            "When appropriate, recommend consulting with healthcare professionals. "
+            "Use the following context to provide accurate answers.\n\n"
         )
         
         if context_chunks:
+            instruction_prompt += "Context:\n"
             for i, chunk in enumerate(context_chunks, 1):
-                similarity = chunk.get('similarity', 0)
                 text_preview = chunk['text'][:800] if len(chunk['text']) > 800 else chunk['text']
                 instruction_prompt += f"Chunk {i}:\n{text_preview}\n\n"
-        else:
-            instruction_prompt += "No relevant document chunks found.\n\n"
         
         instruction_prompt += f"User Query: {query}\n\nAnswer:"
         
-        for attempt in range(max_retries):
+        chat_response = "No response generated by the model."
+        if check_ollama_server():
             try:
-                if not check_ollama_server():
-                    print(f"Ollama server not available, attempt {attempt + 1}/{max_retries}")
-                    if attempt < max_retries - 1:
-                        await asyncio.sleep(retry_delay)
-                        continue
-                    return "Ollama server is not available. Please try again later."
-                
-                print(f"Sending chat request to Ollama at {OLLAMA_HOST}, attempt {attempt + 1}")
-                
                 response = ollama.chat(
                     model=LANGUAGE_MODEL,
                     messages=[
                         {'role': 'system', 'content': instruction_prompt},
                         {'role': 'user', 'content': query},
                     ],
-                    stream=False,  # Changed to False for simpler handling
+                    stream=False,
                 )
-                
                 if response and 'message' in response and 'content' in response['message']:
-                    answer = response['message']['content'].strip()
-                    
-                    if user_id:
-                        store_to_redis(f"chat:{user_id}", [{"text": answer, "similarity": 0}])
-                    
-                    return answer if answer else "No response generated by the model."
-                else:
-                    print(f"Unexpected response structure: {response}")
-                    return "Unexpected response from the model."
-                    
+                    chat_response = response['message']['content'].strip()
             except Exception as e:
-                print(f"Chat attempt {attempt + 1} failed: {type(e).__name__}: {e}")
-                if attempt < max_retries - 1:
-                    await asyncio.sleep(retry_delay)
-                else:
-                    raise
-        
-        return "Failed to get response after multiple attempts."
+                print(f"Ollama chat error: {e}")
+                chat_response = "Unable to generate response due to model error. Please try again."
+        else:
+            print("Ollama server unavailable")
+            chat_response = "Ollama server is not available, but I can still assist with doctor searches."
+
+        doctor_recommendations = []
+        if doctor_manager:
+            specialty = None
+            specialty_keywords = {
+                'gynecologist': 'gynecologist',
+                'obgyn': 'gynecologist',
+                'endocrinologist': 'endocrinologist',
+                'urologist': 'urologist',
+                'reproductive specialist': 'reproductive_specialist',
+                'sexual health specialist': 'sexual_health_specialist'
+            }
+            query_lower = query.lower()
+            for keyword, spec in specialty_keywords.items():
+                if keyword in query_lower:
+                    specialty = spec
+                    break
+            if not specialty and any(word in query_lower for word in ['hormone', 'gender']):
+                specialty = 'endocrinologist'
+            
+            try:
+                doctors = doctor_manager.search_doctors(specialty=specialty)[:2]
+                doctor_recommendations = doctors
+            except Exception as e:
+                print(f"Doctor search error: {e}")
+                doctor_recommendations = []
+
+        return chat_response, doctor_recommendations
         
     except Exception as e:
-        print(f"Ollama chat error after {max_retries} attempts: {type(e).__name__}: {e}")
-        return "Sorry, I couldn't generate a response due to a server connection issue. Please try again later."
+        print(f"Unexpected chat error: {e}")
+        return "Sorry, an unexpected error occurred. Please try again later.", []
 
-# 11. Discord bot
-intents = discord.Intents.default()
-intents.message_content = True
-bot = commands.Bot(command_prefix='!', intents=intents)
+# Google Drive PDF Processing
+async def download_and_process_pdf():
+    global DOCUMENT_READY
+    try:
+        credentials = service_account.Credentials.from_service_account_file(GOOGLE_CREDS)
+        service = build('drive', 'v3', credentials=credentials)
+        
+        request = service.files().get_media(fileId=FILE_ID)
+        fh = io.BytesIO()
+        downloader = MediaIoBaseDownload(fh, request)
+        done = False
+        while done is False:
+            status, done = downloader.next_chunk()
+        
+        fh.seek(0)
+        doc = fitz.open(stream=fh, filetype="pdf")
+        text_chunks = []
+        
+        for page in doc:
+            text = page.get_text()
+            if text.strip():
+                chunks = [text[i:i+1000] for i in range(0, len(text), 1000)]
+                for chunk in chunks:
+                    embedding = get_embedding(chunk)
+                    if embedding:
+                        text_chunks.append({
+                            'text': chunk,
+                            'embedding': embedding
+                        })
+        
+        client = MongoClient(MONGO_URI)
+        db = client[MONGO_DB]
+        collection = db[MONGO_COLL]
+        collection.delete_many({})
+        if text_chunks:
+            collection.insert_many(text_chunks)
+        
+        client.close()
+        DOCUMENT_READY = True
+        print("PDF processed and embeddings stored successfully")
+        
+    except Exception as e:
+        print(f"Error processing PDF: {e}")
+        DOCUMENT_READY = False
 
-@bot.event
-async def on_ready():
-    print(f'Logged in as {bot.user}')
+# API Endpoints
+@app.on_event("startup")
+async def startup_event():
+    print("Starting GenderHealthcare Chatbot API...")
     if check_ollama_server():
-        await initialize_document()
+        print("Ollama server is available")
     else:
-        print("Ollama server not available, skipping document initialization.")
+        print("Ollama server not available")
+    asyncio.create_task(download_and_process_pdf())
 
-@bot.command(name='search')
-async def search_command(ctx, *, query):
-    if ctx.channel.id != DISCORD_CHANNEL:
-        return
-    
-    await ctx.send(f"Searching for: '{query}'...")
-    
-    if not DOCUMENT_READY:
-        await ctx.send("Document not ready. Please wait for initialization to complete.")
-        return
+@app.get("/")
+async def root():
+    return {"message": "GenderHealthcare Chatbot API", "status": "running"}
 
+@app.get("/health")
+async def health_check():
+    return {
+        "status": "healthy",
+        "ollama_server": check_ollama_server(),
+        "document_ready": DOCUMENT_READY,
+        "timestamp": datetime.now().isoformat()
+    }
+
+@app.post("/search", response_model=List[DocumentResponse])
+async def search_documents(request: SearchRequest):
     try:
-        similarities = await process_document(FILE_ID, query, str(ctx.author.id))
-    
-        if similarities and similarities[0]['similarity'] > 0.2:  # Lowered threshold
-            response = f"**Top Results for: '{query}'**\n\n"
-            for i, result in enumerate(similarities[:3], 1):
-                similarity_score = result['similarity']
-                text_preview = result['text'][:500] + "..." if len(result['text']) > 500 else result['text']
-                response += f"**{i}. Match (Similarity: {similarity_score:.3f})**\n{text_preview}\n\n"
-        else:
-            response = "No results found with sufficient similarity."
+        if not DOCUMENT_READY:
+            raise HTTPException(status_code=503, detail="Document processing not complete")
         
-        if len(response) > 2000:
-            response = response[:1997] + "..."
+        query_embedding = get_embedding(request.query)
+        if not query_embedding:
+            raise HTTPException(status_code=500, detail="Failed to generate query embedding")
         
-        await ctx.send(response)
+        client = MongoClient(MONGO_URI)
+        db = client[MONGO_DB]
+        collection = db[MONGO_COLL]
+        
+        results = collection.aggregate([
+            {
+                "$vectorSearch": {
+                    "index": "vector_index",
+                    "queryVector": query_embedding,
+                    "path": "embedding",
+                    "numCandidates": 100,
+                    "limit": request.limit
+                }
+            },
+            {
+                "$project": {
+                    "text": 1,
+                    "score": {"$meta": "vectorSearchScore"}
+                }
+            }
+        ])
+        
+        response = [
+            DocumentResponse(text=doc['text'], similarity=doc['score'])
+            for doc in results
+        ]
+        
+        client.close()
+        return response
         
     except Exception as e:
-        await ctx.send(f"Error processing request: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Search error: {str(e)}")
 
-@bot.command(name='chat')
-async def chat_command(ctx, *, query):
-    if ctx.channel.id != DISCORD_CHANNEL:
-        return
-    
-    await ctx.send(f"Processing query: '{query}'...")
-    
-    if not DOCUMENT_READY:
-        await ctx.send("Document not ready. Please wait for initialization to complete.")
-        return
-
+@app.post("/chat", response_model=ChatResponse)
+async def chat(request: ChatRequest):
     try:
-        # Get top matches
-        similarities = await process_document(FILE_ID, query, str(ctx.author.id))
+        doctor_manager = DoctorManager(supabase)
+        query_processor = HealthcareQueryProcessor(doctor_manager)
         
-        # Get Ollama response with context
-        ollama_response = await get_chat_response(query, similarities[:3], str(ctx.author.id))
+        try:
+            processed_response = query_processor.process_query(request.query)
+            if processed_response['success']:
+                return ChatResponse(
+                    response=processed_response['message'],
+                    context_used=False,
+                    doctor_recommendations=processed_response['data'].get('doctors') if processed_response['data'] else None
+                )
+            else:
+                print(f"Query processor failed: {processed_response['message']}")
+        except Exception as e:
+            print(f"Query processor error: {str(e)}")
         
-        # Send only the Ollama response
-        if len(ollama_response) > 2000:
-            # Split long responses
-            for i in range(0, len(ollama_response), 2000):
-                chunk = ollama_response[i:i+2000]
-                await ctx.send(chunk)
-        else:
-            await ctx.send(ollama_response)
+        if not DOCUMENT_READY:
+            print("Document not ready, falling back to basic response")
+            response, doctor_recommendations = await get_enhanced_chat_response(
+                request.query,
+                None,
+                doctor_manager
+            )
+            return ChatResponse(
+                response=response,
+                context_used=False,
+                doctor_recommendations=doctor_recommendations
+            )
+        
+        search_request = SearchRequest(query=request.query, user_id=request.user_id)
+        try:
+            context_chunks = await search_documents(search_request)
+        except Exception as e:
+            print(f"Search documents error: {e}")
+            context_chunks = None
+        
+        response, doctor_recommendations = await get_enhanced_chat_response(
+            request.query,
+            context_chunks,
+            doctor_manager
+        )
+        
+        return ChatResponse(
+            response=response,
+            context_used=bool(context_chunks),
+            doctor_recommendations=doctor_recommendations
+        )
         
     except Exception as e:
-        await ctx.send(f"Error processing chat request: {str(e)}")
+        print(f"Chat endpoint error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Chat error: {str(e)}")
 
-@bot.command(name='info')
-async def info_command(ctx):
-    if ctx.channel.id != DISCORD_CHANNEL:
-        return
-    
-    status = "Ready" if DOCUMENT_READY else "Not Ready"
-    server_status = "Online" if check_ollama_server() else "Offline"
-    
-    await ctx.send(
-        f"**PDF Search Bot**\n"
-        f"Document Status: {status}\n"
-        f"Ollama Server: {server_status}\n"
-        f"Commands: `!search <query>`, `!chat <query>`, `!info`, `!stop`\n"
-        f"Using {MODEL} for embeddings and {LANGUAGE_MODEL} for chat"
-    )
-
-@bot.command(name='stop')
-async def stop_command(ctx):
-    if ctx.channel.id != DISCORD_CHANNEL:
-        return
-    
-    await ctx.send("Shutting down the bot...")
+@app.post("/doctors", response_model=DoctorResponse)
+async def add_doctor(request: DoctorRequest):
     try:
-        await bot.close()
-        print(f"Bot stopped by {ctx.author.name}")
+        doctor_manager = DoctorManager(supabase)
+        doctor_id = doctor_manager.add_doctor(
+            name=request.name,
+            specialty=request.specialty,
+            bio=request.bio,
+            contact_email=request.contact_email,
+            phone=request.phone,
+            office_address=request.office_address,
+            availability=request.availability,
+            image_url=request.image_url
+        )
+        
+        if not doctor_id:
+            raise HTTPException(status_code=500, detail="Failed to add doctor")
+        
+        return DoctorResponse(
+            success=True,
+            message="Doctor added successfully",
+            data={"doctor_id": doctor_id}
+        )
+        
     except Exception as e:
-        await ctx.send(f"Error stopping the bot: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error adding doctor: {str(e)}")
 
-# Main
+@app.post("/doctors/search", response_model=DoctorResponse)
+async def search_doctors(request: DoctorSearchRequest):
+    try:
+        doctor_manager = DoctorManager(supabase)
+        doctors = doctor_manager.search_doctors(
+            specialty=request.speciality,
+            location=request.location,
+            name_query=request.query
+        )
+        
+        return DoctorResponse(
+            success=True,
+            message=f"Found {len(doctors)} doctors",
+            data={"doctors": doctors}
+        )
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error searching doctors: {str(e)}")
+
+@app.get("/doctors/specialties", response_model=List[str])
+async def get_specialties():
+    try:
+        doctor_manager = DoctorManager(supabase)
+        specialties = doctor_manager.get_all_specialties()
+        return specialties
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error getting specialties: {str(e)}")
+
 if __name__ == "__main__":
-    try:
-        bot.run(DISCORD_TOKEN)
-    except KeyboardInterrupt:
-        print("\nBot stopped by user")
-    except Exception as e:
-        print(f"Bot crashed: {e}")
+    uvicorn.run(app, host="0.0.0.0", port=8000)

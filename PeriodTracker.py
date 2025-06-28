@@ -1,97 +1,98 @@
 class PeriodTracker:
-    def __init__(self, supabase_url: str, supabase_key: str, patient_id: str):
-        self.cycle_length = 28
-        self.supabase: Client = create_client(supabase_url, supabase_key)
-        self.patient_id = patient_id
+    def __init__(self, url, key, id):
+        self.cl = 28  # magic number
+        self.supabase = create_client(url, key)
+        self.id = id
         self.analytics = PeriodAnalytics()
+        self.created = datetime.now()
+        self.updated = datetime.now()
 
-    def add_period(self, start_date: str, end_date: str = None, flow_intensity: str = "medium",
-                   symptoms: List[str] = None, description: str = None) -> Optional[str]:
+    def add(self, sd, ed=None, flow="medium", syms=None, desc=None):
         try:
-            start = datetime.strptime(start_date, "%Y-%m-%d")
-            end = datetime.strptime(end_date, "%Y-%m-%d") if end_date else None
-            
-            if end and end < start:
+            s = datetime.strptime(sd, "%Y-%m-%d")
+            e = datetime.strptime(ed, "%Y-%m-%d") if ed else None
+            if e and e < s:
                 return None
+            if flow not in ["light", "medium", "heavy"]:
+                flow = "medium"
 
-            if flow_intensity not in ["light", "medium", "heavy"]:
-                flow_intensity = "medium"
+            est = s + timedelta(days=self.cl)
+            all_periods = self.supabase.table("period_tracking").select("*").eq("patient_id", self.id).execute().data
+            if len(all_periods) > 1:
+                all_periods.sort(key=lambda x: x["start_date"])
+                diffs = []
+                for i in range(1, len(all_periods)):
+                    diffs.append((datetime.fromisoformat(all_periods[i]["start_date"]) - datetime.fromisoformat(all_periods[i-1]["start_date"])).days)
+                cl = sum(diffs)//len(diffs)
+            else:
+                cl = 28
 
-            estimated_next = start + timedelta(days=self.cycle_length)
-            cycle_length = self.average_cycle_length() or self.cycle_length
-            symptoms_json = json.dumps(symptoms or [])
-
-            response = self.supabase.table("period_tracking").insert({
-                "patient_id": self.patient_id,
-                "start_date": start.isoformat(),
-                "end_date": end.isoformat() if end else None,
-                "estimated_next_date": estimated_next.isoformat(),
-                "cycle_length": cycle_length,
-                "flow_intensity": flow_intensity,
-                "symptoms": symptoms_json,
-                "period_description": description,
-                "created_at": datetime.now().isoformat(),
-                "updated_at": datetime.now().isoformat()
+            res = self.supabase.table("period_tracking").insert({
+                "patient_id": self.id,
+                "start_date": s.isoformat(),
+                "end_date": e.isoformat() if e else None,
+                "estimated_next_date": est.isoformat(),
+                "cycle_length": cl,
+                "flow_intensity": flow,
+                "symptoms": json.dumps(syms if syms else []),
+                "period_description": desc,
+                "created_at": self.created.isoformat(),
+                "updated_at": self.updated.isoformat()
             }).execute()
 
-            return response.data[0]["period_id"] if response.data else None
-        except Exception as e:
-            print(f"Error adding period: {e}")
+            if res.data:
+                return res.data[0]["period_id"]
             return None
+        except Exception as x:
+            print("some error happened", x)
+            return
 
-    def get_periods(self) -> List[Dict]:
+    def get(self):
         try:
-            response = self.supabase.table("period_tracking").select("*").eq("patient_id", self.patient_id).execute()
-            return response.data
-        except:
+            x = self.supabase.table("period_tracking").select("*").eq("patient_id", self.id).execute()
+            return x.data
+        except Exception as err:
             return []
 
-    def average_cycle_length(self) -> Optional[int]:
-        periods = self.get_periods()
-        if len(periods) < 2:
+    def avg(self):
+        x = self.get()
+        if len(x) < 2:
             return None
-        
-        periods_sorted = sorted(
-            [(datetime.fromisoformat(p["start_date"]), p["cycle_length"]) for p in periods],
-            key=lambda x: x[0]
-        )
-        
-        cycles = [(periods_sorted[i][0] - periods_sorted[i-1][0]).days for i in range(1, len(periods_sorted))]
-        return sum(cycles) // len(cycles) if cycles else self.cycle_length
+        x.sort(key=lambda i: i["start_date"])
+        s = 0
+        for i in range(1, len(x)):
+            s += (datetime.fromisoformat(x[i]["start_date"]) - datetime.fromisoformat(x[i-1]["start_date"])).days
+        return s // (len(x) - 1)
 
-    def predict_next_period(self) -> Optional[datetime]:
-        periods = self.get_periods()
-        if not periods:
+    def predict(self):
+        all_data = self.get()
+        if not all_data:
             return None
-        
-        last_period = max([datetime.fromisoformat(p["start_date"]) for p in periods])
-        cycle_length = self.average_cycle_length() or self.cycle_length
-        return last_period + timedelta(days=cycle_length)
+        all_data.sort(key=lambda i: i["start_date"])
+        lp = datetime.fromisoformat(all_data[-1]["start_date"])
+        avg_cycle = self.avg()
+        if avg_cycle:
+            return lp + timedelta(days=avg_cycle)
+        return lp + timedelta(days=28)
 
-    def get_comprehensive_analysis(self) -> Dict[str, Any]:
-        """Get comprehensive period analysis"""
-        periods = self.get_periods()
-        
-        if not periods:
-            return {"error": "No period data available"}
-        
-        analysis = {
-            "total_periods": len(periods),
-            "date_range": {
-                "first_period": min(p["start_date"] for p in periods),
-                "last_period": max(p["start_date"] for p in periods)
+    def analysis(self):
+        d = self.get()
+        if not d:
+            return {"error": "None"}
+        return {
+            "count": len(d),
+            "range": {
+                "first": min(p["start_date"] for p in d),
+                "last": max(p["start_date"] for p in d)
             },
-            "cycle_analysis": self.analytics.calculate_cycle_statistics(periods),
-            "symptom_analysis": self.analytics.analyze_symptoms(periods),
-            "flow_analysis": self.analytics.analyze_flow_patterns(periods)
-        }
-        
-        # Add prediction
-        next_period = self.predict_next_period()
-        if next_period:
-            analysis["prediction"] = {
-                "next_period_date": next_period.strftime('%Y-%m-%d'),
-                "days_until": (next_period - datetime.now()).days
+            "stats": self.analytics.calculate_cycle_statistics(d),
+            "symptoms": self.analytics.analyze_symptoms(d),
+            "flows": self.analytics.analyze_flow_patterns(d),
+            "predict": {
+                "next": self.predict().strftime('%Y-%m-%d') if self.predict() else None,
+                "days": (self.predict() - datetime.now()).days if self.predict() else None
             }
-        
-        return analysis
+        }
+
+    def unused_method(self):
+        print("This method does nothing and is never called.")

@@ -43,6 +43,7 @@ FILE_ID = os.getenv('GOOGLE_DRIVE_FILE_ID_TECHNICAL')
 MONGO_URI = os.getenv('MONGO_URI')
 MONGO_DB = os.getenv('MONGO_DB', 'angler')
 MONGO_COLL = os.getenv('MONGO_COLLECTION', 'Vector')
+CHAT_HISTORY_COLL = os.getenv('CHAT_HISTORY_COLLECTION', 'ChatHistory')  # New collection for chat history
 MODEL = os.getenv('EMBEDDING_MODEL', 'nomic-embed-text')
 LANGUAGE_MODEL = os.getenv('LANGUAGE_MODEL', 'mistral')
 SUPABASE_URL = os.getenv('SUPABASE_URL')
@@ -60,12 +61,12 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 # Pydantic models
 class SearchRequest(BaseModel):
     query: str
-    user_id: Optional[str] = "default"
+    user_id: Optional[str] = None  # Made optional
     limit: Optional[int] = 3
 
 class ChatRequest(BaseModel):
     query: str
-    user_id: Optional[str] = "default"
+    user_id: Optional[str] = None  # Made optional
 
 class DoctorRequest(BaseModel):
     name: str
@@ -90,11 +91,74 @@ class ChatResponse(BaseModel):
     response: str
     context_used: bool
     doctor_recommendations: Optional[List[Dict[str, Any]]] = None
+    session_id: Optional[str] = None  # Add session_id for anonymous users
 
 class DoctorResponse(BaseModel):
     success: bool
     message: str
     data: Optional[Dict[str, Any]] = None
+
+# Chat History Manager Class
+class ChatHistoryManager:
+    def __init__(self, mongo_uri: str, db_name: str, collection_name: str):
+        self.mongo_uri = mongo_uri
+        self.db_name = db_name
+        self.collection_name = collection_name
+    
+    def save_chat_history(self, user_id: str, query: str, response: str, 
+                         context_used: bool = False, doctor_recommendations: List = None):
+        """Save chat history only for logged-in users"""
+        if not user_id:
+            return  # Don't save if no user_id provided
+        
+        try:
+            client = MongoClient(self.mongo_uri)
+            db = client[self.db_name]
+            collection = db[self.collection_name]
+            
+            chat_entry = {
+                "user_id": user_id,
+                "query": query,
+                "response": response,
+                "context_used": context_used,
+                "doctor_recommendations": doctor_recommendations or [],
+                "timestamp": datetime.now().isoformat(),
+                "session_id": str(uuid.uuid4())
+            }
+            
+            collection.insert_one(chat_entry)
+            client.close()
+            
+            print(f"Chat history saved for user: {user_id}")
+            
+        except Exception as e:
+            print(f"Error saving chat history: {e}")
+    
+    def get_user_chat_history(self, user_id: str, limit: int = 50) -> List[Dict]:
+        """Get chat history for a specific user"""
+        if not user_id:
+            return []
+        
+        try:
+            client = MongoClient(self.mongo_uri)
+            db = client[self.db_name]
+            collection = db[self.collection_name]
+            
+            history = list(collection.find(
+                {"user_id": user_id}
+            ).sort("timestamp", -1).limit(limit))
+            
+            client.close()
+            
+            # Convert ObjectId to string for JSON serialization
+            for entry in history:
+                entry['_id'] = str(entry['_id'])
+            
+            return history
+            
+        except Exception as e:
+            print(f"Error retrieving chat history: {e}")
+            return []
 
 # Doctor Management Class
 class DoctorManager:
@@ -499,6 +563,9 @@ async def download_and_process_pdf():
         print(f"Error processing PDF: {e}")
         DOCUMENT_READY = False
 
+# Initialize Chat History Manager
+chat_history_manager = ChatHistoryManager(MONGO_URI, MONGO_DB, CHAT_HISTORY_COLL)
+
 # API Endpoints
 @app.on_event("startup")
 async def startup_event():
@@ -571,14 +638,35 @@ async def chat(request: ChatRequest):
         doctor_manager = DoctorManager(supabase)
         query_processor = HealthcareQueryProcessor(doctor_manager)
         
+        # Generate session_id for anonymous users
+        session_id = None
+        if not request.user_id:
+            session_id = str(uuid.uuid4())
+            print(f"Anonymous user chat - Session ID: {session_id}")
+        else:
+            print(f"Logged-in user chat - User ID: {request.user_id}")
+        
         try:
             processed_response = query_processor.process_query(request.query)
             if processed_response['success']:
-                return ChatResponse(
+                response = ChatResponse(
                     response=processed_response['message'],
                     context_used=False,
-                    doctor_recommendations=processed_response['data'].get('doctors') if processed_response['data'] else None
+                    doctor_recommendations=processed_response['data'].get('doctors') if processed_response['data'] else None,
+                    session_id=session_id
                 )
+                
+                # Save chat history only for logged-in users
+                if request.user_id:
+                    chat_history_manager.save_chat_history(
+                        user_id=request.user_id,
+                        query=request.query,
+                        response=response.response,
+                        context_used=response.context_used,
+                        doctor_recommendations=response.doctor_recommendations
+                    )
+                
+                return response
             else:
                 print(f"Query processor failed: {processed_response['message']}")
         except Exception as e:
@@ -586,16 +674,30 @@ async def chat(request: ChatRequest):
         
         if not DOCUMENT_READY:
             print("Document not ready, falling back to basic response")
-            response, doctor_recommendations = await get_enhanced_chat_response(
+            response_text, doctor_recommendations = await get_enhanced_chat_response(
                 request.query,
                 None,
                 doctor_manager
             )
-            return ChatResponse(
-                response=response,
+            
+            response = ChatResponse(
+                response=response_text,
                 context_used=False,
-                doctor_recommendations=doctor_recommendations
+                doctor_recommendations=doctor_recommendations,
+                session_id=session_id
             )
+            
+            # Save chat history only for logged-in users
+            if request.user_id:
+                chat_history_manager.save_chat_history(
+                    user_id=request.user_id,
+                    query=request.query,
+                    response=response.response,
+                    context_used=response.context_used,
+                    doctor_recommendations=response.doctor_recommendations
+                )
+            
+            return response
         
         search_request = SearchRequest(query=request.query, user_id=request.user_id)
         try:
@@ -604,21 +706,52 @@ async def chat(request: ChatRequest):
             print(f"Search documents error: {e}")
             context_chunks = None
         
-        response, doctor_recommendations = await get_enhanced_chat_response(
+        response_text, doctor_recommendations = await get_enhanced_chat_response(
             request.query,
             context_chunks,
             doctor_manager
         )
         
-        return ChatResponse(
-            response=response,
+        response = ChatResponse(
+            response=response_text,
             context_used=bool(context_chunks),
-            doctor_recommendations=doctor_recommendations
+            doctor_recommendations=doctor_recommendations,
+            session_id=session_id
         )
+        
+        # Save chat history only for logged-in users
+        if request.user_id:
+            chat_history_manager.save_chat_history(
+                user_id=request.user_id,
+                query=request.query,
+                response=response.response,
+                context_used=response.context_used,
+                doctor_recommendations=response.doctor_recommendations
+            )
+        
+        return response
         
     except Exception as e:
         print(f"Chat endpoint error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Chat error: {str(e)}")
+
+@app.get("/chat/history/{user_id}")
+async def get_chat_history(user_id: str, limit: int = 50):
+    """Get chat history for a specific user"""
+    try:
+        if not user_id:
+            raise HTTPException(status_code=400, detail="User ID is required")
+        
+        history = chat_history_manager.get_user_chat_history(user_id, limit)
+        
+        return {
+            "success": True,
+            "message": f"Retrieved {len(history)} chat entries",
+            "data": {"chat_history": history, "user_id": user_id}
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving chat history: {str(e)}")
 
 @app.post("/doctors", response_model=DoctorResponse)
 async def add_doctor(request: DoctorRequest):

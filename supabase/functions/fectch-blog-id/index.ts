@@ -51,7 +51,7 @@ serve(async (req)=>{
     // Get query param
     const url = new URL(req.url);
     const blogId = url.searchParams.get("blog_id");
-    
+    console.log("Received blog_id:", blogId);
     // Call RPC to increment and fetch blog atomically
     const { data, error } = await supabase.rpc("increment_view_and_fetch_blog", {
       input_blog_id: blogId
@@ -63,12 +63,21 @@ serve(async (req)=>{
       return createErrorResponse("Blog not found", 404);
     }
     const blog = Array.isArray(data) ? data[0] : data;
+    let imageUrl = null;
+    if (blog.image_link) {
+      const { data: publicData, error: storageError } = await supabase.storage.from("blog-uploads").getPublicUrl(blog.image_link);
+      if (storageError) {
+        console.error("Storage error:", storageError.message);
+      } else {
+        imageUrl = publicData.publicUrl;
+      }
+    }
     return createSuccessResponse({
       blog_id: blog.blog_id,
       blog_title: blog.blog_title,
       blog_content: blog.blog_content,
       excerpt: blog.excerpt,
-      image_link: blog.image_link,
+      image_link: imageUrl,
       blog_tags: blog.blog_tags,
       blog_status: blog.blog_status,
       created_at: blog.created_at,
@@ -76,6 +85,6 @@ serve(async (req)=>{
       doctor_details: blog.doctor_details
     });
   } catch (error) {
-    return createErrorResponse("Internal server error", 500, error.message);
+    return createErrorResponse(error.message, 500, error.message);
   }
 });

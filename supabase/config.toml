@@ -473,3 +473,113 @@ entrypoint = "./functions/create-staff/index.ts"
 # Specifies static files to be bundled with the function. Supports glob patterns.
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/create-staff/*.html" ]
+
+[functions.fetch-slot-by-doctor-id]
+enabled = true
+verify_jwt = true
+import_map = "./functions/fetch-slot-by-doctor-id/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/fetch-slot-by-doctor-id/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/fetch-slot-by-doctor-id/*.html" ]
+
+[functions.fetch-slots]
+enabled = true
+verify_jwt = true
+import_map = "./functions/fetch-slots/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/fetch-slots/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/fetch-slots/*.html" ]
+
+[functions.fetch-service-by-doctor-id]
+enabled = true
+verify_jwt = true
+import_map = "./functions/fetch-service-by-doctor-id/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/fetch-service-by-doctor-id/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/fetch-service-by-doctor-id/*.html" ]
+
+[functions.vpay-payment]
+enabled = true
+verify_jwt = true
+import_map = "./functions/vpay-payment/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/vpay-payment/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/vpay-payment/*.html" ]
+
+[functions.vnpay-payment]
+enabled = true
+verify_jwt = true
+import_map = "./functions/vnpay-payment/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/vnpay-payment/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/vnpay-payment/*.html" ]
+
+[functions.vnpay-callback]
+enabled = true
+verify_jwt = true
+import_map = "./functions/vnpay-callback/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/vnpay-callback/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/vnpay-callback/*.html" ]
+
+[functions.fetch-doctor-by-service-id]
+enabled = true
+verify_jwt = true
+import_map = "./functions/fetch-doctor-by-service-id/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/fetch-doctor-by-service-id/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/fetch-doctor-by-service-id/*.html" ]
+
+[functions.update-patient-profile]
+enabled = true
+verify_jwt = true
+import_map = "./functions/update-patient-profile/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/update-patient-profile/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/update-patient-profile/*.html" ]
+
+[functions.fetch-serviceBooking]
+enabled = true
+verify_jwt = true
+import_map = "./functions/fetch-serviceBooking/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/fetch-serviceBooking/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/fetch-serviceBooking/*.html" ]
+
+[functions.fetch-doctorBooking]
+enabled = true
+verify_jwt = true
+import_map = "./functions/fetch-doctorBooking/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/fetch-doctorBooking/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/fetch-doctorBooking/*.html" ]

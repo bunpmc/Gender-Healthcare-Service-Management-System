@@ -4,14 +4,14 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 function createErrorResponse(error, status = 400, details = null) {
   const response = {
     error,
+    details
   };
-  if (details) response.details = details;
   return new Response(JSON.stringify(response), {
     status,
     headers: {
       "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "*",
-    },
+      "Access-Control-Allow-Origin": "*"
+    }
   });
 }
 function createSuccessResponse(data, status = 200) {
@@ -19,19 +19,19 @@ function createSuccessResponse(data, status = 200) {
     status,
     headers: {
       "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "*",
-    },
+      "Access-Control-Allow-Origin": "*"
+    }
   });
 }
-serve(async (req) => {
+serve(async (req)=>{
   if (req.method === "OPTIONS") {
     return new Response("ok", {
       headers: {
         "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers":
-          "authorization, x-client-info, apikey, content-type",
+        "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
         "Access-Control-Allow-Methods": "POST, OPTIONS",
-      },
+        "Access-Control-Max-Age": "86400"
+      }
     });
   }
   if (req.method !== "POST") {
@@ -44,13 +44,17 @@ serve(async (req) => {
   }
   const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
   try {
-    const body = await req.json();
-    const { email, fullName, message, phone, schedule } = body;
-    if (!fullName || !message || !schedule) {
-      return createErrorResponse(
-        "Missing required fields: fullName, message, schedule, phone",
-        400,
-      );
+    // Fix 2: Handle invalid JSON
+    let body;
+    try {
+      body = await req.json();
+    } catch (error) {
+      return createErrorResponse("Invalid JSON in request body", 400, error.message);
+    }
+    const { email, fullName, message, phone, schedule, gender = "other", date_of_birth, doctor_id, preferred_date, preferred_time, preferred_slot_id, visit_type = "consultation" } = body;
+    // Validation
+    if (!fullName || !message || !schedule || !phone || !date_of_birth) {
+      return createErrorResponse("Missing required fields: fullName, message, schedule, date_of_birth, phone", 400);
     }
     if (email) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -60,131 +64,381 @@ serve(async (req) => {
     }
     const phoneRegex = /^\+?[1-9]\d{1,14}$/;
     if (!phoneRegex.test(phone)) {
-      return createErrorResponse(
-        "Invalid phone number format (e.g., +8434567890)",
-        400,
-      );
+      return createErrorResponse("Invalid phone number format (e.g., +8434567890)", 400);
     }
-    if (isNaN(new Date(schedule).getTime())) {
-      return createErrorResponse("Invalid schedule date format ISO8601", 400);
+    if (preferred_time) {
+      const timeRegex = /^([01]\d|2[0-3]):[0-5]\d:00$/;
+      if (!timeRegex.test(preferred_time)) {
+        return createErrorResponse("Invalid preferred_time format (e.g., 09:00:00)", 400);
+      }
     }
-    let patientId;
+    // Fix 6: Validate date_of_birth
+    try {
+      const dob = new Date(date_of_birth);
+      if (isNaN(dob.getTime()) || dob > new Date()) {
+        return createErrorResponse("Invalid date_of_birth: must be a valid date in the past", 400);
+      }
+    } catch  {
+      return createErrorResponse("Invalid date_of_birth format", 400);
+    }
+    // Mapping schedule to time ranges
+    const scheduleTimeRanges = {
+      Morning: {
+        start: "08:00:00",
+        end: "12:00:00"
+      },
+      Afternoon: {
+        start: "13:00:00",
+        end: "17:00:00"
+      },
+      Evening: {
+        start: "18:00:00",
+        end: "22:00:00"
+      }
+    };
+    const timeRange = scheduleTimeRanges[schedule];
+    if (!timeRange) {
+      return createErrorResponse("Invalid schedule value. Use: Morning, Afternoon, or Evening", 400);
+    }
+    // Fix 3: Robust timezone handling for targetDate
+    const now = new Date();
+    const offsetMs = 7 * 60 * 60 * 1000; // +07:00 offset
+    const targetDate = preferred_date ? new Date(preferred_date).toISOString().split("T")[0] : new Date(now.getTime() + offsetMs).toISOString().split("T")[0];
+    if (!doctor_id) {
+      return createErrorResponse("Doctor selection is required. Please choose a doctor for your appointment.", 400, {
+        schedule,
+        date: targetDate,
+        time_range: timeRange,
+        suggestion: "Please select a doctor from the available doctors list"
+      });
+    }
+    let selectedSlot = null;
+    let bookedSlotInfo = null;
+    // Validate the selected doctor
+    const { data: doctor, error: doctorError } = await supabase.from("doctor_details").select("doctor_id").eq("doctor_id", doctor_id).single();
+    if (doctorError || !doctor) {
+      // Fix 10: Structured logging
+      console.log(JSON.stringify({
+        level: "error",
+        message: "Doctor validation error",
+        details: doctorError?.message
+      }));
+      return createErrorResponse("Invalid doctor selection. Please choose a valid doctor.", 400, {
+        doctor_id,
+        suggestion: "Please select a doctor from the available doctors list"
+      });
+    }
+    // Fetch available slots
+    console.log(JSON.stringify({
+      level: "info",
+      message: "Calling get_available_slots",
+      params: {
+        p_doctor_id: doctor_id,
+        p_slot_date: targetDate,
+        p_start_time: timeRange.start,
+        p_end_time: timeRange.end,
+        p_slot_id: preferred_slot_id || null
+      }
+    }));
+    const { data: availableSlots, error: slotCheckError } = await supabase.rpc("get_available_slots", {
+      p_doctor_id: doctor_id,
+      p_slot_date: targetDate,
+      p_start_time: timeRange.start,
+      p_end_time: timeRange.end,
+      p_slot_id: preferred_slot_id || null
+    });
+    if (slotCheckError) {
+      console.log(JSON.stringify({
+        level: "error",
+        message: "Slot check error",
+        details: slotCheckError.message
+      }));
+      return createErrorResponse("Failed to check doctor availability", 500, slotCheckError.message);
+    }
+    if (!availableSlots || availableSlots.length === 0) {
+      console.log(JSON.stringify({
+        level: "warn",
+        message: "No available slots found for doctor",
+        details: {
+          doctor_id,
+          targetDate,
+          schedule
+        }
+      }));
+      return createErrorResponse(`The selected doctor is not available for ${schedule} schedule on ${targetDate}. Please choose a different doctor, date, or time.`, 400, {
+        doctor_id,
+        schedule,
+        date: targetDate,
+        time_range: timeRange,
+        available_slots: 0,
+        suggestion: "Try selecting a different doctor, date, or time schedule (Morning/Afternoon/Evening)"
+      });
+    }
+    // Require specific time selection when multiple slots are available
+    if (!preferred_slot_id && !preferred_time) {
+      return createErrorResponse("Time slot selection is required. Please choose a specific time for your appointment.", 400, {
+        doctor_id,
+        schedule,
+        date: targetDate,
+        available_slots: availableSlots.map((slot)=>({
+            slot_id: slot.doctor_slot_id,
+            time: slot.slot_time,
+            date: slot.slot_date
+          })),
+        suggestion: "Choose from the available time slots listed above"
+      });
+    }
+    // Select slot based on user preferences
+    if (preferred_slot_id) {
+      selectedSlot = availableSlots.find((slot)=>slot.doctor_slot_id === preferred_slot_id);
+      if (!selectedSlot) {
+        return createErrorResponse("The selected time slot is no longer available. Please choose a different time.", 400, {
+          preferred_slot_id,
+          doctor_id,
+          available_slots: availableSlots.map((slot)=>({
+              slot_id: slot.doctor_slot_id,
+              time: slot.slot_time,
+              date: slot.slot_date
+            })),
+          suggestion: "Choose from the available time slots listed above"
+        });
+      }
+    } else if (preferred_time) {
+      selectedSlot = availableSlots.find((slot)=>slot.slot_time === preferred_time);
+      if (!selectedSlot) {
+        return createErrorResponse(`The preferred time ${preferred_time} is not available. Please choose a different time.`, 400, {
+          preferred_time,
+          doctor_id,
+          schedule,
+          available_slots: availableSlots.map((slot)=>({
+              slot_id: slot.doctor_slot_id,
+              time: slot.slot_time,
+              date: slot.slot_date
+            })),
+          suggestion: "Choose from the available time slots listed above"
+        });
+      }
+    }
+    console.log(JSON.stringify({
+      level: "info",
+      message: "Selected slot",
+      details: selectedSlot
+    }));
+    // Book the selected slot
+    const { data: bookResult, error: bookError } = await supabase.rpc("book_appointment_slot", {
+      p_slot_id: selectedSlot.doctor_slot_id
+    });
+    if (bookError || !bookResult) {
+      console.log(JSON.stringify({
+        level: "error",
+        message: "Slot booking error",
+        details: bookError?.message
+      }));
+      return createErrorResponse("Failed to book the appointment slot", 500, bookError?.message);
+    }
+    // Fix 4: Verify slot booking
+    const { data: bookedSlot, error: verifyError } = await supabase.from("doctor_slot_assignments").select("appointments_count, max_appointments").eq("doctor_slot_id", selectedSlot.doctor_slot_id).single();
+    if (verifyError || !bookedSlot) {
+      console.log(JSON.stringify({
+        level: "error",
+        message: "Slot verification failed",
+        details: verifyError?.message || "Slot not found"
+      }));
+      return createErrorResponse("Failed to verify booked slot", 500, verifyError?.message || "Slot not found");
+    }
+    if (bookedSlot.appointments_count >= bookedSlot.max_appointments) {
+      return createErrorResponse("Slot is already full", 400, "This slot has reached the maximum number of appointments");
+    }
+    bookedSlotInfo = {
+      doctor_slot_id: selectedSlot.doctor_slot_id,
+      slot_date: selectedSlot.slot_date,
+      slot_time: selectedSlot.slot_time,
+      doctor_id: selectedSlot.doctor_id,
+      schedule
+    };
+    // Patient/Guest Logic
+    let patientId = null;
+    let newAppointment = null;
+    // Check existing patient by email
     if (email) {
-      const { data: patient_email, error: patientError } = await supabase.from(
-        "patients",
-      ).select("id").eq("email", email).maybeSingle();
-      //PGRST116: no row return
+      const { data: patient_email, error: patientError } = await supabase.from("patients").select("id").eq("email", email).maybeSingle();
       if (patientError && patientError.code !== "PGRST116") {
-        console.log(
-          "Email query error:",
-          patientError.code,
-          patientError.message,
-        );
-        return createErrorResponse(
-          "Failed to check existing patient with email",
-          500,
-          patientError.message,
-        );
+        console.log(JSON.stringify({
+          level: "error",
+          message: "Email query error",
+          details: {
+            code: patientError.code,
+            message: patientError.message
+          }
+        }));
+        return createErrorResponse("Failed to check existing patient with email", 500, patientError.message);
       }
       if (patient_email) {
         patientId = patient_email.id;
       }
     }
-    const { data: patient, error: phoneError } = await supabase.from("patients")
-      .select("id").eq("phone", phone).maybeSingle();
-    if (phoneError && phoneError.code !== "PGRST116") {
-      console.log("Phone query error:", phoneError.code, phoneError.message);
-      return createErrorResponse(phoneError.message, 500, phoneError.message);
-    }
-    if (patient) {
-      patientId = patient.id;
-    }
+    // Check by phone if not found by email
     if (!patientId) {
-      const userId = crypto.randomUUID();
-      const { data: authUser, error: authError } = await supabase.auth.admin
-        .createUser({
-          email: email || `${phone}@placeholder.com`,
-          phone: phone,
-          email_confirm: true,
-          phone_confirm: true,
-          user_metadata: {
-            full_name: fullName,
-          },
-        });
-      if (authError) {
-        console.log("Auth user creation error:", authError.message);
-        return createErrorResponse(authError.message, 500, authError.message);
+      const { data: patient, error: phoneError } = await supabase.from("patients").select("id").eq("phone", phone).maybeSingle();
+      if (phoneError && phoneError.code !== "PGRST116") {
+        console.log(JSON.stringify({
+          level: "error",
+          message: "Phone query error",
+          details: {
+            code: phoneError.code,
+            message: phoneError.message
+          }
+        }));
+        return createErrorResponse("Failed to check existing patient with phone", 500, phoneError.message);
       }
-      const patientData = {
-        id: authUser.user.id,
-        full_name: fullName,
-        phone: phone,
-        email: email || `${phone}@placeholder.com`,
-        date_of_birth: "1970-01-01",
-        gender: "other",
-        allergies: {
-          known_allergies: [],
-        },
-        chronic_conditions: {
-          conditions: [],
-        },
-        past_surgeries: {
-          surgeries: [],
-        },
-        vaccination_status: "not_vaccinated",
-        patient_status: "active",
-        created_at: new Date().toISOString(),
-      };
-      const { data: newPatient, error: createPatientError } = await supabase
-        .from("patients").insert(patientData).select("id").single();
-      if (createPatientError) {
-        await supabase.auth.admin.deleteUser(authUser.user.id);
-        return createErrorResponse(
-          createPatientError.message,
-          500,
-          createPatientError.message,
-        );
+      if (patient) {
+        patientId = patient.id;
       }
-      patientId = newPatient.id;
     }
-    const { data: newAppointment, error: appointmentError } = await supabase
-      .from("appointments").insert({
+    const guestId = crypto.randomUUID();
+    if (!patientId) {
+      // Fix 5: Check for existing guest by phone
+      const { data: existingGuest, error: guestCheckError } = await supabase.from("guests").select("guest_id").eq("phone", phone).maybeSingle();
+      if (guestCheckError && guestCheckError.code !== "PGRST116") {
+        console.log(JSON.stringify({
+          level: "error",
+          message: "Guest check error",
+          details: guestCheckError.message
+        }));
+        await supabase.rpc("cancel_appointment_slot", {
+          p_slot_id: selectedSlot.doctor_slot_id
+        });
+        return createErrorResponse("Failed to check existing guest", 500, guestCheckError.message);
+      }
+      if (existingGuest) {
+        // Use existing guest ID
+        guestId = existingGuest.guest_id;
+      } else {
+        // Create new guest
+        const { error: guestError } = await supabase.from("guests").insert({
+          guest_id: guestId,
+          email: email || `${phone}@placeholder.com`,
+          phone,
+          gender,
+          date_of_birth,
+          created_at: new Date().toISOString(),
+          full_name: fullName
+        });
+        if (guestError) {
+          console.log(JSON.stringify({
+            level: "error",
+            message: "Guest creation error",
+            details: guestError.message
+          }));
+          await supabase.rpc("cancel_appointment_slot", {
+            p_slot_id: selectedSlot.doctor_slot_id
+          });
+          return createErrorResponse("Failed to create guest", 500, guestError.message);
+        }
+      }
+      // Create Guest Appointment
+      const { data, error: appointmentError } = await supabase.from("guest_appointments").insert({
+        guest_appointment_id: crypto.randomUUID(),
+        guest_id: guestId,
+        phone,
+        email: email || `${phone}@placeholder.com`,
+        message,
+        visit_type,
+        schedule,
+        appointment_status: "pending",
+        doctor_id: doctor_id,
+        slot_id: selectedSlot.doctor_slot_id,
+        appointment_date: bookedSlotInfo.slot_date,
+        appointment_time: bookedSlotInfo.slot_time,
+        preferred_date: preferred_date || null,
+        preferred_time: preferred_time || null,
+        created_at: new Date().toISOString()
+      }).select(`
+          guest_appointment_id,
+          guest_id,
+          visit_type,
+          appointment_status,
+          schedule,
+          message,
+          doctor_id,
+          slot_id,
+          appointment_date,
+          appointment_time,
+          preferred_date,
+          preferred_time,
+          created_at
+        `).single();
+      if (appointmentError) {
+        console.log(JSON.stringify({
+          level: "error",
+          message: "Guest appointment insert error",
+          details: {
+            code: appointmentError.code,
+            message: appointmentError.message
+          }
+        }));
+        await supabase.rpc("cancel_appointment_slot", {
+          p_slot_id: selectedSlot.doctor_slot_id
+        });
+        return createErrorResponse("Failed to create guest appointment", 500, appointmentError.message);
+      }
+      newAppointment = data;
+    } else {
+      // Create Patient Appointment
+      const { data, error: appointmentError } = await supabase.from("appointments").insert({
         appointment_id: crypto.randomUUID(),
         patient_id: patientId,
-        phone: phone,
+        phone,
         email: email || `${phone}@placeholder.com`,
-        visit_type: "consultation",
-        appointment_status: "pending",
-        created_at: new Date(schedule).toISOString(),
-      }).select(`
-        appointment_id,
-        patient_id,
+        message,
         visit_type,
-        appointment_status,
-        created_at,
-        patients (
-          full_name,
-          date_of_birth,
-          gender
-        )
-      `).single();
-    if (appointmentError) {
-      console.log(
-        "Appointment insert error:",
-        appointmentError.code,
-        appointmentError.message,
-      );
-      return createErrorResponse(
-        appointmentError.message,
-        500,
-        appointmentError.message,
-      );
+        schedule,
+        appointment_status: "pending",
+        doctor_id: doctor_id,
+        slot_id: selectedSlot.doctor_slot_id,
+        appointment_date: bookedSlotInfo.slot_date,
+        appointment_time: bookedSlotInfo.slot_time,
+        preferred_date: preferred_date || null,
+        preferred_time: preferred_time || null,
+        created_at: new Date().toISOString()
+      }).select(`
+          appointment_id,
+          patient_id,
+          visit_type,
+          appointment_status,
+          schedule,
+          message,
+          doctor_id,
+          slot_id,
+          appointment_date,
+          appointment_time,
+          preferred_date,
+          preferred_time,
+          created_at,
+          patients (
+            full_name,
+            date_of_birth,
+            gender
+          )
+        `).single();
+      if (appointmentError) {
+        console.log(JSON.stringify({
+          level: "error",
+          message: "Patient appointment insert error",
+          details: {
+            code: appointmentError.code,
+            message: appointmentError.message
+          }
+        }));
+        await supabase.rpc("cancel_appointment_slot", {
+          p_slot_id: selectedSlot.doctor_slot_id
+        });
+        return createErrorResponse("Failed to create patient appointment", 500, appointmentError.message);
+      }
+      newAppointment = data;
     }
-    const now = new Date();
-    const endTime = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-    const { data: staffSchedules, error: scheduleError } = await supabase.from(
-      "staff_schedules",
-    ).select(`
+    // Notifications Logic
+    const { data: staffSchedules, error: scheduleError } = await supabase.from("staff_schedules").select(`
         staff_id,
         start_time,
         end_time,
@@ -192,72 +446,73 @@ serve(async (req) => {
         staff_members (
           full_name,
           working_email,
-          role        )
-      `).gte("start_time", now.toISOString()).lte(
-      "end_time",
-      endTime.toISOString(),
-    );
+          role
+        )
+      `);
     if (scheduleError) {
-      return createErrorResponse(
-        scheduleError.message,
-        500,
-        scheduleError.message,
-      );
+      console.log(JSON.stringify({
+        level: "error",
+        message: "Staff schedule error",
+        details: scheduleError.message
+      }));
+      return createErrorResponse("Failed to fetch staff schedules", 500, scheduleError.message);
     }
     if (!staffSchedules || staffSchedules.length === 0) {
       return createSuccessResponse({
         success: true,
         message: "Appointment created, but no staff available to notify",
+        data: {
+          appointment: newAppointment,
+          slot_info: bookedSlotInfo
+        }
       });
     }
-    const notifications = [];
-    const relevantStaff = staffSchedules // .filter((schedule)=>schedule.staff_members?.working_email?.endsWith("@company.gmail.com"))
-      .filter((schedule) =>
-        schedule.staff_members?.role === "receptionist" ||
-        schedule.staff_members?.role === "doctor"
-      );
+    const relevantStaff = staffSchedules.filter((schedule)=>schedule.staff_members?.role === "receptionist" || schedule.staff_members?.role === "doctor");
     if (relevantStaff.length === 0) {
       return createSuccessResponse({
         success: true,
         message: "Appointment created, but no eligible staff to notify",
+        data: {
+          appointment: newAppointment,
+          slot_info: bookedSlotInfo
+        }
       });
     }
-    for (const schedule of relevantStaff) {
-      notifications.push({
-        appointment_id: newAppointment.appointment_id,
+    // Insert notifications
+    const isGuest = !!newAppointment.guest_appointment_id;
+    const formattedNotifications = relevantStaff.map((schedule)=>({
         staff_id: schedule.staff_id,
         notification_type: "new_appointment",
         sent_at: new Date().toISOString(),
-      });
-    }
-    if (notifications.length > 0) {
-      const { error: logError } = await supabase.from("notifications").insert(
-        notifications,
-      );
-      if (logError) {
-        console.log(
-          "Notification insert error:",
-          logError.code,
-          logError.message,
-        );
-        return createErrorResponse(
-          "Failed to log notifications",
-          500,
-          logError.message,
-        );
-      }
+        appointment_id: isGuest ? newAppointment.guest_appointment_id : newAppointment.appointment_id
+      }));
+    const { error: logError } = await supabase.from(isGuest ? "guest_notifications" : "notifications").insert(formattedNotifications);
+    if (logError) {
+      console.log(JSON.stringify({
+        level: "error",
+        message: "Notification insert error",
+        details: {
+          code: logError.code,
+          message: logError.message
+        }
+      }));
+      return createErrorResponse("Failed to log notifications", 500, logError.message);
     }
     return createSuccessResponse({
       success: true,
-      message:
-        `Appointment created and notified ${notifications.length} staff members`,
+      message: `Appointment created successfully and notified ${formattedNotifications.length} staff members`,
       data: {
         appointment: newAppointment,
-        notifications,
-      },
+        slot_info: bookedSlotInfo,
+        notifications: formattedNotifications
+      }
     });
   } catch (error) {
-    console.log("Global error:", error.message);
+    console.log(JSON.stringify({
+      level: "error",
+      message: "Global error",
+      details: error.message
+    }));
     return createErrorResponse("Internal server error", 500, error.message);
   }
 });

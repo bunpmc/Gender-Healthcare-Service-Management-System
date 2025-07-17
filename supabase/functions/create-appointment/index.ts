@@ -1,6 +1,8 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { connect } from "https://deno.land/x/redis@v0.29.4/mod.ts"; // Updated to v0.29.4, using `connect`
+// Error and Success Response Functions (unchanged)
 function createErrorResponse(error, status = 400, details = null) {
   const response = {
     error,
@@ -23,6 +25,30 @@ function createSuccessResponse(data, status = 200) {
     }
   });
 }
+// Initialize Redis client with your configuration
+const redisConfig = {
+  hostname: "redis-16115.c232.us-east-1-2.ec2.redns.redis-cloud.com",
+  port: 16115,
+  password: "TTscija9E5nQS9xCyypEjeA2xfhdibSE"
+};
+let redis = null;
+try {
+  redis = await connect(redisConfig);
+  console.log(JSON.stringify({
+    level: "info",
+    message: "Connected to Redis",
+    details: {
+      hostname: redisConfig.hostname,
+      port: redisConfig.port
+    }
+  }));
+} catch (error) {
+  console.log(JSON.stringify({
+    level: "error",
+    message: "Failed to connect to Redis",
+    details: error.message
+  }));
+}
 serve(async (req)=>{
   if (req.method === "OPTIONS") {
     return new Response("ok", {
@@ -44,7 +70,7 @@ serve(async (req)=>{
   }
   const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
   try {
-    // Fix 2: Handle invalid JSON
+    // Parse and validate request body
     let body;
     try {
       body = await req.json();
@@ -72,7 +98,6 @@ serve(async (req)=>{
         return createErrorResponse("Invalid preferred_time format (e.g., 09:00:00)", 400);
       }
     }
-    // Fix 6: Validate date_of_birth
     try {
       const dob = new Date(date_of_birth);
       if (isNaN(dob.getTime()) || dob > new Date()) {
@@ -81,7 +106,7 @@ serve(async (req)=>{
     } catch  {
       return createErrorResponse("Invalid date_of_birth format", 400);
     }
-    // Mapping schedule to time ranges
+    // Schedule time ranges
     const scheduleTimeRanges = {
       Morning: {
         start: "08:00:00",
@@ -100,7 +125,6 @@ serve(async (req)=>{
     if (!timeRange) {
       return createErrorResponse("Invalid schedule value. Use: Morning, Afternoon, or Evening", 400);
     }
-    // Fix 3: Robust timezone handling for targetDate
     const now = new Date();
     const offsetMs = 7 * 60 * 60 * 1000; // +07:00 offset
     const targetDate = preferred_date ? new Date(preferred_date).toISOString().split("T")[0] : new Date(now.getTime() + offsetMs).toISOString().split("T")[0];
@@ -114,10 +138,9 @@ serve(async (req)=>{
     }
     let selectedSlot = null;
     let bookedSlotInfo = null;
-    // Validate the selected doctor
+    // Validate doctor
     const { data: doctor, error: doctorError } = await supabase.from("doctor_details").select("doctor_id").eq("doctor_id", doctor_id).single();
     if (doctorError || !doctor) {
-      // Fix 10: Structured logging
       console.log(JSON.stringify({
         level: "error",
         message: "Doctor validation error",
@@ -174,7 +197,7 @@ serve(async (req)=>{
         suggestion: "Try selecting a different doctor, date, or time schedule (Morning/Afternoon/Evening)"
       });
     }
-    // Require specific time selection when multiple slots are available
+    // Require specific time selection
     if (!preferred_slot_id && !preferred_time) {
       return createErrorResponse("Time slot selection is required. Please choose a specific time for your appointment.", 400, {
         doctor_id,
@@ -188,7 +211,7 @@ serve(async (req)=>{
         suggestion: "Choose from the available time slots listed above"
       });
     }
-    // Select slot based on user preferences
+    // Select slot based on preferences
     if (preferred_slot_id) {
       selectedSlot = availableSlots.find((slot)=>slot.doctor_slot_id === preferred_slot_id);
       if (!selectedSlot) {
@@ -236,7 +259,7 @@ serve(async (req)=>{
       }));
       return createErrorResponse("Failed to book the appointment slot", 500, bookError?.message);
     }
-    // Fix 4: Verify slot booking
+    // Verify slot booking
     const { data: bookedSlot, error: verifyError } = await supabase.from("doctor_slot_assignments").select("appointments_count, max_appointments").eq("doctor_slot_id", selectedSlot.doctor_slot_id).single();
     if (verifyError || !bookedSlot) {
       console.log(JSON.stringify({
@@ -259,7 +282,6 @@ serve(async (req)=>{
     // Patient/Guest Logic
     let patientId = null;
     let newAppointment = null;
-    // Check existing patient by email
     if (email) {
       const { data: patient_email, error: patientError } = await supabase.from("patients").select("id").eq("email", email).maybeSingle();
       if (patientError && patientError.code !== "PGRST116") {
@@ -277,7 +299,6 @@ serve(async (req)=>{
         patientId = patient_email.id;
       }
     }
-    // Check by phone if not found by email
     if (!patientId) {
       const { data: patient, error: phoneError } = await supabase.from("patients").select("id").eq("phone", phone).maybeSingle();
       if (phoneError && phoneError.code !== "PGRST116") {
@@ -297,7 +318,6 @@ serve(async (req)=>{
     }
     const guestId = crypto.randomUUID();
     if (!patientId) {
-      // Fix 5: Check for existing guest by phone
       const { data: existingGuest, error: guestCheckError } = await supabase.from("guests").select("guest_id").eq("phone", phone).maybeSingle();
       if (guestCheckError && guestCheckError.code !== "PGRST116") {
         console.log(JSON.stringify({
@@ -311,10 +331,8 @@ serve(async (req)=>{
         return createErrorResponse("Failed to check existing guest", 500, guestCheckError.message);
       }
       if (existingGuest) {
-        // Use existing guest ID
         guestId = existingGuest.guest_id;
       } else {
-        // Create new guest
         const { error: guestError } = await supabase.from("guests").insert({
           guest_id: guestId,
           email: email || `${phone}@placeholder.com`,
@@ -437,7 +455,7 @@ serve(async (req)=>{
       }
       newAppointment = data;
     }
-    // Notifications Logic
+    // Fetch staff schedules for notifications
     const { data: staffSchedules, error: scheduleError } = await supabase.from("staff_schedules").select(`
         staff_id,
         start_time,
@@ -478,35 +496,81 @@ serve(async (req)=>{
         }
       });
     }
-    // Insert notifications
-    const isGuest = !!newAppointment.guest_appointment_id;
-    const formattedNotifications = relevantStaff.map((schedule)=>({
-        staff_id: schedule.staff_id,
-        notification_type: "new_appointment",
-        sent_at: new Date().toISOString(),
-        appointment_id: isGuest ? newAppointment.guest_appointment_id : newAppointment.appointment_id
-      }));
-    const { error: logError } = await supabase.from(isGuest ? "guest_notifications" : "notifications").insert(formattedNotifications);
-    if (logError) {
-      console.log(JSON.stringify({
-        level: "error",
-        message: "Notification insert error",
-        details: {
-          code: logError.code,
-          message: logError.message
+    // Redis Notification Logic
+    if (redis) {
+      const isGuest = !!newAppointment.guest_appointment_id;
+      const notificationChannel = "appointment_notifications";
+      const notifications = relevantStaff.map((schedule)=>({
+          staff_id: schedule.staff_id,
+          notification_type: "new_appointment",
+          sent_at: new Date().toISOString(),
+          appointment_id: isGuest ? newAppointment.guest_appointment_id : newAppointment.appointment_id,
+          appointment_details: {
+            appointment_date: bookedSlotInfo.slot_date,
+            appointment_time: bookedSlotInfo.slot_time,
+            doctor_id: bookedSlotInfo.doctor_id,
+            schedule,
+            visit_type,
+            patient_name: isGuest ? fullName : newAppointment.patients?.full_name,
+            patient_email: email || `${phone}@placeholder.com`,
+            patient_phone: phone
+          },
+          staff_details: {
+            staff_email: schedule.staff_members.working_email,
+            staff_name: schedule.staff_members.full_name,
+            staff_role: schedule.staff_members.role
+          }
+        }));
+      try {
+        // Publish each notification to Redis channel
+        for (const notification of notifications){
+          await redis.publish(notificationChannel, JSON.stringify(notification));
+          console.log(JSON.stringify({
+            level: "info",
+            message: "Published notification to Redis",
+            details: {
+              channel: notificationChannel,
+              staff_id: notification.staff_id,
+              appointment_id: notification.appointment_id
+            }
+          }));
         }
-      }));
-      return createErrorResponse("Failed to log notifications", 500, logError.message);
-    }
-    return createSuccessResponse({
-      success: true,
-      message: `Appointment created successfully and notified ${formattedNotifications.length} staff members`,
-      data: {
-        appointment: newAppointment,
-        slot_info: bookedSlotInfo,
-        notifications: formattedNotifications
+        return createSuccessResponse({
+          success: true,
+          message: `Appointment created successfully and notified ${notifications.length} staff members via Redis`,
+          data: {
+            appointment: newAppointment,
+            slot_info: bookedSlotInfo,
+            notifications: notifications.map((n)=>({
+                staff_id: n.staff_id,
+                notification_type: n.notification_type,
+                sent_at: n.sent_at,
+                appointment_id: n.appointment_id
+              }))
+          }
+        });
+      } catch (redisError) {
+        console.log(JSON.stringify({
+          level: "error",
+          message: "Redis publish error",
+          details: redisError.message
+        }));
+        return createErrorResponse("Failed to send notifications via Redis", 500, redisError.message);
       }
-    });
+    } else {
+      console.log(JSON.stringify({
+        level: "warn",
+        message: "Redis client not initialized, skipping notifications"
+      }));
+      return createSuccessResponse({
+        success: true,
+        message: "Appointment created, but Redis notifications could not be sent due to connection failure",
+        data: {
+          appointment: newAppointment,
+          slot_info: bookedSlotInfo
+        }
+      });
+    }
   } catch (error) {
     console.log(JSON.stringify({
       level: "error",
@@ -514,5 +578,23 @@ serve(async (req)=>{
       details: error.message
     }));
     return createErrorResponse("Internal server error", 500, error.message);
+  } finally{
+    // Close Redis connection
+    if (redis) {
+      try {
+        await redis.close();
+        console.log(JSON.stringify({
+          level: "info",
+          message: "Redis connection closed"
+        }));
+      } catch (error) {
+        console.log(JSON.stringify({
+          level: "error",
+          message: "Failed to close Redis connection",
+          details: error.message
+        }));
+      }
+    }
   }
 });
+s

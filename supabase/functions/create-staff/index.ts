@@ -1,8 +1,8 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 serve(async (req)=>{
-  let uploadedFileName11 = null;
-  let supabase11 = null;
+  let uploadedFileName = null;
+  let supabase = null;
   try {
     if (req.method === "OPTIONS") {
       return new Response("ok", {
@@ -37,7 +37,7 @@ serve(async (req)=>{
         }
       });
     }
-    supabase11 = createClient(supabaseUrl, supabaseServiceRoleKey);
+    supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
     const formData = await req.formData();
     const full_name = formData.get("full_name")?.toString();
     const working_email = formData.get("working_email")?.toString();
@@ -63,6 +63,7 @@ serve(async (req)=>{
     let image_url = null;
     const file = formData.get("image");
     if (file && file instanceof File) {
+      console.log("[INFO] Image file received:", file.name);
       const allowedTypes = [
         "image/jpeg",
         "image/png",
@@ -70,7 +71,7 @@ serve(async (req)=>{
       ];
       if (!allowedTypes.includes(file.type)) {
         return new Response(JSON.stringify({
-          error: "Invalid file type. Only JPEG, PNG, and GIF are allowed."
+          error: "Invalid file type"
         }), {
           status: 400,
           headers: {
@@ -79,12 +80,13 @@ serve(async (req)=>{
           }
         });
       }
-      uploadedFileName11 = `${Date.now()}-${file.name}`;
-      const { error: uploadError } = await supabase11.storage.from("staff-uploads").upload(uploadedFileName11, file, {
+      uploadedFileName = file.name;
+      const { error: uploadError } = await supabase.storage.from("staff-uploads").upload(uploadedFileName, file, {
         contentType: file.type,
         upsert: true
       });
       if (uploadError) {
+        console.log("[ERROR] Failed to upload user image:", uploadError.message);
         return new Response(JSON.stringify({
           error: "Failed to upload image",
           details: uploadError.message
@@ -96,33 +98,31 @@ serve(async (req)=>{
           }
         });
       }
-      const { data: publicData } = supabase11.storage.from("staff-uploads").getPublicUrl(uploadedFileName11);
-      if (!publicData?.publicUrl) {
-        return new Response(JSON.stringify({
-          error: "Failed to retrieve image URL"
-        }), {
-          status: 500,
-          headers: {
-            "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*"
-          }
-        });
-      }
-      image_link = uploadedFileName11;
-      image_url = publicData.publicUrl;
+      console.log("[SUCCESS] Uploaded user image:", uploadedFileName);
+      const { data: publicData } = supabase.storage.from("staff-uploads").getPublicUrl(uploadedFileName);
+      image_link = uploadedFileName;
+      image_url = publicData?.publicUrl;
     }
-    const { data: user, error: userError } = await supabase11.auth.admin.createUser({
+    // ❗️Nếu không có ảnh thì dùng ảnh mặc định
+    if (!image_link) {
+      image_link = "default.jpg";
+      const { data: defaultAvatar } = supabase.storage.from("staff-uploads").getPublicUrl(image_link);
+      image_url = defaultAvatar?.publicUrl;
+      console.log("[INFO] No image uploaded, using default avatar:", image_url);
+    }
+    // Tạo tài khoản auth
+    const { data: user, error: userError } = await supabase.auth.admin.createUser({
       email: working_email,
       email_confirm: true
     });
     if (userError || !user) {
-      if (uploadedFileName11) {
-        await supabase11.storage.from("staff-uploads").remove([
-          uploadedFileName11
+      if (uploadedFileName) {
+        await supabase.storage.from("staff-uploads").remove([
+          uploadedFileName
         ]);
       }
       return new Response(JSON.stringify({
-        error: "Failed to create user in Auth",
+        error: "Failed to create user",
         details: userError?.message
       }), {
         status: 500,
@@ -133,7 +133,7 @@ serve(async (req)=>{
       });
     }
     const staffId = user.user.id;
-    const { error: insertError } = await supabase11.from("staff_members").insert([
+    const { error: insertError } = await supabase.from("staff_members").insert([
       {
         staff_id: staffId,
         full_name,
@@ -149,10 +149,10 @@ serve(async (req)=>{
       }
     ]);
     if (insertError) {
-      await supabase11.auth.admin.deleteUser(staffId);
-      if (uploadedFileName11) {
-        await supabase11.storage.from("staff-uploads").remove([
-          uploadedFileName11
+      await supabase.auth.admin.deleteUser(staffId);
+      if (uploadedFileName) {
+        await supabase.storage.from("staff-uploads").remove([
+          uploadedFileName
         ]);
       }
       return new Response(JSON.stringify({
@@ -178,9 +178,9 @@ serve(async (req)=>{
       }
     });
   } catch (err) {
-    if (uploadedFileName11 && supabase11) {
-      await supabase11.storage.from("staff-uploads").remove([
-        uploadedFileName11
+    if (uploadedFileName && supabase) {
+      await supabase.storage.from("staff-uploads").remove([
+        uploadedFileName
       ]);
     }
     return new Response(JSON.stringify({

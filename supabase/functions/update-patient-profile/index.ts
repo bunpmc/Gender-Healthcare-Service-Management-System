@@ -1,8 +1,13 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-function createResponse(data, status = 200) {
-  return new Response(JSON.stringify(data), {
+// Helper functions for consistent responses
+function createErrorResponse(error, status = 400, details = null) {
+  const response = {
+    error
+  };
+  if (details) response.details = details;
+  return new Response(JSON.stringify(response), {
     status,
     headers: {
       "Content-Type": "application/json",
@@ -10,15 +15,27 @@ function createResponse(data, status = 200) {
     }
   });
 }
-function extractInitials(name) {
-  return name.split(" ").map((word)=>word.charAt(0).toUpperCase()).join("").slice(0, 3);
-}
-function generateAvatarUrl(initials) {
-  const base = "https://ui-avatars.com/api/";
-  const encoded = encodeURIComponent(initials);
-  return `${base}?name=${encoded}&background=random&size=256`;
+function createSuccessResponse(message, data = null) {
+  return new Response(JSON.stringify({
+    message,
+    data
+  }), {
+    status: 200,
+    headers: {
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*"
+    }
+  });
 }
 serve(async (req)=>{
+  // Initialize Supabase
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!supabaseUrl || !supabaseKey) {
+    return createErrorResponse("Supabase config missing", 500);
+  }
+  const supabase = createClient(supabaseUrl, supabaseKey);
+  // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response("ok", {
       headers: {
@@ -28,48 +45,49 @@ serve(async (req)=>{
       }
     });
   }
+  // Restrict to POST method
   if (req.method !== "POST") {
-    return createResponse({
-      error: "Method not allowed"
-    }, 405);
+    return createErrorResponse("Method not allowed", 405);
   }
-  const supabaseUrl = Deno.env.get("SUPABASE_URL");
-  const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  const supabase = createClient(supabaseUrl, supabaseKey);
   try {
-    const body = await req.json();
-    const { id, full_name, phone, email, date_of_birth, gender, allergies, chronic_conditions, past_surgeries, vaccination_status, image_link, bio } = body;
+    // Parse form data
+    const formData = await req.formData();
+    const id = formData.get("id")?.toString();
+    const full_name = formData.get("full_name")?.toString();
+    const phone = formData.get("phone")?.toString();
+    const email = formData.get("email")?.toString();
+    const date_of_birth = formData.get("date_of_birth")?.toString();
+    const gender = formData.get("gender")?.toString();
+    const allergies = formData.get("allergies")?.toString();
+    const chronic_conditions = formData.get("chronic_conditions")?.toString();
+    const past_surgeries = formData.get("past_surgeries")?.toString();
+    const vaccination_status = formData.get("vaccination_status")?.toString();
+    const bio = formData.get("bio")?.toString();
+    // Validate required fields
     if (!id || !full_name) {
-      return createResponse({
-        error: "Missing required fields"
-      }, 400);
+      return createErrorResponse("Missing required fields: id, full_name", 400);
     }
-    let finalImageLink = image_link;
-    // Nếu không có image_link → tạo avatar
-    if (!finalImageLink) {
-      const initials = extractInitials(full_name);
-      const avatarUrl = generateAvatarUrl(initials);
-      // Fetch avatar và upload lên bucket
-      const avatarResponse = await fetch(avatarUrl);
-      const avatarBlob = await avatarResponse.blob();
-      const buffer = new Uint8Array(await avatarBlob.arrayBuffer());
-      const filePath = `${id}.png`;
-      const { error: uploadError } = await supabase.storage.from("patient-uploads") // bạn cần tạo sẵn bucket này
-      .upload(filePath, buffer, {
-        contentType: "image/png",
-        upsert: true
-      });
-      if (uploadError) {
-        console.error("Upload error:", uploadError.message);
-        return createResponse({
-          error: "Failed to upload avatar."
-        }, 500);
+    // Validate date_of_birth
+    if (date_of_birth) {
+      const dob = new Date(date_of_birth);
+      const currentDate = new Date();
+      if (isNaN(dob.getTime())) {
+        return createErrorResponse("Invalid date_of_birth format", 400);
       }
-      const { data: publicData } = supabase.storage.from("patient-uploads").getPublicUrl(filePath);
-      finalImageLink = publicData?.publicUrl || null;
+      if (dob > currentDate) {
+        return createErrorResponse("Date of birth cannot be in the future", 400);
+      }
     }
-    // Cập nhật patient profile
-    const { error: updateError } = await supabase.from("patients").update({
+    // Check if patient exists
+    const { data: existingPatient, error: fetchError } = await supabase.from("patients").select("id").eq("id", id).single();
+    if (fetchError || !existingPatient) {
+      return createErrorResponse("Patient not found", 404, fetchError?.message);
+    }
+    // Set default image link for every update
+    const image_link = `${supabaseUrl}/storage/v1/object/public/patient-uploads/default.jpg`;
+    console.log("Using default image link:", image_link); // Debug: Log default image link
+    // Prepare update fields
+    const updateFields = {
       full_name,
       phone,
       email,
@@ -79,29 +97,22 @@ serve(async (req)=>{
       chronic_conditions,
       past_surgeries,
       vaccination_status,
-      image_link: finalImageLink,
-      bio
-    }).eq("id", id);
+      bio,
+      image_link,
+      updated_at: new Date().toISOString()
+    };
+    // Update patient data
+    const { error: updateError } = await supabase.from("patients").update(updateFields).eq("id", id);
     if (updateError) {
-      return createResponse({
-        error: "Failed to update profile",
-        details: updateError.message
-      }, 500);
+      return createErrorResponse("Failed to update patient", 500, updateError.message);
     }
-    return createResponse({
-      success: true,
-      message: "Profile updated successfully.",
-      data: {
-        id,
-        full_name,
-        image_link: finalImageLink
-      }
+    return createSuccessResponse("Patient profile updated successfully", {
+      id,
+      full_name,
+      image_link
     });
-  } catch (error) {
-    console.error("Unexpected error:", error);
-    return createResponse({
-      error: "Internal server error",
-      details: error.message
-    }, 500);
+  } catch (err) {
+    console.error("Unhandled error:", err);
+    return createErrorResponse("Server error", 500, err.message);
   }
 });

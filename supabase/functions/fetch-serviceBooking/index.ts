@@ -35,7 +35,7 @@ serve(async (req)=>{
   }
   const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
   try {
-    const { data, error } = await supabase.from("medical_services").select("service_id, service_name, excerpt");
+    const { data, error } = await supabase.from("medical_services").select("service_id, service_name, excerpt").eq("is_active", true);
     if (error) {
       return createResponse({
         error: error.message

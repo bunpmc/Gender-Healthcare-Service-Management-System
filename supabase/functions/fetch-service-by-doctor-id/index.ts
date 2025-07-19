@@ -60,13 +60,14 @@ serve(async (req)=>{
     const { data: serviceLinks, error: serviceError } = await supabase.from("doctor_services").select(`
         service_id,
         medical_services (
-          service_name
+          service_name,
+          is_active
         )
       `).eq("doctor_id", doctorId);
     if (serviceError) {
       console.error("Error fetching services:", serviceError);
     }
-    const services = (serviceLinks || []).map((item)=>({
+    const services = (serviceLinks || []).filter((item)=>item.medical_services?.is_active).map((item)=>({
         service_id: item.service_id,
         service_name: item.medical_services?.service_name || null
       }));

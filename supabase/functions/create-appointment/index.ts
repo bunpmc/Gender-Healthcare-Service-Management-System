@@ -529,8 +529,8 @@ serve(async (req)=>{
         port: parseInt(Deno.env.get("SMTP_PORT")) || 587,
         secure: false,
         auth: {
-          user: 'zbzbzxv@gmail.com',
-          pass: 'hyaw oqwh abpa yxey'
+          user: Deno.env.get("SMTP_USER"),
+          pass: Deno.env.get("SMTP_PASS")
         }
       });
       // Notification handling

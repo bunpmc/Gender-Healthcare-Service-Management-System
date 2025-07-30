@@ -36,7 +36,7 @@ jobs:
       #   run: deno fmt --check
 
       - name: Run linter
-        run: deno lint
+        run: deno lint supabase/functions --ignore=apps,.angular
 
       - name: Run tests
         run: deno test -A

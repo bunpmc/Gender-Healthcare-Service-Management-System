@@ -121,3 +121,9 @@ dist
 
 # Ignore Supabase .env
 /product-gdhc/supabase/.env
+
+# Build outputs
+build/
+dist/
+*.tgz
+*.tar.gz

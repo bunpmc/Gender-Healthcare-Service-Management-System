@@ -116,8 +116,8 @@ dist
 .pnp.*
 
 # Ignore Angular environments
-/product-gdhc/apps/management-web/src/app/environments/
-/product-gdhc/apps/product-web/src/app/environments/
+**/product-gdhc/apps/management-web/src/app/environments/
+**/product-gdhc/apps/product-web/src/app/environments/
 
 # Ignore Supabase .env
-/product-gdhc/supabase/.env
+**/product-gdhc/supabase/.env

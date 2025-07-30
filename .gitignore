@@ -114,3 +114,8 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# remove angular environment folder
+.\product-gdhc\apps\management-web\src\app\environments
+.\product-gdhc\apps\product-web\src\app\environments
+.\product-gdhc\supabase\.env

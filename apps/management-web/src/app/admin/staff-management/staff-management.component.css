@@ -1,0 +1,173 @@
+/* Enhanced Staff Management Styles */
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Animation Classes */
+.animate-fadeIn {
+  animation: fadeIn 0.6s ease-out;
+}
+
+.animate-slideIn {
+  animation: slideIn 0.4s ease-out;
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Custom Gradient Backgrounds */
+.bg-gradient-healthcare {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.bg-gradient-purple-indigo {
+  background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+}
+
+/* Enhanced Form Styles */
+.form-input-enhanced {
+  @apply w-full px-4 py-3 border border-gray-300 rounded-lg;
+  @apply focus:ring-2 focus:ring-purple-500 focus:border-purple-500;
+  @apply transition-all duration-200;
+  @apply placeholder-gray-400;
+}
+
+.form-input-enhanced:focus {
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+/* Enhanced Button Styles */
+.btn-primary-gradient {
+  @apply px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600;
+  @apply text-white font-medium rounded-lg;
+  @apply hover:from-purple-700 hover:to-indigo-700;
+  @apply focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2;
+  @apply transition-all duration-200;
+  @apply disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.btn-secondary {
+  @apply px-6 py-3 bg-gray-600 text-white font-medium rounded-lg;
+  @apply hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2;
+  @apply transition-all duration-200;
+}
+
+/* Status Badge Styles */
+.status-badge {
+  @apply px-3 py-1 rounded-full text-sm font-medium;
+}
+
+.status-active {
+  @apply bg-green-100 text-green-800;
+}
+
+.status-inactive {
+  @apply bg-red-100 text-red-800;
+}
+
+.status-on-leave {
+  @apply bg-yellow-100 text-yellow-800;
+}
+
+/* Card Hover Effects */
+.card-hover {
+  @apply transition-all duration-300;
+}
+
+.card-hover:hover {
+  @apply shadow-xl transform -translate-y-1;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+  @apply animate-spin rounded-full border-b-2 border-purple-600;
+}
+
+/* Modal Backdrop */
+.modal-backdrop {
+  backdrop-filter: blur(4px);
+  @apply bg-black bg-opacity-50;
+}
+
+/* Responsive Table Styles */
+.table-responsive {
+  @apply overflow-x-auto;
+}
+
+.table-responsive table {
+  @apply min-w-full;
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  @apply bg-gray-100 rounded-full;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-purple-300 rounded-full;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  @apply bg-purple-400;
+}
+
+/* Accessibility Improvements */
+.focus-visible:focus {
+  @apply outline-none ring-2 ring-purple-500 ring-offset-2;
+}
+
+/* Print Styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .print-friendly {
+    @apply text-black bg-white;
+  }
+}
+
+/* Dark Mode Support (Future Enhancement) */
+@media (prefers-color-scheme: dark) {
+  .dark-mode-card {
+    @apply bg-gray-800 text-white border-gray-700;
+  }
+
+  .dark-mode-input {
+    @apply bg-gray-700 border-gray-600 text-white;
+  }
+}

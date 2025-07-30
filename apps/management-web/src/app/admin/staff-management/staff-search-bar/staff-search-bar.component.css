@@ -1,0 +1,14 @@
+/* Ensure search bar is responsive and aligned */
+.w-92 {
+  width: 23rem;
+}
+
+@media (max-width: 768px) {
+  .w-92 {
+    width: 100%;
+  }
+}
+
+select, input {
+  min-width: 150px;
+}

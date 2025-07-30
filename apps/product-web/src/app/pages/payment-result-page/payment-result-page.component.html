@@ -1,0 +1,180 @@
+<div class="payment-result-container">
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="isLoading">
+    <div class="loading-spinner">
+      <i class="pi pi-spin pi-spinner"></i>
+    </div>
+    <h2>{{ "PAYMENT.VERIFYING" | translate }}</h2>
+    <p>{{ "PAYMENT.PLEASE_WAIT" | translate }}</p>
+  </div>
+
+  <!-- Error State -->
+  <div class="error-state" *ngIf="!isLoading && errorMessage">
+    <div class="error-icon">
+      <i class="pi pi-exclamation-triangle"></i>
+    </div>
+    <h2>{{ "PAYMENT.ERROR_TITLE" | translate }}</h2>
+    <p class="error-message">{{ errorMessage }}</p>
+    <div class="error-actions">
+      <button class="btn btn-primary" (click)="goHome()">
+        <i class="pi pi-home"></i>
+        {{ "PAYMENT.GO_HOME" | translate }}
+      </button>
+      <button class="btn btn-secondary" (click)="goToServices()">
+        <i class="pi pi-shopping-cart"></i>
+        {{ "PAYMENT.CONTINUE_SHOPPING" | translate }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Success State -->
+  <div
+    class="success-state"
+    *ngIf="!isLoading && !errorMessage && isPaymentSuccessful()"
+  >
+    <div class="success-icon">
+      <i class="pi pi-check-circle"></i>
+    </div>
+    <h1 class="success-title">{{ "PAYMENT.SUCCESS_TITLE" | translate }}</h1>
+    <p class="success-message">{{ "PAYMENT.SUCCESS_MESSAGE" | translate }}</p>
+
+    <!-- Payment Details -->
+    <div class="payment-details" *ngIf="callbackData">
+      <h3 class="details-title">
+        {{ "PAYMENT.TRANSACTION_DETAILS" | translate }}
+      </h3>
+
+      <div class="detail-row" *ngIf="hasOrderId()">
+        <span class="detail-label">Mã đơn hàng:</span>
+        <span class="detail-value">{{ getOrderId() }}</span>
+      </div>
+
+      <div class="detail-row">
+        <span class="detail-label"
+          >{{ "PAYMENT.TRANSACTION_ID" | translate }}:</span
+        >
+        <span class="detail-value">{{ callbackData.vnp_TransactionNo }}</span>
+      </div>
+
+      <div class="detail-row">
+        <span class="detail-label">{{ "PAYMENT.AMOUNT" | translate }}:</span>
+        <span class="detail-value amount">{{ formatAmount() }}</span>
+      </div>
+
+      <div class="detail-row">
+        <span class="detail-label">{{ "PAYMENT.BANK_CODE" | translate }}:</span>
+        <span class="detail-value">{{ callbackData.vnp_BankCode }}</span>
+      </div>
+
+      <div class="detail-row">
+        <span class="detail-label"
+          >{{ "PAYMENT.PAYMENT_DATE" | translate }}:</span
+        >
+        <span class="detail-value">{{ formatPaymentDate() }}</span>
+      </div>
+
+      <div class="detail-row">
+        <span class="detail-label"
+          >{{ "PAYMENT.ORDER_INFO" | translate }}:</span
+        >
+        <span class="detail-value">{{ callbackData.vnp_OrderInfo }}</span>
+      </div>
+    </div>
+
+    <!-- Success Actions -->
+    <div class="success-actions">
+      <button class="btn btn-outline" (click)="printReceipt()">
+        <i class="pi pi-print"></i>
+        {{ "PAYMENT.PRINT_RECEIPT" | translate }}
+      </button>
+      <button class="btn btn-secondary" (click)="goToServices()">
+        <i class="pi pi-shopping-cart"></i>
+        {{ "PAYMENT.CONTINUE_SHOPPING" | translate }}
+      </button>
+      <button class="btn btn-primary" (click)="goHome()">
+        <i class="pi pi-home"></i>
+        {{ "PAYMENT.GO_HOME" | translate }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Failure State -->
+  <div
+    class="failure-state"
+    *ngIf="!isLoading && !errorMessage && !isPaymentSuccessful()"
+  >
+    <div class="failure-icon">
+      <i class="pi pi-times-circle"></i>
+    </div>
+    <h1 class="failure-title">{{ "PAYMENT.FAILURE_TITLE" | translate }}</h1>
+    <p class="failure-message">{{ getStatusMessage() }}</p>
+
+    <!-- Payment Details -->
+    <div class="payment-details" *ngIf="callbackData">
+      <h3 class="details-title">
+        {{ "PAYMENT.TRANSACTION_DETAILS" | translate }}
+      </h3>
+
+      <div class="detail-row" *ngIf="hasOrderId()">
+        <span class="detail-label">Mã đơn hàng:</span>
+        <span class="detail-value">{{ getOrderId() }}</span>
+      </div>
+
+      <div class="detail-row">
+        <span class="detail-label"
+          >{{ "PAYMENT.REFERENCE_ID" | translate }}:</span
+        >
+        <span class="detail-value">{{ callbackData.vnp_TxnRef }}</span>
+      </div>
+
+      <div class="detail-row">
+        <span class="detail-label">{{ "PAYMENT.AMOUNT" | translate }}:</span>
+        <span class="detail-value amount">{{ formatAmount() }}</span>
+      </div>
+
+      <div class="detail-row">
+        <span class="detail-label"
+          >{{ "PAYMENT.RESPONSE_CODE" | translate }}:</span
+        >
+        <span class="detail-value">{{ callbackData.vnp_ResponseCode }}</span>
+      </div>
+
+      <div class="detail-row" *ngIf="callbackData.vnp_PayDate">
+        <span class="detail-label"
+          >{{ "PAYMENT.ATTEMPT_DATE" | translate }}:</span
+        >
+        <span class="detail-value">{{ formatPaymentDate() }}</span>
+      </div>
+    </div>
+
+    <!-- Failure Actions -->
+    <div class="failure-actions">
+      <button class="btn btn-secondary" (click)="goHome()">
+        <i class="pi pi-home"></i>
+        {{ "PAYMENT.GO_HOME" | translate }}
+      </button>
+      <button class="btn btn-primary" routerLink="/transaction">
+        <i class="pi pi-refresh"></i>
+        {{ "PAYMENT.TRY_AGAIN" | translate }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Support Information -->
+  <div class="support-info" *ngIf="!isLoading">
+    <div class="support-content">
+      <h4>{{ "PAYMENT.NEED_HELP" | translate }}</h4>
+      <p>{{ "PAYMENT.SUPPORT_MESSAGE" | translate }}</p>
+      <div class="support-contacts">
+        <a href="tel:+84123456789" class="support-link">
+          <i class="pi pi-phone"></i>
+          +84 123 456 789
+        </a>
+        <a href="mailto:support@genderhealthcare.com" class="support-link">
+          <i class="pi pi-envelope"></i>
+          support&#64;genderhealthcare.com
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

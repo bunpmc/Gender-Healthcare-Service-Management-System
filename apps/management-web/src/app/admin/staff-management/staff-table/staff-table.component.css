@@ -1,0 +1,25 @@
+/* Ensure table is responsive and fits within the page */
+table {
+  min-width: 100%;
+  table-layout: auto;
+}
+
+th, td {
+  white-space: nowrap; /* Prevent text wrapping */
+}
+
+td div.truncate {
+  max-width: 100px; /* Tighter truncation for compact display, especially for ID */
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Style pagination controls */
+button:disabled {
+  cursor: not-allowed;
+}
+
+/* Ensure table container doesn’t overflow */
+.overflow-x-auto {
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on mobile */
+}

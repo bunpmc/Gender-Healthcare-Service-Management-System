@@ -1,0 +1,112 @@
+<div class="overflow-x-auto max-w-full">
+  <table *ngIf="paginatedStaff.length > 0" class="w-full text-left bg-white rounded-lg shadow-sm text-xs">
+    <thead>
+      <tr class="border-b border-gray-200 bg-gray-50">
+        <th class="py-2 px-3 font-semibold text-gray-600 w-[6%]">ID</th>
+        <th class="py-2 px-3 font-semibold text-gray-600 w-[16%]">Full Name</th>
+        <th class="py-2 px-3 font-semibold text-gray-600 w-[21%]">Email</th>
+        <th class="py-2 px-3 font-semibold text-gray-600 w-[15%]">Role</th>
+        <th class="py-2 px-3 font-semibold text-gray-600 w-[10%]">Experience</th>
+        <th class="py-2 px-3 font-semibold text-gray-600 w-[10%]">Hired At</th>
+        <th class="py-2 px-3 font-semibold text-gray-600 w-[10%]">Available</th>
+        <th class="py-2 px-3 font-semibold text-gray-600 w-[10%]">Status</th>
+        <th class="py-2 px-3 font-semibold text-gray-600 w-[12%]">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let staff of paginatedStaff" class="border-b border-gray-200 hover:bg-gray-50">
+        <td class="py-2 px-3">
+          <div class="font-mono truncate">{{ staff.staff_id }}</div>
+        </td>
+        <td class="py-2 px-3">
+          <div class="truncate">{{ staff.full_name }}</div>
+        </td>
+        <td class="py-2 px-3">
+          <div class="truncate">{{ staff.working_email }}</div>
+        </td>
+        <td class="py-2 px-3">
+          <div class="truncate">{{ getRoleName(staff.role) }}</div>
+        </td>
+        <td class="py-2 px-3">
+          <div>{{ staff.years_experience || 'N/A' }} years</div>
+        </td>
+        <td class="py-2 px-3">
+          <div>{{ formatDate(staff.hired_at) }}</div>
+        </td>
+        <td class="py-2 px-3">
+          <span
+            class="px-2 py-1 rounded-full text-xs font-medium"
+            [ngClass]="{
+              'bg-green-100 text-green-800': staff.is_available,
+              'bg-gray-100 text-gray-800': !staff.is_available
+            }"
+          >
+            {{ staff.is_available ? 'Available' : 'Unavailable' }}
+          </span>
+        </td>
+        <td class="py-2 px-3">
+          <span
+            class="px-2 py-1 rounded-full text-xs font-medium"
+            [ngClass]="{
+              'bg-green-100 text-green-800': staff.staff_status === 'active',
+              'bg-gray-100 text-gray-800': staff.staff_status === 'inactive',
+              'bg-yellow-100 text-yellow-800': staff.staff_status === 'on_leave'
+            }"
+          >
+            {{ staff.staff_status | titlecase }}
+          </span>
+        </td>
+        <td class="py-2 px-3">
+          <div class="flex space-x-2">
+            <button
+              (click)="onViewStaff(staff)"
+              class="text-blue-500 hover:text-blue-700 focus:outline-none"
+              title="View"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+            </button>
+            <button
+              (click)="onEditStaff(staff)"
+              class="text-blue-500 hover:text-blue-700 focus:outline-none"
+              title="Edit"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+              </svg>
+            </button>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <div *ngIf="filteredStaff.length === 0" class="text-center py-4 text-gray-600 text-sm">
+    No staff members match the current filters.
+  </div>
+  <div *ngIf="filteredStaff.length > 0" class="flex flex-col sm:flex-row justify-between items-center mt-4 text-sm">
+    <div class="flex items-center space-x-4 mb-2 sm:mb-0">
+      <span class="text-gray-600">
+        Showing {{ (page - 1) * pageSize + 1 }} to {{ page * pageSize > filteredStaff.length ? filteredStaff.length : page * pageSize }} of {{ filteredStaff.length }} staff
+      </span>
+    </div>
+    <div class="flex space-x-2">
+      <button
+        (click)="onPageChange(page - 1)"
+        [disabled]="page === 1"
+        class="px-3 py-1 border border-gray-300 rounded-lg text-gray-600 disabled:opacity-50 text-sm"
+      >
+        Previous
+      </button>
+      <span class="px-3 py-1 text-gray-600">Page {{ page }} of {{ totalPages }}</span>
+      <button
+        (click)="onPageChange(page + 1)"
+        [disabled]="page === totalPages"
+        class="px-3 py-1 border border-gray-300 rounded-lg text-gray-600 disabled:opacity-50 text-sm"
+      >
+        Next
+      </button>
+    </div>
+  </div>
+</div>

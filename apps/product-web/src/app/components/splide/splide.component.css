@@ -1,0 +1,21 @@
+.splide__arrows {
+  display: none !important;
+}
+.splide__slide {
+  transition: transform 0.3s, filter 0.3s;
+}
+.splide__list:hover .splide__slide {
+  filter: blur(3px);
+  transform: scale(1);
+}
+.splide__slide:hover {
+  filter: none !important;
+  z-index: 20;
+  transform: scale(1.07);
+}
+.text-group {
+  transition: transform 0.3s;
+}
+.splide__slide:hover .text-group {
+  transform: scale(1.05);
+}

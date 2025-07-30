@@ -1,0 +1,158 @@
+/* Modern Admin Portal Header Styles */
+
+/* Header Element - Ensure proper stacking context */
+header {
+  position: relative;
+  z-index: 1000;
+}
+
+/* Header Container */
+.header-container {
+  @apply relative p-6 m-6 rounded-3xl;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  animation: slideInFromTop 0.8s ease-out;
+  z-index: 1000;
+}
+
+/* Header Animations */
+@keyframes slideInFromTop {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Action Buttons */
+.notification-btn,
+.profile-btn {
+  @apply transition-all duration-300 transform hover:scale-105;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.notification-btn:hover,
+.profile-btn:hover {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* Dropdown Styles */
+.notification-dropdown,
+.profile-dropdown {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  animation: dropdownSlideIn 0.3s ease-out;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+@keyframes dropdownSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Notification Badge Animation */
+.notification-btn span {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: .8;
+  }
+}
+
+/* Hover Effects */
+.notification-dropdown a:hover,
+.profile-dropdown a:hover,
+.profile-dropdown button:hover {
+  transform: translateX(4px);
+  transition: all 0.2s ease-out;
+}
+
+/* Logo Animation */
+.w-10.h-10 {
+  animation: logoFloat 3s ease-in-out infinite;
+}
+
+@keyframes logoFloat {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+/* Interactive Elements */
+.notification-btn:active,
+.profile-btn:active {
+  transform: scale(0.95);
+}
+
+/* Responsive Design */
+@media (max-width: 1280px) {
+  .header-container {
+    @apply p-4 m-4;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-container {
+    @apply p-3 m-3 rounded-2xl;
+  }
+
+  .notification-dropdown,
+  .profile-dropdown {
+    @apply w-72;
+  }
+}
+
+@media (max-width: 640px) {
+  .header-container {
+    @apply p-2 m-2 rounded-xl;
+  }
+
+  .notification-dropdown,
+  .profile-dropdown {
+    @apply w-64;
+  }
+
+  .profile-btn {
+    min-height: 44px; /* Minimum touch target size */
+    min-width: 44px;
+  }
+
+  /* Ensure dropdown appears above mobile content */
+  .profile-dropdown {
+    z-index: 9999 !important;
+    position: fixed !important;
+    top: auto !important;
+    right: 1rem !important;
+    left: auto !important;
+  }
+}
+
+/* Dark Mode Support (if needed) */
+@media (prefers-color-scheme: dark) {
+  .header-container {
+    @apply bg-gray-900 border-gray-700;
+  }
+
+  .notification-dropdown,
+  .profile-dropdown {
+    @apply bg-gray-800 border-gray-700;
+  }
+}

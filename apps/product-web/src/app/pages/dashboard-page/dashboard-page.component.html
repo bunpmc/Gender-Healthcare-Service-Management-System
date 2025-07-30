@@ -1,0 +1,546 @@
+<app-header />
+<body>
+  <div class="dashboard-container">
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-container">
+      <div class="loading-spinner"></div>
+      <p class="loading-text">{{ "DASHBOARD.LOADING_TEXT" | translate }}</p>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="errorMessage && !isLoading" class="error-container">
+      <p class="error-message">{{ errorMessage }}</p>
+      <div class="error-actions">
+        <button class="retry-btn" (click)="refreshDashboard()">
+          {{ "DASHBOARD.TRY_AGAIN" | translate }}
+        </button>
+        <button class="debug-btn" (click)="debugToken()">{{ "DASHBOARD.DEBUG_TOKEN" | translate }}</button>
+        <button class="refresh-token-btn" (click)="forceRefreshToken()">
+          {{ "DASHBOARD.REFRESH_TOKEN" | translate }}
+        </button>
+      </div>
+    </div>
+
+    <div class="dashboard-content" *ngIf="!isLoading && !errorMessage">
+      <div class="dashboard-sidebar">
+        <div class="dashboard-avatar">
+          <img
+            [src]="getFullImageUrl(dashboard.imageLink)"
+            alt="dashboard Avatar"
+            class="avatar-image"
+          />
+
+          <!-- Avatar Upload Section (only visible when editing) -->
+          <div class="avatar-upload-overlay" *ngIf="isEditing">
+            <input
+              type="file"
+              #fileInput
+              (change)="onAvatarSelected($event)"
+              accept="image/*"
+              style="display: none"
+            />
+            <button
+              class="upload-btn"
+              (click)="fileInput.click()"
+              [disabled]="isProfileSaving"
+            >
+              Change Photo
+            </button>
+          </div>
+        </div>
+
+        <div class="dashboard-info">
+          <h1 class="dashboard-name">{{ dashboard.name }}</h1>
+          <p class="dashboard-bio">{{ dashboard.bio }}</p>
+
+          <button
+            class="edit-dashboard-btn"
+            (click)="toggleEdit()"
+            [disabled]="isProfileSaving"
+          >
+            {{ isEditing ? "View dashboard" : "Edit dashboard" }}
+          </button>
+
+          <!-- Profile Error Message -->
+          <div class="profile-error" *ngIf="profileError">
+            <p class="error-text">{{ profileError }}</p>
+          </div>
+
+          <!-- Edge Function Profile Status -->
+          <div
+            class="edge-profile-status"
+            *ngIf="
+              isLoadingEdgeProfile || edgeProfileError || edgeFunctionProfile
+            "
+          >
+            <div *ngIf="isLoadingEdgeProfile" class="loading-indicator">
+              Loading profile from server...
+            </div>
+            <div *ngIf="edgeProfileError" class="edge-error">
+              {{ edgeProfileError }}
+            </div>
+            <div
+              *ngIf="edgeFunctionProfile && !isLoadingEdgeProfile"
+              class="edge-success"
+            >
+              Profile loaded from server
+              <div class="edge-profile-info">
+                <p>
+                  <strong>Appointments:</strong>
+                  {{
+                    edgeFunctionProfile
+                      ? edgeFunctionProfile.appointments.length
+                      : 0
+                  }}
+                </p>
+                <p>
+                  <strong>Status:</strong>
+                  {{ edgeFunctionProfile.patient_status | titlecase }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Edit dashboard Form - GitHub Style -->
+          <div class="edit-dashboard-form" *ngIf="isEditing">
+            <div class="form-group">
+              <label for="name">Name</label>
+              <input
+                type="text"
+                id="name"
+                [(ngModel)]="editdashboard.name"
+                class="form-input"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="bio">Bio</label>
+              <textarea
+                id="bio"
+                [(ngModel)]="editdashboard.bio"
+                class="form-textarea"
+                rows="3"
+              >
+              </textarea>
+            </div>
+
+            <!-- New Profile Fields -->
+            <div class="form-group">
+              <label for="phone"
+                >Phone Number <span class="required">*</span></label
+              >
+              <input
+                type="tel"
+                id="phone"
+                [(ngModel)]="editdashboard.phone"
+                class="form-input"
+                placeholder="e.g., +84901234567 or 0901234567"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="email"
+                >Email Address <span class="required">*</span></label
+              >
+              <input
+                type="email"
+                id="email"
+                [(ngModel)]="editdashboard.email"
+                class="form-input"
+                placeholder="your.email@example.com"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="dateOfBirth">Date of Birth</label>
+              <input
+                type="date"
+                id="dateOfBirth"
+                [(ngModel)]="editdashboard.dateOfBirth"
+                class="form-input"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="gender">Gender <span class="required">*</span></label>
+              <select
+                id="gender"
+                [(ngModel)]="editdashboard.gender"
+                class="form-select"
+                required
+              >
+                <option
+                  *ngFor="let option of genderOptions"
+                  [value]="option.value"
+                >
+                  {{ option.label }}
+                </option>
+              </select>
+            </div>
+
+            <div class="form-actions">
+              <button
+                class="save-btn"
+                (click)="savedashboard()"
+                [disabled]="isProfileSaving"
+              >
+                <span
+                  *ngIf="isProfileSaving"
+                  class="loading-spinner-small"
+                ></span>
+                {{ isProfileSaving ? "Saving..." : "Save" }}
+              </button>
+              <button
+                class="cancel-btn"
+                (click)="cancelEdit()"
+                [disabled]="isProfileSaving"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-main">
+        <!-- Dashboard Statistics Section -->
+        <div class="dashboard-stats-section" *ngIf="edgeFunctionProfile">
+          <div class="stats-header">
+            <h2 class="stats-title">{{ "DASHBOARD.OVERVIEW" | translate }}</h2>
+            <button
+              class="refresh-btn"
+              (click)="loadEdgeFunctionProfile()"
+              [disabled]="isLoadingEdgeProfile"
+            >
+              <span *ngIf="!isLoadingEdgeProfile">{{ "DASHBOARD.REFRESH" | translate }}</span>
+              <span *ngIf="isLoadingEdgeProfile">{{ "DASHBOARD.LOADING" | translate }}</span>
+            </button>
+          </div>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-content">
+                <div class="stat-number">
+                  {{ dashboardStatistics.totalPatients || 1 }}
+                </div>
+                <div class="stat-label">{{ "DASHBOARD.PROFILE" | translate }}</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-content">
+                <div class="stat-number">
+                  {{ dashboardStatistics.totalAppointments || 0 }}
+                </div>
+                <div class="stat-label">{{ "DASHBOARD.APPOINTMENTS" | translate }}</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-content">
+                <div class="stat-number">
+                  {{ dashboardStatistics.pendingAppointments || 0 }}
+                </div>
+                <div class="stat-label">{{ "DASHBOARD.PENDING" | translate }}</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-content">
+                <div class="stat-number">
+                  {{ dashboardStatistics.confirmedAppointments || 0 }}
+                </div>
+                <div class="stat-label">{{ "DASHBOARD.CONFIRMED" | translate }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Edge Function Appointments Section -->
+        <div
+          class="edge-appointments-section"
+          *ngIf="
+            edgeFunctionProfile?.appointments &&
+            edgeFunctionProfile &&
+            edgeFunctionProfile.appointments.length > 0
+          "
+        >
+          <div class="section-header">
+            <h2 class="section-title">Your Appointments (From Server)</h2>
+            <span class="appointment-count"
+              >{{
+                edgeFunctionProfile
+                  ? edgeFunctionProfile.appointments.length
+                  : 0
+              }}
+              appointments</span
+            >
+          </div>
+          <div class="appointments-grid">
+            <div
+              *ngFor="
+                let appointment of (
+                  edgeFunctionProfile?.appointments || []
+                ).slice(0, 6)
+              "
+              class="appointment-card edge-appointment"
+            >
+              <div class="appointment-header">
+                <span class="appointment-type">{{
+                  appointment.visit_type | titlecase
+                }}</span>
+                <span
+                  class="appointment-status"
+                  [ngClass]="'status-' + appointment.appointment_status"
+                >
+                  {{ appointment.appointment_status | titlecase }}
+                </span>
+              </div>
+              <div class="appointment-details">
+                <p
+                  class="appointment-date"
+                  *ngIf="appointment.appointment_date"
+                >
+                  Date: {{ appointment.appointment_date | date : "mediumDate" }}
+                </p>
+                <p
+                  class="appointment-time"
+                  *ngIf="appointment.appointment_time"
+                >
+                  Time: {{ appointment.appointment_time }}
+                </p>
+                <p class="appointment-schedule">
+                  Schedule: {{ appointment.schedule }}
+                </p>
+                <p class="appointment-message" *ngIf="appointment.message">
+                  Message: {{ appointment.message }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="calendar-section">
+          <div class="calendar-header">
+            <div class="calendar-nav">
+              <button class="nav-btn" (click)="previousMonth()">‹</button>
+              <div class="month-picker-container">
+                <button class="current-month" (click)="toggleDatePicker()">
+                  {{ currentMonthName }}
+                  <span class="dropdown-arrow">▼</span>
+                </button>
+
+                <!-- Date Picker Popup -->
+                <div class="date-picker-popup" *ngIf="showDatePicker">
+                  <div class="date-picker-header">
+                    <h4>Select Month & Year</h4>
+                    <button class="close-btn" (click)="closeDatePicker()">
+                      ×
+                    </button>
+                  </div>
+                  <div class="date-picker-content">
+                    <!-- Quick Navigation -->
+                    <div class="quick-nav">
+                      <button
+                        class="quick-nav-btn"
+                        (click)="
+                          goToMonth(today.getMonth(), today.getFullYear());
+                          closeDatePicker()
+                        "
+                      >
+                        This Month
+                      </button>
+                      <button
+                        class="quick-nav-btn"
+                        (click)="goToNextMonth(); closeDatePicker()"
+                      >
+                        Next Month
+                      </button>
+                    </div>
+
+                    <!-- Year Selector with Navigation -->
+                    <div class="year-selector">
+                      <label>Year:</label>
+                      <div class="year-controls">
+                        <button class="year-nav-btn" (click)="changeYear(-1)">
+                          ‹
+                        </button>
+                        <select
+                          [(ngModel)]="currentYear"
+                          (change)="goToMonth(currentMonth, currentYear)"
+                        >
+                          <option
+                            *ngFor="let year of availableYears"
+                            [value]="year"
+                          >
+                            {{ year }}
+                          </option>
+                        </select>
+                        <button class="year-nav-btn" (click)="changeYear(1)">
+                          ›
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Month Grid -->
+                    <div class="month-grid">
+                      <button
+                        *ngFor="let month of availableMonths"
+                        class="month-btn"
+                        [class.active]="month.value === currentMonth"
+                        [class.current]="
+                          month.value === today.getMonth() &&
+                          currentYear === today.getFullYear()
+                        "
+                        (click)="
+                          goToMonth(month.value, currentYear); closeDatePicker()
+                        "
+                      >
+                        {{ month.name.substring(0, 3) }}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <button class="nav-btn" (click)="nextMonth()">›</button>
+            </div>
+            <div class="calendar-controls">
+              <button class="today-btn" (click)="goToToday()">Today</button>
+              <select
+                class="view-selector"
+                [(ngModel)]="calendarView"
+                (change)="changeView(calendarView)"
+              >
+                <option value="month">Month</option>
+                <option value="week">Week</option>
+                <option value="day">Day</option>
+              </select>
+              <button class="add-appointment-btn" (click)="addAppointment()">
+                + Add Appointment
+              </button>
+            </div>
+          </div>
+
+          <!-- Month View -->
+          <div class="calendar-grid" *ngIf="calendarView === 'month'">
+            <div class="calendar-day-header">Sun</div>
+            <div class="calendar-day-header">Mon</div>
+            <div class="calendar-day-header">Tue</div>
+            <div class="calendar-day-header">Wed</div>
+            <div class="calendar-day-header">Thu</div>
+            <div class="calendar-day-header">Fri</div>
+            <div class="calendar-day-header">Sat</div>
+
+            <div
+              *ngFor="let day of calendarDays"
+              class="calendar-day"
+              [class.other-month]="!day.isCurrentMonth"
+              [class.today]="day.isToday"
+              (click)="onDayClick(day)"
+            >
+              <div class="day-number">{{ day.date }}</div>
+
+              <div
+                *ngFor="let appointment of day.appointments"
+                [ngClass]="getAppointmentTypeClass(appointment.type)"
+              >
+                <div class="appointment-title">
+                  {{ appointment.type | titlecase }}
+                </div>
+                <div class="appointment-title">{{ appointment.title }}</div>
+                <div class="appointment-time">• {{ appointment.time }}</div>
+                <div
+                  *ngIf="appointment.status"
+                  [ngClass]="getStatusClass(appointment.status)"
+                >
+                  {{ getStatusText(appointment.status) }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Week View -->
+          <div class="week-view" *ngIf="calendarView === 'week'">
+            <div class="week-header">
+              <div class="time-column-header"></div>
+              <div
+                *ngFor="let day of calendarDays; let i = index"
+                class="week-day-header"
+                [class.today]="day.isToday"
+              >
+                <div class="day-name">{{ dayNames[i] }}</div>
+                <div class="day-date">{{ day.date }}</div>
+              </div>
+            </div>
+
+            <div class="week-body">
+              <div *ngFor="let timeSlot of timeSlots" class="time-row">
+                <div class="time-label">{{ timeSlot }}</div>
+                <div
+                  *ngFor="let day of calendarDays"
+                  class="time-slot"
+                  [class.today]="day.isToday"
+                >
+                  <div
+                    *ngFor="
+                      let appointment of getAppointmentsForDayTimeSlot(
+                        day.date,
+                        timeSlot
+                      )
+                    "
+                    [ngClass]="getAppointmentTypeClass(appointment.type)"
+                    class="week-appointment"
+                  >
+                    <div class="appointment-title">{{ appointment.title }}</div>
+                    <div
+                      *ngIf="appointment.status"
+                      [ngClass]="getStatusClass(appointment.status)"
+                    >
+                      {{ getStatusText(appointment.status) }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Day View -->
+          <div class="day-view" *ngIf="calendarView === 'day'">
+            <div class="day-header">
+              <h3>
+                {{ dayNames[currentDate.getDay()] }},
+                {{ currentDate.getDate() }} {{ currentMonthName.split(" ")[0] }}
+              </h3>
+            </div>
+
+            <div class="day-body">
+              <div *ngFor="let timeSlot of timeSlots" class="day-time-row">
+                <div class="time-label">{{ timeSlot }}</div>
+                <div class="day-time-slot">
+                  <div
+                    *ngFor="
+                      let appointment of getAppointmentsForDayTimeSlot(
+                        currentDate.getDate(),
+                        timeSlot
+                      )
+                    "
+                    [ngClass]="getAppointmentTypeClass(appointment.type)"
+                    class="day-appointment"
+                  >
+                    <div class="appointment-title">{{ appointment.title }}</div>
+                    <div class="appointment-time">{{ appointment.time }}</div>
+                    <div
+                      *ngIf="appointment.status"
+                      [ngClass]="getStatusClass(appointment.status)"
+                    >
+                      {{ getStatusText(appointment.status) }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+<app-footer />

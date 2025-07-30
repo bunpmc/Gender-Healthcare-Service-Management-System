@@ -1,0 +1,1241 @@
+<body class="bg-[#f9f9f9] min-h-screen font-poppins">
+  <!-- Header Component -->
+  <app-header></app-header>
+
+  <!-- Progress Bar -->
+  <div class="relative w-full bg-white shadow-sm">
+    <div class="h-1 w-full bg-gray-200 rounded">
+      <div
+        class="h-1 bg-[#4e6688] rounded transition-all duration-500"
+        [style.width]="progressWidth"
+      ></div>
+    </div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+    <!-- Debug Info (Remove in production) -->
+    <div
+      class="max-w-4xl mx-auto mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm"
+    >
+      <strong>Debug Info:</strong>
+      Step: {{ currentStep }} | Auth: {{ isUserLoggedIn() ? "Yes" : "No" }} |
+      Type: {{ bookingType || "None" }} | Profile Step:
+      {{ shouldShowProfileStep() ? "Show" : "Hide" }} | UseProfile:
+      {{ booking.useProfile || "None" }}
+    </div>
+
+    <!-- Error/Success -->
+    @if (errorMessage) {
+    <div
+      class="text-red-500 text-sm mb-4 text-center flex items-center justify-center gap-1"
+    >
+      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path
+          fill-rule="evenodd"
+          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+          clip-rule="evenodd"
+        ></path>
+      </svg>
+      <span>{{ errorMessage }}</span>
+    </div>
+    } @if (successMessage) {
+    <div
+      class="text-green-500 text-sm mb-4 text-center flex items-center justify-center gap-1"
+    >
+      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path
+          fill-rule="evenodd"
+          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+          clip-rule="evenodd"
+        ></path>
+      </svg>
+      <span>{{ successMessage }}</span>
+    </div>
+    }
+
+    <!-- STEP 0: Choose booking type -->
+    @if (currentStep === 0) {
+    <div class="max-w-7xl mx-auto">
+      <form (ngSubmit)="chooseBookingType(selectedType)">
+        <div
+          class="bg-white rounded-2xl shadow-lg p-8 mb-8 flex flex-col gap-8"
+        >
+          <h2
+            class="text-2xl font-bold text-[#4e6688] mb-2 font-poppins tracking-tight"
+          >
+            {{ "APPOINTMENT.BOOKING_TYPE.TITLE" | translate }}
+          </h2>
+          <div class="space-y-6">
+            <label
+              class="booking-type-btn w-full bg-white border border-gray-200 rounded-xl p-6 flex justify-between items-center group transition hover:border-[#4e6688]/80 cursor-pointer"
+              [ngClass]="{
+                'ring-2 ring-[#4e6688] shadow-md shadow-[#4e6688]/10':
+                  selectedType === 'serfirst'
+              }"
+            >
+              <input
+                type="radio"
+                class="hidden"
+                name="bookingType"
+                value="serfirst"
+                [(ngModel)]="selectedType"
+                required
+              />
+              <div class="flex-1">
+                <div
+                  class="text-xl font-semibold text-[#4e6688] mb-1 font-poppins"
+                >
+                  {{
+                    "APPOINTMENT.BOOKING_TYPE.SERVICE_FIRST.TITLE" | translate
+                  }}
+                </div>
+                <div class="text-gray-500 text-base">
+                  {{
+                    "APPOINTMENT.BOOKING_TYPE.SERVICE_FIRST.DESCRIPTION"
+                      | translate
+                  }}
+                </div>
+              </div>
+              <svg
+                class="w-6 h-6 text-[#4e6688] group-hover:translate-x-1 transition-transform ml-3"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 5l7 7-7 7"
+                ></path>
+              </svg>
+            </label>
+
+            <label
+              class="booking-type-btn w-full bg-white border border-gray-200 rounded-xl p-6 flex justify-between items-center group transition hover:border-[#4e6688]/80 cursor-pointer"
+              [ngClass]="{
+                'ring-2 ring-[#4e6688] shadow-md shadow-[#4e6688]/10':
+                  selectedType === 'docfirst'
+              }"
+            >
+              <input
+                type="radio"
+                class="hidden"
+                name="bookingType"
+                value="docfirst"
+                [(ngModel)]="selectedType"
+                required
+              />
+              <div class="flex-1">
+                <div
+                  class="text-xl font-semibold text-[#4e6688] mb-1 font-poppins"
+                >
+                  {{
+                    "APPOINTMENT.BOOKING_TYPE.DOCTOR_FIRST.TITLE" | translate
+                  }}
+                </div>
+                <div class="text-gray-500 text-base">
+                  {{
+                    "APPOINTMENT.BOOKING_TYPE.DOCTOR_FIRST.DESCRIPTION"
+                      | translate
+                  }}
+                </div>
+              </div>
+              <svg
+                class="w-6 h-6 text-[#4e6688] group-hover:translate-x-1 transition-transform ml-3"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 5l7 7-7 7"
+                ></path>
+              </svg>
+            </label>
+          </div>
+          <button
+            type="submit"
+            class="w-full mt-8 bg-[#4e6688] text-white font-semibold rounded-lg px-8 py-2 hover:bg-[#38507c] transition"
+          >
+            {{ "APPOINTMENT.BUTTONS.CONTINUE" | translate }}
+          </button>
+        </div>
+      </form>
+    </div>
+    }
+
+    <!-- STEP 1: Profile Selection (Logged-in users only) -->
+    @if (shouldShowProfileStep()) {
+    <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl p-8 md:p-10">
+      <!-- Step Header -->
+      <div class="text-center mb-8">
+        <div
+          class="inline-flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full mb-4"
+        >
+          <svg
+            class="w-6 h-6 text-blue-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+            ></path>
+          </svg>
+        </div>
+        <h2 class="text-2xl font-bold text-gray-800 mb-2">
+          {{ "APPOINTMENT.PROFILE_SELECTION.TITLE" | translate }}
+        </h2>
+        <p class="text-gray-600">
+          {{ "APPOINTMENT.PROFILE_SELECTION.SUBTITLE" | translate }}
+        </p>
+      </div>
+
+      <!-- Profile Options -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+        <!-- Book for Myself -->
+        <div
+          (click)="selectProfileType('me')"
+          class="group relative bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-6 cursor-pointer transition-all duration-300 hover:border-blue-400 hover:shadow-lg hover:scale-105"
+        >
+          <div class="text-center">
+            <div
+              class="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4 group-hover:bg-blue-200 transition-colors"
+            >
+              <svg
+                class="w-8 h-8 text-blue-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                ></path>
+              </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-800 mb-2">
+              {{ "APPOINTMENT.PROFILE_SELECTION.USE_MY_PROFILE" | translate }}
+            </h3>
+            <p class="text-sm text-gray-600 mb-4">
+              {{
+                "APPOINTMENT.PROFILE_SELECTION.USE_MY_PROFILE_DESC" | translate
+              }}
+            </p>
+            <div
+              class="inline-flex items-center text-blue-600 text-sm font-medium"
+            >
+              <span>{{
+                "APPOINTMENT.PROFILE_SELECTION.USE_MY_PROFILE" | translate
+              }}</span>
+              <svg
+                class="w-4 h-4 ml-1"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 5l7 7-7 7"
+                ></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Book for Someone Else -->
+        <div
+          (click)="selectProfileType('another')"
+          class="group relative bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-6 cursor-pointer transition-all duration-300 hover:border-green-400 hover:shadow-lg hover:scale-105"
+        >
+          <div class="text-center">
+            <div
+              class="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4 group-hover:bg-green-200 transition-colors"
+            >
+              <svg
+                class="w-8 h-8 text-green-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                ></path>
+              </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-800 mb-2">
+              {{ "APPOINTMENT.PROFILE_SELECTION.BOOK_FOR_ANOTHER" | translate }}
+            </h3>
+            <p class="text-sm text-gray-600 mb-4">
+              {{
+                "APPOINTMENT.PROFILE_SELECTION.BOOK_FOR_ANOTHER_DESC"
+                  | translate
+              }}
+            </p>
+            <div
+              class="inline-flex items-center text-green-600 text-sm font-medium"
+            >
+              <span>{{
+                "APPOINTMENT.PROFILE_SELECTION.BOOK_FOR_ANOTHER" | translate
+              }}</span>
+              <svg
+                class="w-4 h-4 ml-1"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 5l7 7-7 7"
+                ></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Back Button -->
+      <div class="flex justify-center mt-8">
+        <button
+          type="button"
+          (click)="goToPrevStep()"
+          class="inline-flex items-center px-6 py-3 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200"
+        >
+          <svg
+            class="w-4 h-4 mr-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M15 19l-7-7 7-7"
+            ></path>
+          </svg>
+          {{ "APPOINTMENT.BUTTONS.BACK" | translate }}
+        </button>
+      </div>
+    </div>
+    }
+
+    <!-- STEP 1/2: Patient Information -->
+    @if ((currentStep === 1 && !isUserLoggedIn()) || (currentStep === 2 &&
+    isUserLoggedIn())) {
+    <form
+      #patientForm="ngForm"
+      (ngSubmit)="submitPatientForm(patientForm)"
+      class="max-w-7xl mx-auto bg-white rounded-2xl shadow-xl px-8 py-10 md:py-12 space-y-10 text-[#29374f]"
+      autocomplete="off"
+    >
+      <h3
+        class="text-3xl font-extrabold mb-6 text-[#4e6688] font-poppins tracking-tight text-center"
+      >
+        {{ "APPOINTMENT.PATIENT_INFO.TITLE" | translate }}
+      </h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-7 text-black">
+        <!-- Full Name -->
+        <div>
+          <label
+            for="fullName"
+            class="block text-base font-bold mb-2 text-[#4e6688]"
+          >
+            Full Name <span class="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            id="fullName"
+            [(ngModel)]="booking.fullName"
+            name="fullName"
+            required
+            #fullName="ngModel"
+            [ngClass]="{
+              'border-red-400 ring-1 ring-red-200 bg-white':
+                fullName.invalid && (formSubmitted || fullName.touched),
+              'border-[#4e6688] ring-1 ring-[#4e6688] bg-white':
+                fullName.valid && fullName.touched
+            }"
+            class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#4e6688] focus:ring-1 focus:ring-[#4e6688] text-base font-medium outline-none bg-white placeholder:text-gray-400 transition"
+            placeholder="e.g. Nguyen Van A"
+            autocomplete="name"
+          />
+          @if (fullName.invalid && (formSubmitted || fullName.touched)) {
+          <div
+            class="error-message text-red-500 text-xs mt-1 flex items-center gap-1"
+          >
+            Please enter your full name.
+          </div>
+          }
+        </div>
+
+        <!-- Email -->
+        <div>
+          <label
+            for="email"
+            class="block text-base font-bold mb-2 text-[#4e6688]"
+          >
+            Email
+            <span class="text-xs text-gray-400 font-medium">(Optional)</span>
+          </label>
+          <input
+            type="email"
+            id="email"
+            [(ngModel)]="booking.email"
+            name="email"
+            #email="ngModel"
+            pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$"
+            [ngClass]="{
+              'border-red-400 ring-1 ring-red-200 bg-white':
+                email.invalid &&
+                booking.email &&
+                (formSubmitted || email.touched)
+            }"
+            class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#4e6688] focus:ring-1 focus:ring-[#4e6688] text-base font-medium outline-none bg-white placeholder:text-gray-400 transition"
+            placeholder="e.g. johndoe@email.com"
+            autocomplete="email"
+          />
+          @if (email.invalid && booking.email && (formSubmitted ||
+          email.touched)) {
+          <div
+            class="error-message text-red-500 text-xs mt-1 flex items-center gap-1"
+          >
+            Please enter a valid email address.
+          </div>
+          }
+        </div>
+
+        <!-- Phone -->
+        <div>
+          <label
+            for="phone"
+            class="block text-base font-bold mb-2 text-[#4e6688]"
+          >
+            Phone Number <span class="text-red-500">*</span>
+          </label>
+          <div
+            class="flex rounded-xl border bg-white transition overflow-hidden"
+            [ngClass]="{
+              'border-red-400 ring-1 ring-red-200':
+                phone.invalid && (formSubmitted || phone.touched)
+            }"
+          >
+            <select
+              [(ngModel)]="booking.phoneRegion"
+              name="phoneRegion"
+              id="phoneRegion"
+              (ngModelChange)="onPhoneRegionChange($event)"
+              class="appearance-none bg-transparent border-0 pl-3 pr-4 py-3 text-base font-medium outline-none cursor-pointer rounded-l-xl"
+            >
+              @for (region of phoneRegions; track region.code) {
+              <option [value]="region.code">
+                {{ region.flag }} {{ region.dialCode }}
+              </option>
+              }
+            </select>
+            <div class="w-px bg-gray-200"></div>
+            <input
+              type="tel"
+              id="phone"
+              [(ngModel)]="booking.phone"
+              name="phone"
+              required
+              #phone="ngModel"
+              (input)="formatPhoneNumber($event)"
+              [ngClass]="{
+                'bg-white': true
+              }"
+              class="flex-1 px-4 py-3 border-0 rounded-r-xl text-base font-medium outline-none transition placeholder:text-gray-400"
+              [placeholder]="selectedPhoneRegion.placeholder"
+              autocomplete="tel"
+            />
+          </div>
+          @if (!isPhoneValid() && (formSubmitted || phone.touched)) {
+          <div
+            class="error-message text-red-500 text-xs mt-1 flex items-center gap-1"
+          >
+            Please enter a valid phone number.
+          </div>
+          }
+        </div>
+
+        <!-- Gender -->
+        <div>
+          <label
+            for="gender"
+            class="block text-base font-bold mb-2 text-[#4e6688]"
+          >
+            Gender
+          </label>
+          <select
+            [(ngModel)]="booking.gender"
+            name="gender"
+            id="gender"
+            class="px-4 py-3 w-full rounded-xl border border-gray-200 focus:border-[#4e6688] focus:ring-1 focus:ring-[#4e6688] text-base font-medium outline-none bg-white transition min-w-[120px]"
+          >
+            <option value="" selected disabled>--- Select gender ---</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="other">Other / Prefer not to say</option>
+          </select>
+        </div>
+
+        <!-- Reason for Visit -->
+        <div class="md:col-span-2">
+          <label
+            for="message"
+            class="block text-base font-bold mb-2 text-[#4e6688]"
+          >
+            Reason for Visit <span class="text-red-500">*</span>
+          </label>
+          <textarea
+            [(ngModel)]="booking.message"
+            name="message"
+            id="message"
+            required
+            #message="ngModel"
+            class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#4e6688] focus:ring-1 focus:ring-[#4e6688] text-base font-medium outline-none bg-white transition placeholder:text-gray-400"
+            [ngClass]="{
+              'border-red-400 ring-1 ring-red-200 bg-white':
+                message.invalid && (formSubmitted || message.touched)
+            }"
+            placeholder="Describe the main reason for your visit (e.g. headache, checkup, ...)"
+            rows="4"
+          ></textarea>
+          @if (message.invalid && (formSubmitted || message.touched)) {
+          <div
+            class="error-message text-red-500 text-xs mt-1 flex items-center gap-1"
+          >
+            Please provide a reason for your visit.
+          </div>
+          }
+        </div>
+      </div>
+      <!-- Buttons -->
+      <div
+        class="mt-10 flex flex-col md:flex-row justify-between items-center gap-4 pt-6 border-t border-gray-100"
+      >
+        <button
+          type="button"
+          (click)="goToPrevStep()"
+          class="flex items-center text-[#4e6688] font-semibold rounded-xl px-4 py-2 hover:bg-[#f3f8fa] transition focus:outline-none focus:ring-2 focus:ring-[#4e6688] focus:ring-offset-2"
+        >
+          <svg
+            class="w-6 h-6 mr-2"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M15 19l-7-7 7-7"
+            />
+          </svg>
+          Back
+        </button>
+        <button
+          type="submit"
+          class="bg-[#4e6688] text-white font-bold px-10 py-3 rounded-xl shadow-sm hover:shadow-lg transition focus:outline-none focus:ring-2 focus:ring-[#98d2c0] focus:ring-offset-2"
+        >
+          <span class="flex items-center gap-2">
+            CONTINUE
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </span>
+        </button>
+      </div>
+    </form>
+    }
+
+    <!-- STEP 2/3: Select Service (serfirst) or Doctor (docfirst) -->
+    @if ((currentStep === 2 && !isUserLoggedIn()) || (currentStep === 3 &&
+    isUserLoggedIn())) {
+    <form
+      class="max-w-7xl mx-auto bg-white rounded-2xl shadow-lg px-8 py-10 space-y-10"
+    >
+      <h3
+        class="text-2xl md:text-3xl font-extrabold mb-6 text-[#4e6688] font-poppins tracking-tight text-center"
+      >
+        @if (bookingType === 'serfirst') { Select Service } @if (bookingType ===
+        'docfirst') { Select Doctor }
+      </h3>
+
+      <!-- Filter Row -->
+      <div
+        class="flex flex-wrap md:flex-nowrap gap-2 items-center mb-4 text-black"
+      >
+        <div class="relative flex-1">
+          <!-- Only show one input depending on bookingType -->
+          @if (bookingType === 'serfirst') {
+          <input
+            type="text"
+            [ngModel]="serviceSearch"
+            (ngModelChange)="serviceSearch = $event; onServiceSearchChange()"
+            placeholder="Search service by name or description..."
+            class="px-3 py-2 rounded-lg border border-gray-200 focus:border-[#4e6688] text-sm outline-none w-full pr-10"
+            name="step2_service_search"
+            autocomplete="off"
+          />
+          <button
+            *ngIf="serviceSearch"
+            type="button"
+            (click)="clearServiceSearch()"
+            class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 text-lg"
+            tabindex="-1"
+          >
+            ×
+          </button>
+          } @if (bookingType === 'docfirst') {
+          <input
+            type="text"
+            [ngModel]="doctorSearch"
+            (ngModelChange)="doctorSearch = $event; onDoctorSearchChange()"
+            placeholder="Search doctor by name or specialization..."
+            class="px-3 py-2 rounded-lg border border-gray-200 focus:border-[#4e6688] text-sm outline-none w-full pr-10"
+            name="step2_doctor_search"
+            autocomplete="off"
+          />
+          <button
+            *ngIf="doctorSearch"
+            type="button"
+            (click)="clearDoctorSearch()"
+            class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 text-lg"
+            tabindex="-1"
+          >
+            ×
+          </button>
+          }
+        </div>
+
+        <!-- Service Sort -->
+        @if (bookingType === 'serfirst') {
+        <div class="flex items-center gap-2">
+          <label class="text-sm font-medium text-[#4e6688]">Sort by:</label>
+          <select
+            [(ngModel)]="serviceSort"
+            (ngModelChange)="onServiceSortChange()"
+            class="px-3 py-2 rounded-lg border border-gray-200 focus:border-[#4e6688] text-sm outline-none bg-white"
+            name="serviceSort"
+          >
+            <option value="name">Name (A-Z)</option>
+            <option value="desc">Description</option>
+          </select>
+        </div>
+        <span class="text-xs text-gray-400 ml-3">
+          {{ getServiceResultCount() }}
+        </span>
+        }
+
+        <!-- Doctor Filter/Sort -->
+        @if (bookingType === 'docfirst') {
+        <div class="flex items-center gap-2">
+          <label class="text-sm font-medium text-[#4e6688]">Gender:</label>
+          <select
+            [(ngModel)]="doctorGenderFilter"
+            (ngModelChange)="onDoctorGenderFilterChange()"
+            class="px-3 py-2 rounded-lg border border-gray-200 focus:border-[#4e6688] text-sm outline-none"
+            name="doctorGenderFilter"
+          >
+            <option value="">All</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
+        </div>
+        <div class="flex items-center gap-2">
+          <label class="text-sm font-medium text-[#4e6688]">Sort by:</label>
+          <select
+            [(ngModel)]="doctorSort"
+            (ngModelChange)="onDoctorSortChange()"
+            class="px-3 py-2 rounded-lg border border-gray-200 focus:border-[#4e6688] text-sm outline-none bg-white"
+            name="doctorSort"
+          >
+            <option value="name">Name (A-Z)</option>
+            <option value="specialization">Specialization</option>
+          </select>
+        </div>
+        <span class="text-xs text-gray-400 ml-3">
+          {{ getDoctorResultCount() }}
+        </span>
+        }
+      </div>
+
+      <!-- List Card (fixed height, scrollable) -->
+      <div
+        class="overflow-y-auto max-h-96 flex flex-col gap-4 border rounded-xl bg-[#fafbfc] p-4 shadow-inner"
+      >
+        <!-- Service List -->
+        @if (bookingType === 'serfirst') { @for (service of filteredServices;
+        track service.service_id) {
+        <button
+          type="button"
+          (click)="selectService(service)"
+          class="group text-left transition border rounded-xl p-4 bg-white hover:border-[#4e6688] outline-none flex flex-col gap-1 shadow-sm hover:shadow-md"
+          [ngClass]="{
+            'border-[#4e6688] border-2 font-bold bg-[#f4f8ff] ring-2 ring-[#4e6688]/30 scale-[1.01] shadow-lg':
+              booking.service_id === service.service_id
+          }"
+        >
+          <span
+            class="text-base font-semibold text-[#4e6688] group-hover:text-[#0987c6] transition"
+          >
+            {{ service.name }}
+          </span>
+          <span class="text-gray-500 text-sm">{{ service.description }}</span>
+        </button>
+        } @if (filteredServices.length === 0) {
+        <div
+          class="flex flex-col items-center gap-2 py-6 text-gray-400 text-base"
+        >
+          No service found.
+        </div>
+        } }
+        <!-- Doctor List -->
+        @if (bookingType === 'docfirst') { @for (doctor of filteredDoctors;
+        track doctor.doctor_id) {
+        <div
+          (click)="selectDoctor(doctor)"
+          class="doctor-card bg-white border rounded-xl p-4 flex gap-4 items-center transition cursor-pointer hover:border-[#4e6688] hover:shadow-md"
+          [ngClass]="{
+            'border-[#4e6688] border-2 font-bold bg-[#f4f8ff] ring-2 ring-[#4e6688]/30 scale-[1.01] shadow-lg':
+              booking.doctor_id === doctor.doctor_id
+          }"
+        >
+          <img
+            [src]="doctor.image_link"
+            alt="{{ doctor.full_name }}"
+            class="w-12 h-12 object-cover rounded-full border"
+          />
+          <div class="flex-1">
+            <div class="text-base font-semibold text-[#4e6688] mb-1">
+              {{ doctor.full_name }}
+            </div>
+            <div class="text-xs text-gray-500 mb-1">
+              {{ doctor.specialization }}
+            </div>
+            <div class="flex items-center">
+              <span
+                class="text-xs font-medium"
+                [ngClass]="{
+                  'text-blue-600': doctor.gender === 'male',
+                  'text-pink-600': doctor.gender === 'female',
+                  'text-gray-600':
+                    doctor.gender !== 'male' && doctor.gender !== 'female'
+                }"
+              >
+                {{
+                  doctor.gender === "male"
+                    ? "Nam"
+                    : doctor.gender === "female"
+                    ? "Nữ"
+                    : doctor.gender
+                }}
+              </span>
+            </div>
+          </div>
+        </div>
+        } @if (filteredDoctors.length === 0) {
+        <div
+          class="flex flex-col items-center gap-2 py-6 text-gray-400 text-base"
+        >
+          No doctor found.
+        </div>
+        } }
+      </div>
+
+      <!-- Error if not selected -->
+      @if ( formSubmitted && ( (bookingType === 'serfirst' &&
+      !booking.service_id) || (bookingType === 'docfirst' && !booking.doctor_id)
+      ) ) {
+      <div
+        class="error-message text-red-500 text-xs mt-3 flex items-center gap-1 text-center justify-center"
+      >
+        Please select a
+        {{ bookingType === "serfirst" ? "service" : "doctor" }} to continue.
+      </div>
+      }
+
+      <!-- Buttons -->
+      <div
+        class="mt-8 flex flex-col md:flex-row justify-between items-center gap-4 pt-6 border-t border-gray-100"
+      >
+        <button
+          type="button"
+          (click)="goToPrevStep()"
+          class="flex items-center text-[#4e6688] font-semibold rounded-xl px-4 py-2 hover:bg-[#f3f8fa] transition focus:outline-none focus:ring-2 focus:ring-[#4e6688] focus:ring-offset-2"
+        >
+          <svg
+            class="w-6 h-6 mr-2"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M15 19l-7-7 7-7"
+            />
+          </svg>
+          Back
+        </button>
+        <button
+          type="button"
+          [disabled]="
+            (bookingType === 'serfirst' && !booking.service_id) ||
+            (bookingType === 'docfirst' && !booking.doctor_id)
+          "
+          (click)="
+            bookingType === 'serfirst'
+              ? onContinueService()
+              : onContinueDoctor()
+          "
+          class="bg-[#4e6688] text-white font-bold px-10 py-3 rounded-xl hover:bg-[#98d2c0] hover:text-[#29374f] transition focus:outline-none focus:ring-2 focus:ring-[#4e6688] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <span class="flex items-center gap-2">
+            CONTINUE
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </span>
+        </button>
+      </div>
+    </form>
+    }
+
+    <!-- STEP 3/4: Second Selection Step -->
+    @if ((currentStep === 3 && !isUserLoggedIn()) || (currentStep === 4 &&
+    isUserLoggedIn())) {
+    <form
+      class="max-w-7xl mx-auto bg-white rounded-2xl shadow-lg px-8 py-10 space-y-10"
+    >
+      <h3
+        class="text-2xl md:text-3xl font-extrabold mb-6 text-[#4e6688] font-poppins tracking-tight text-center"
+      >
+        @if (bookingType === 'serfirst') { Select doctor for service "<span
+          class="text-[#0987c6]"
+          >{{ getSelectedServiceName() }}</span
+        >" } @if (bookingType === 'docfirst') { Select service for "<span
+          class="text-[#0987c6]"
+          >{{ getSelectedDoctorName() }}</span
+        >" }
+      </h3>
+
+      <!-- Filter Row -->
+      <div
+        class="flex flex-wrap md:flex-nowrap gap-2 items-center mb-4 text-black"
+      >
+        @if (bookingType === 'serfirst') {
+        <!-- Doctor Search -->
+        <div class="relative flex-1">
+          <input
+            type="text"
+            [ngModel]="doctorSearch"
+            (ngModelChange)="doctorSearch = $event; onDoctorSearchChange()"
+            placeholder="Search doctor by name or specialization..."
+            class="px-3 py-2 rounded-lg border border-gray-200 focus:border-[#4e6688] text-sm outline-none w-full pr-10"
+            name="doctorStep3"
+            autocomplete="off"
+          />
+          <button
+            *ngIf="doctorSearch"
+            type="button"
+            (click)="clearDoctorSearch()"
+            class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 text-lg"
+            tabindex="-1"
+          >
+            ×
+          </button>
+        </div>
+        <div class="flex items-center gap-2">
+          <label class="text-sm font-medium text-[#4e6688]">Gender:</label>
+          <select
+            [(ngModel)]="doctorGenderFilter"
+            (ngModelChange)="onDoctorGenderFilterChange()"
+            class="px-3 py-2 rounded-lg border border-gray-200 focus:border-[#4e6688] text-sm outline-none"
+            name="doctorGenderFilter3"
+          >
+            <option value="">All</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
+        </div>
+        <div class="flex items-center gap-2">
+          <label class="text-sm font-medium text-[#4e6688]">Sort by:</label>
+          <select
+            [(ngModel)]="doctorSort"
+            (ngModelChange)="onDoctorSortChange()"
+            class="px-3 py-2 rounded-lg border border-gray-200 focus:border-[#4e6688] text-sm outline-none bg-white"
+            name="doctorSort3"
+          >
+            <option value="name">Name (A-Z)</option>
+            <option value="specialization">Specialization</option>
+          </select>
+        </div>
+        <span class="text-xs text-gray-400 ml-3">
+          {{ getDoctorResultCount() }}
+        </span>
+        } @if (bookingType === 'docfirst') {
+        <!-- Service Search -->
+        <div class="relative flex-1">
+          <input
+            type="text"
+            [ngModel]="serviceSearch"
+            (ngModelChange)="serviceSearch = $event; onServiceSearchChange()"
+            placeholder="Search service by name or description..."
+            class="px-3 py-2 rounded-lg border border-gray-200 focus:border-[#4e6688] text-sm outline-none w-full pr-10"
+            name="serviceStep3"
+            autocomplete="off"
+          />
+          <button
+            *ngIf="serviceSearch"
+            type="button"
+            (click)="clearServiceSearch()"
+            class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 text-lg"
+            tabindex="-1"
+          >
+            ×
+          </button>
+        </div>
+        <div class="flex items-center gap-2">
+          <label class="text-sm font-medium text-[#4e6688]">Sort by:</label>
+          <select
+            [(ngModel)]="serviceSort"
+            (ngModelChange)="onServiceSortChange()"
+            class="px-3 py-2 rounded-lg border border-gray-200 focus:border-[#4e6688] text-sm outline-none bg-white"
+            name="serviceSort3"
+          >
+            <option value="name">Name (A-Z)</option>
+            <option value="desc">Description</option>
+          </select>
+        </div>
+        <span class="text-xs text-gray-400 ml-3">
+          {{ getServiceResultCount() }}
+        </span>
+        }
+      </div>
+
+      <!-- List Card (fixed height, scrollable) -->
+      <div
+        class="overflow-y-auto max-h-96 flex flex-col gap-4 border rounded-xl bg-[#fafbfc] p-4 shadow-inner"
+      >
+        @if (bookingType === 'serfirst') { @for (doctor of filteredDoctors;
+        track doctor.doctor_id) {
+        <div
+          (click)="selectDoctor(doctor)"
+          class="doctor-card bg-white border rounded-xl p-4 flex gap-4 items-center transition cursor-pointer hover:border-[#4e6688] hover:shadow-md"
+          [ngClass]="{
+            'border-[#4e6688] border-2 font-bold bg-[#f4f8ff] ring-2 ring-[#4e6688]/30 scale-[1.01] shadow-lg':
+              booking.doctor_id === doctor.doctor_id
+          }"
+        >
+          <img
+            [src]="doctor.image_link"
+            alt="{{ doctor.full_name }}"
+            class="w-12 h-12 object-cover rounded-full border"
+          />
+          <div class="flex-1">
+            <div class="text-base font-semibold text-[#4e6688] mb-1">
+              {{ doctor.full_name }}
+            </div>
+            <div class="text-xs text-gray-500 mb-1">
+              {{ doctor.specialization }}
+            </div>
+            <div class="flex items-center">
+              <span
+                class="text-xs font-medium"
+                [ngClass]="{
+                  'text-blue-600': doctor.gender === 'male',
+                  'text-pink-600': doctor.gender === 'female',
+                  'text-gray-600':
+                    doctor.gender !== 'male' && doctor.gender !== 'female'
+                }"
+              >
+                {{
+                  doctor.gender === "male"
+                    ? "Nam"
+                    : doctor.gender === "female"
+                    ? "Nữ"
+                    : doctor.gender
+                }}
+              </span>
+            </div>
+          </div>
+        </div>
+        } @if (filteredDoctors.length === 0) {
+        <div
+          class="flex flex-col items-center gap-2 py-6 text-gray-400 text-base"
+        >
+          No doctor found.
+        </div>
+        } } @if (bookingType === 'docfirst') { @for (service of
+        filteredDoctorServices; track service.service_id) {
+        <button
+          type="button"
+          (click)="selectService(service)"
+          class="group text-left transition border rounded-xl p-4 bg-white hover:border-[#4e6688] outline-none flex flex-col gap-1 shadow-sm hover:shadow-md"
+          [ngClass]="{
+            'border-[#4e6688] border-2 font-bold bg-[#f4f8ff] ring-2 ring-[#4e6688]/30 scale-[1.01] shadow-lg':
+              booking.service_id === service.service_id
+          }"
+        >
+          <span
+            class="text-base font-semibold text-[#4e6688] group-hover:text-[#0987c6] transition"
+          >
+            {{ service.name }}
+          </span>
+          <span class="text-gray-500 text-sm">{{ service.description }}</span>
+        </button>
+        } @if (filteredDoctorServices.length === 0) {
+        <div
+          class="flex flex-col items-center gap-2 py-6 text-gray-400 text-base"
+        >
+          No service found.
+        </div>
+        } }
+      </div>
+
+      <!-- Error if not selected -->
+      @if ( formSubmitted && ( (bookingType === 'serfirst' &&
+      !booking.doctor_id) || (bookingType === 'docfirst' && !booking.service_id)
+      ) ) {
+      <div
+        class="error-message text-red-500 text-xs mt-3 flex items-center gap-1 text-center justify-center"
+      >
+        Please select
+        {{ bookingType === "serfirst" ? "a doctor" : "a service" }} to continue.
+      </div>
+      }
+
+      <!-- Buttons -->
+      <div
+        class="mt-8 flex flex-col md:flex-row justify-between items-center gap-4 pt-6 border-t border-gray-100"
+      >
+        <button
+          type="button"
+          (click)="goToPrevStep()"
+          [disabled]="
+            (bookingType === 'serfirst' && !booking.doctor_id) ||
+            (bookingType === 'docfirst' && !booking.service_id)
+          "
+          class="flex items-center text-[#4e6688] font-semibold rounded-xl px-4 py-2 hover:bg-[#f3f8fa] transition focus:outline-none focus:ring-2 focus:ring-[#4e6688] focus:ring-offset-2"
+        >
+          <svg
+            class="w-6 h-6 mr-2"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M15 19l-7-7 7-7"
+            />
+          </svg>
+          Back
+        </button>
+        <button
+          type="button"
+          [disabled]="
+            (bookingType === 'serfirst' && !booking.doctor_id) ||
+            (bookingType === 'docfirst' && !booking.service_id)
+          "
+          (click)="
+            bookingType === 'serfirst'
+              ? onContinueDoctor()
+              : onContinueService()
+          "
+          class="bg-[#4e6688] text-white font-bold px-10 py-3 rounded-xl hover:bg-[#98d2c0] hover:text-[#29374f] transition focus:outline-none focus:ring-2 focus:ring-[#4e6688] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <span class="flex items-center gap-2">
+            CONTINUE
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </span>
+        </button>
+      </div>
+    </form>
+    }
+
+    <!-- STEP 4/5: Select Slot -->
+    @if ((currentStep === 4 && !isUserLoggedIn()) || (currentStep === 5 &&
+    isUserLoggedIn())) {
+    <form
+      class="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg px-8 py-10 space-y-10"
+    >
+      <h3
+        class="text-2xl md:text-3xl font-extrabold mb-6 text-[#4e6688] text-center"
+      >
+        Select an appointment time
+      </h3>
+
+      <!-- Date Picker -->
+      <div>
+        <label class="block text-base font-bold mb-2 text-[#4e6688]">
+          Date
+        </label>
+        <select
+          [(ngModel)]="selectedDate"
+          (ngModelChange)="onDateChange($event)"
+          class="px-4 py-3 w-full rounded-xl border border-gray-200 focus:border-[#4e6688] text-base font-medium outline-none bg-white transition text-black"
+          name="slotDate"
+          autocomplete="off"
+        >
+          @for (date of availableDates; track date) {
+          <option [value]="date">{{ date }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Slot List -->
+      <div class="mt-6">
+        <label class="block text-base font-bold mb-2 text-[#4e6688]">
+          Available time slots
+        </label>
+        <div class="flex flex-wrap gap-3">
+          @for (slot of slotsForSelectedDate; track slot.doctor_slot_id) {
+          <button
+            type="button"
+            [disabled]="
+              !slot.is_active ||
+              slot.appointments_count >= slot.max_appointments
+            "
+            (click)="selectSlot(slot)"
+            [ngClass]="{
+              'bg-[#f4f8ff] border-[#4e6688] text-[#4e6688] font-bold ring-2 ring-[#4e6688]/30':
+                booking.preferred_slot_id === slot.doctor_slot_id,
+              'bg-white border-gray-200 text-[#29374f]':
+                booking.preferred_slot_id !== slot.doctor_slot_id,
+              'opacity-50 cursor-not-allowed':
+                !slot.is_active ||
+                slot.appointments_count >= slot.max_appointments
+            }"
+            class="px-4 py-2 border rounded-xl shadow-sm text-base transition"
+          >
+            {{ slot.slot_time.slice(0, 5) }}
+            <span *ngIf="slot.appointments_count >= slot.max_appointments"
+              >(Full)</span
+            >
+          </button>
+
+          } @if (slotsForSelectedDate.length === 0) {
+          <div class="w-full text-gray-400 text-center">
+            No slots available for this date.
+          </div>
+          }
+        </div>
+      </div>
+
+      <!-- Error nếu chưa chọn slot -->
+      @if (formSubmitted && !booking.preferred_slot_id) {
+      <div
+        class="error-message text-red-500 text-xs mt-3 flex items-center gap-1 text-center justify-center"
+      >
+        Please select a time slot to continue.
+      </div>
+      }
+
+      <!-- Button điều hướng -->
+      <div
+        class="mt-8 flex flex-col md:flex-row justify-between items-center gap-4 pt-6 border-t border-gray-100"
+      >
+        <button
+          type="button"
+          (click)="goToPrevStep()"
+          class="flex items-center text-[#4e6688] font-semibold rounded-xl px-4 py-2 hover:bg-[#f3f8fa] transition focus:outline-none focus:ring-2 focus:ring-[#4e6688] focus:ring-offset-2"
+        >
+          <svg
+            class="w-6 h-6 mr-2"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M15 19l-7-7 7-7"
+            />
+          </svg>
+          Back
+        </button>
+        <button
+          type="button"
+          [disabled]="!booking.preferred_slot_id"
+          (click)="onContinueSlot()"
+          class="bg-[#4e6688] text-white font-bold px-10 py-3 rounded-xl hover:bg-[#98d2c0] hover:text-[#29374f] transition focus:outline-none focus:ring-2 focus:ring-[#4e6688] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <span class="flex items-center gap-2">
+            CONTINUE
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </span>
+        </button>
+      </div>
+    </form>
+    }
+  </div>
+
+  <!-- Footer Component -->
+  <app-footer></app-footer>
+</body>

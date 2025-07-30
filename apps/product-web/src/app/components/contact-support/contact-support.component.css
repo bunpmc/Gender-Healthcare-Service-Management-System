@@ -1,0 +1,173 @@
+/* Contact Support Container */
+.contact-support-container {
+  position: fixed;
+  bottom: 190px; /* Higher up to make room for Back to Top button */
+  right: 1.2rem; /* Same as AI chat */
+  z-index: 35; /* Below AI chat (z-index: 9999) but above content */
+  display: flex;
+  flex-direction: column; /* Vertical layout */
+  gap: 12px; /* Gap between buttons */
+  align-items: center;
+}
+
+/* Contact Support Buttons */
+.contact-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.2),
+    0 4px 6px -2px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Heart beat animation */
+@keyframes heartbeat {
+  0% {
+    transform: scale(1);
+  }
+  14% {
+    transform: scale(1.05);
+  }
+  28% {
+    transform: scale(1);
+  }
+  42% {
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(1);
+  }
+}
+
+.contact-btn {
+  animation: heartbeat 3s ease-in-out infinite;
+}
+
+/* Phone Button */
+.phone-btn {
+  background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+}
+
+.phone-btn:hover {
+  transform: scale(1.1);
+}
+
+/* Zalo Button */
+.zalo-btn {
+  background: linear-gradient(135deg, #0068ff 0%, #0052cc 100%);
+  animation-delay: 0.5s;
+}
+
+.zalo-btn:hover {
+  transform: scale(1.1);
+}
+
+/* Icons */
+.contact-icon {
+  width: 24px;
+  height: 24px;
+  color: white;
+  transition: transform 0.2s ease;
+}
+
+.contact-btn:hover .contact-icon {
+  transform: scale(1.1);
+}
+
+/* Ripple Effect */
+.ripple {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  opacity: 0.3;
+  animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.phone-btn .ripple {
+  background: #25d366;
+}
+
+.zalo-btn .ripple {
+  background: #0068ff;
+  animation-delay: 0.5s;
+}
+
+@keyframes ping {
+  75%,
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+/* Tooltips */
+.tooltip {
+  position: absolute;
+  bottom: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 1000;
+}
+
+.tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+  border-top-color: rgba(0, 0, 0, 0.8);
+}
+
+.contact-btn:hover .tooltip {
+  opacity: 1;
+}
+
+/* Responsive Design */
+@media (max-width: 640px) {
+  .contact-support-container {
+    bottom: 170px;
+    right: 20px;
+    gap: 10px;
+  }
+
+  .contact-btn {
+    width: 45px;
+    height: 45px;
+  }
+
+  .contact-icon {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+@media (max-width: 768px) and (min-width: 641px) {
+  .contact-support-container {
+    bottom: 180px;
+    right: 1rem;
+  }
+}
+
+@media (min-width: 1200px) {
+  .contact-support-container {
+    bottom: 200px;
+    right: 1.5rem;
+  }
+}

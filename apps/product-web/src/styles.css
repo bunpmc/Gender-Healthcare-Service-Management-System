@@ -1,0 +1,31 @@
+/* You can add global styles to this file, and also import other style files */
+@import "tailwindcss";
+
+/* Global default styles */
+* {
+  font-family: "Source Sans Pro", Arial, sans-serif;
+}
+
+/* Set default text color to black for body */
+body, html {
+  color: #000000;
+  background-color: #ffffff;
+}
+
+/* Only set black color for elements that don't have color specified */
+/* This will be the fallback color for elements without explicit color */
+div:not([class*="text-"]):not([style*="color"]),
+span:not([class*="text-"]):not([style*="color"]),
+p:not([class*="text-"]):not([style*="color"]),
+h1:not([class*="text-"]):not([style*="color"]),
+h2:not([class*="text-"]):not([style*="color"]),
+h3:not([class*="text-"]):not([style*="color"]),
+h4:not([class*="text-"]):not([style*="color"]),
+h5:not([class*="text-"]):not([style*="color"]),
+h6:not([class*="text-"]):not([style*="color"]),
+td:not([class*="text-"]):not([style*="color"]),
+th:not([class*="text-"]):not([style*="color"]),
+li:not([class*="text-"]):not([style*="color"]),
+label:not([class*="text-"]):not([style*="color"]) {
+  color: #000000;
+}

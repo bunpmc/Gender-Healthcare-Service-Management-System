@@ -1,0 +1,115 @@
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+  @for (card of statsCards; track card.title) {
+    <div class="bg-gradient-to-br from-white via-blue-50 to-indigo-50 shadow-xl rounded-2xl p-6 relative flex flex-col h-full min-h-[180px] transition-all duration-300 hover:shadow-2xl hover:scale-105 border border-white/20 backdrop-blur-sm"
+         [class.border-l-4]="card.priority !== 'normal'"
+         [class.border-yellow-400]="card.priority === 'high'"
+         [class.border-red-500]="card.priority === 'urgent'"
+         [class.from-red-50]="card.priority === 'urgent'"
+         [class.to-red-100]="card.priority === 'urgent'"
+         [class.from-yellow-50]="card.priority === 'high'"
+         [class.to-yellow-100]="card.priority === 'high'">
+
+      <!-- Loading Overlay -->
+      @if (card.loading) {
+        <div class="absolute inset-0 bg-white/70 backdrop-blur-sm flex items-center justify-center rounded-2xl z-10">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+        </div>
+      }
+
+      <!-- Priority Badge -->
+      @if (card.priority === 'urgent' && !card.loading) {
+        <div class="absolute -top-2 -right-2 w-4 h-4 bg-red-500 rounded-full animate-pulse"></div>
+      }
+      @if (card.priority === 'high' && !card.loading) {
+        <div class="absolute -top-2 -right-2 w-4 h-4 bg-yellow-400 rounded-full"></div>
+      }
+
+      <!-- Header -->
+      <div class="flex justify-between items-center mb-3">
+        <h3 class="text-sm font-semibold text-gray-600 leading-tight">{{ card.title }}</h3>
+        <div class="flex-shrink-0">
+          <svg class="w-6 h-6 transition-colors duration-200"
+               [class.text-indigo-600]="card.priority === 'normal'"
+               [class.text-yellow-600]="card.priority === 'high'"
+               [class.text-red-600]="card.priority === 'urgent'"
+               xmlns="http://www.w3.org/2000/svg"
+               fill="none"
+               viewBox="0 0 24 24"
+               stroke="currentColor">
+            <path stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  [attr.d]="card.iconPath" />
+          </svg>
+        </div>
+      </div>
+
+      <!-- Data Section - grows to fill space -->
+      <div class="flex-1 flex flex-col justify-center">
+        <div class="text-2xl lg:text-3xl font-bold mb-2 leading-tight min-h-[36px] flex items-center"
+             [class.text-gray-800]="card.priority === 'normal'"
+             [class.text-yellow-700]="card.priority === 'high'"
+             [class.text-red-700]="card.priority === 'urgent'">
+          @if (card.value === 'Error') {
+            <span class="text-red-500 text-xl">⚠️ Error</span>
+          } @else {
+            {{ card.value }}
+          }
+        </div>
+      </div>
+
+      <!-- Footer Section - fixed at bottom -->
+      <div class="mt-auto space-y-1">
+        <div class="text-xs font-medium leading-tight"
+             [class.text-green-600]="!card.subtext.includes('Error') && !card.loading && card.priority === 'normal'"
+             [class.text-gray-400]="card.loading"
+             [class.text-red-500]="card.subtext.includes('Error')"
+             [class.text-yellow-600]="card.priority === 'high'"
+             [class.text-red-600]="card.priority === 'urgent'">
+          {{ card.subtext }}
+        </div>
+
+        @if (card.alert) {
+          <div class="text-xs font-semibold leading-tight p-2 bg-red-100 text-red-700 rounded-md border border-red-200 animate-pulse">
+            <div class="flex items-center space-x-1">
+              <svg class="w-3 h-3 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+              </svg>
+              <span>{{ card.alert }}</span>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>
+
+<!-- Critical Alerts Banner -->
+@if (hasCriticalAlertsAndNotLoading) {
+  <div class="mt-4 p-4 bg-red-100 border-l-4 border-red-500 rounded-md">
+    <div class="flex">
+      <div class="flex-shrink-0">
+        <svg class="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+        </svg>
+      </div>
+      <div class="ml-3">
+        <h3 class="text-sm font-medium text-red-800">Critical Alerts</h3>
+        <p class="text-sm text-red-700">You have urgent tasks that require immediate attention.</p>
+      </div>
+    </div>
+    <div class="mt-2">
+      <button class="text-sm text-red-600 hover:underline">View Tasks</button>
+    </div>
+  </div>
+}
+
+<div class="mt-4 flex justify-between items-center">
+  <span>Last updated: {{ lastUpdated }}</span>
+  <button (click)="refreshData()" [disabled]="isLoading" class="px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center">
+    <svg class="w-4 h-4 mr-2" [class.animate-spin]="isLoading" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M4 12a8 8 0 0116 0H4z" fill="currentColor"/>
+    </svg>
+    <span>{{ isLoading ? 'Refreshing...' : 'Refresh Data' }}</span>
+  </button>
+</div>

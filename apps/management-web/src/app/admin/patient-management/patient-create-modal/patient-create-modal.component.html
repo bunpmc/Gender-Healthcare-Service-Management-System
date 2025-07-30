@@ -1,0 +1,375 @@
+<!-- Enhanced Patient Creation Modal -->
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" *ngIf="isVisible">
+  <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden">
+    <!-- Modal Header -->
+    <div class="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <div class="bg-white bg-opacity-20 rounded-lg p-2">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-xl font-bold text-white">Add New Patient</h2>
+            <p class="text-purple-100 text-sm">Create a comprehensive patient profile</p>
+          </div>
+        </div>
+        <button
+          (click)="closeModal()"
+          class="text-white hover:text-purple-200 transition-colors duration-200"
+          title="Close modal"
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Progress Indicator -->
+    <div class="px-6 py-4 bg-gray-50 border-b">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-sm font-medium text-gray-700">Step {{ currentStep }} of {{ totalSteps }}</span>
+        <span class="text-sm text-gray-500">{{ getStepTitle() }}</span>
+      </div>
+      <div class="w-full bg-gray-200 rounded-full h-2">
+        <div 
+          class="bg-gradient-to-r from-purple-600 to-indigo-600 h-2 rounded-full transition-all duration-300"
+          [style.width.%]="(currentStep / totalSteps) * 100"
+        ></div>
+      </div>
+    </div>
+
+    <!-- Form Content -->
+    <div class="p-6 overflow-y-auto max-h-[60vh]">
+      <form [formGroup]="patientForm" (ngSubmit)="onSubmit()">
+        
+        <!-- Step 1: Basic Information -->
+        <div *ngIf="currentStep === 1" class="space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Full Name -->
+            <div class="md:col-span-2">
+              <label class="block text-sm font-semibold text-gray-700 mb-2">
+                Full Name <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                formControlName="full_name"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200"
+                placeholder="Enter patient's full name"
+                [class.border-red-500]="isFieldInvalid('full_name')"
+              />
+              <div *ngIf="isFieldInvalid('full_name')" class="mt-1 text-sm text-red-600">
+                Full name is required
+              </div>
+            </div>
+
+            <!-- Email -->
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">
+                Email Address <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="email"
+                formControlName="email"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200"
+                placeholder="patient@example.com"
+                [class.border-red-500]="isFieldInvalid('email')"
+              />
+              <div *ngIf="isFieldInvalid('email')" class="mt-1 text-sm text-red-600">
+                <span *ngIf="patientForm.get('email')?.errors?.['required']">Email is required</span>
+                <span *ngIf="patientForm.get('email')?.errors?.['email']">Please enter a valid email</span>
+              </div>
+            </div>
+
+            <!-- Phone -->
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">
+                Phone Number <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="tel"
+                formControlName="phone"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200"
+                placeholder="+1 (555) 123-4567"
+                [class.border-red-500]="isFieldInvalid('phone')"
+              />
+              <div *ngIf="isFieldInvalid('phone')" class="mt-1 text-sm text-red-600">
+                Phone number is required
+              </div>
+            </div>
+
+            <!-- Date of Birth -->
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">
+                Date of Birth <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="date"
+                formControlName="date_of_birth"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200"
+                [class.border-red-500]="isFieldInvalid('date_of_birth')"
+              />
+              <div *ngIf="isFieldInvalid('date_of_birth')" class="mt-1 text-sm text-red-600">
+                Date of birth is required
+              </div>
+            </div>
+
+            <!-- Gender -->
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">
+                Gender <span class="text-red-500">*</span>
+              </label>
+              <select
+                formControlName="gender"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200"
+                [class.border-red-500]="isFieldInvalid('gender')"
+              >
+                <option value="">Select gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+                <option value="prefer_not_to_say">Prefer not to say</option>
+              </select>
+              <div *ngIf="isFieldInvalid('gender')" class="mt-1 text-sm text-red-600">
+                Gender is required
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: Contact & Address Information -->
+        <div *ngIf="currentStep === 2" class="space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Emergency Contact Name -->
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">
+                Emergency Contact Name
+              </label>
+              <input
+                type="text"
+                formControlName="emergency_contact_name"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200"
+                placeholder="Emergency contact full name"
+              />
+            </div>
+
+            <!-- Emergency Contact Phone -->
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">
+                Emergency Contact Phone
+              </label>
+              <input
+                type="tel"
+                formControlName="emergency_contact_phone"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200"
+                placeholder="+1 (555) 123-4567"
+              />
+            </div>
+
+            <!-- Address -->
+            <div class="md:col-span-2">
+              <label class="block text-sm font-semibold text-gray-700 mb-2">
+                Address
+              </label>
+              <textarea
+                formControlName="address"
+                rows="3"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200"
+                placeholder="Enter full address"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: Medical Information -->
+        <div *ngIf="currentStep === 3" class="space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Blood Type -->
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">
+                Blood Type
+              </label>
+              <select
+                formControlName="blood_type"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200"
+              >
+                <option value="">Select blood type</option>
+                <option value="A+">A+</option>
+                <option value="A-">A-</option>
+                <option value="B+">B+</option>
+                <option value="B-">B-</option>
+                <option value="AB+">AB+</option>
+                <option value="AB-">AB-</option>
+                <option value="O+">O+</option>
+                <option value="O-">O-</option>
+              </select>
+            </div>
+
+            <!-- Vaccination Status -->
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">
+                Vaccination Status
+              </label>
+              <select
+                formControlName="vaccination_status"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200"
+              >
+                <option value="not_vaccinated">Not Vaccinated</option>
+                <option value="partially_vaccinated">Partially Vaccinated</option>
+                <option value="fully_vaccinated">Fully Vaccinated</option>
+                <option value="boosted">Boosted</option>
+              </select>
+            </div>
+
+            <!-- Allergies -->
+            <div class="md:col-span-2">
+              <label class="block text-sm font-semibold text-gray-700 mb-2">
+                Known Allergies
+              </label>
+              <textarea
+                formControlName="allergies"
+                rows="3"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200"
+                placeholder="List any known allergies (medications, food, environmental, etc.)"
+              ></textarea>
+            </div>
+
+            <!-- Medical History -->
+            <div class="md:col-span-2">
+              <label class="block text-sm font-semibold text-gray-700 mb-2">
+                Medical History
+              </label>
+              <textarea
+                formControlName="medical_history"
+                rows="4"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200"
+                placeholder="Brief medical history, chronic conditions, previous surgeries, etc."
+              ></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4: Account Settings -->
+        <div *ngIf="currentStep === 4" class="space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Patient Status -->
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">
+                Patient Status
+              </label>
+              <select
+                formControlName="patient_status"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200"
+              >
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="suspended">Suspended</option>
+              </select>
+            </div>
+
+            <!-- Insurance Provider -->
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">
+                Insurance Provider
+              </label>
+              <input
+                type="text"
+                formControlName="insurance_provider"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200"
+                placeholder="Insurance company name"
+              />
+            </div>
+
+            <!-- Insurance Policy Number -->
+            <div class="md:col-span-2">
+              <label class="block text-sm font-semibold text-gray-700 mb-2">
+                Insurance Policy Number
+              </label>
+              <input
+                type="text"
+                formControlName="insurance_policy_number"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200"
+                placeholder="Policy number"
+              />
+            </div>
+
+            <!-- Notes -->
+            <div class="md:col-span-2">
+              <label class="block text-sm font-semibold text-gray-700 mb-2">
+                Additional Notes
+              </label>
+              <textarea
+                formControlName="notes"
+                rows="3"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200"
+                placeholder="Any additional notes or special instructions"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="px-6 py-4 bg-gray-50 border-t flex items-center justify-between">
+      <div class="flex items-center space-x-4">
+        <!-- Auto-save indicator -->
+        <div *ngIf="isAutoSaving" class="flex items-center text-sm text-gray-600">
+          <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-600 mr-2"></div>
+          Auto-saving...
+        </div>
+        <div *ngIf="lastSaved" class="text-sm text-gray-500">
+          Last saved: {{ lastSaved | date:'short' }}
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-3">
+        <!-- Previous Button -->
+        <button
+          type="button"
+          (click)="previousStep()"
+          [disabled]="currentStep === 1"
+          class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+        >
+          Previous
+        </button>
+
+        <!-- Next/Submit Button -->
+        <button
+          type="button"
+          (click)="nextStep()"
+          *ngIf="currentStep < totalSteps"
+          [disabled]="!isCurrentStepValid()"
+          class="px-6 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+        >
+          Next
+        </button>
+
+        <button
+          type="submit"
+          (click)="onSubmit()"
+          *ngIf="currentStep === totalSteps"
+          [disabled]="!patientForm.valid || isSubmitting"
+          class="px-6 py-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+        >
+          <span *ngIf="!isSubmitting">Create Patient</span>
+          <span *ngIf="isSubmitting" class="flex items-center">
+            <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+            Creating...
+          </span>
+        </button>
+
+        <!-- Cancel Button -->
+        <button
+          type="button"
+          (click)="closeModal()"
+          class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

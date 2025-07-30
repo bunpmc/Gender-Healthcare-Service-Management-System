@@ -1,0 +1,508 @@
+/* Patient Table Responsive Design */
+
+/*
+ * Layout calculations:
+ * - Sidebar width: 256px (w-64)
+ * - Layout margins: 48px (mx-6 = 24px each side)
+ * - Layout gap: 24px (gap-6)
+ * - Content padding: 16px (p-2 = 8px each side)
+ * Total reserved space: 256px + 48px + 24px + 16px = 344px
+ * Available space: calc(100vw - 344px)
+ */
+
+/* Base table styles */
+.patient-table-container {
+  background-color: white;
+  border-radius: 1rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+  /* Strict width constraint to prevent overflow */
+  max-width: calc(100vw - 344px);
+  width: 100%;
+  /* Additional safety constraints */
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/* Additional safety wrapper for the entire component */
+:host {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.table-wrapper {
+  /* CRITICAL: Prevent any horizontal overflow */
+  overflow-x: hidden;
+  max-width: 100%;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  /* Smooth scrolling on mobile */
+  -webkit-overflow-scrolling: touch;
+  /* Custom scrollbar styling */
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e0 #f7fafc;
+  /* Ensure table header stays visible during scroll */
+  position: relative;
+}
+
+.table-wrapper::-webkit-scrollbar {
+  height: 8px;
+}
+
+.table-wrapper::-webkit-scrollbar-track {
+  background-color: #f3f4f6;
+  border-radius: 0.5rem;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb {
+  background-color: #d8b4fe;
+  border-radius: 0.5rem;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb:hover {
+  background-color: #c084fc;
+}
+
+/* Table layout and sizing */
+.patient-table {
+  width: 100%;
+  max-width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background-color: white;
+  table-layout: fixed;
+  /* REMOVED: min-width constraint that was causing overflow */
+}
+
+/* Percentage-based column width management for responsive design */
+.col-checkbox { width: 5%; min-width: 40px; }
+.col-id { width: 10%; min-width: 80px; }
+.col-name { width: 20%; min-width: 120px; }
+.col-email { width: 25%; min-width: 140px; }
+.col-phone { width: 12%; min-width: 100px; }
+.col-gender { width: 8%; min-width: 70px; }
+.col-status { width: 10%; min-width: 80px; }
+.col-date { width: 12%; min-width: 90px; }
+.col-actions { width: 10%; min-width: 80px; }
+
+/* Cell content styling */
+.table-cell {
+  padding: 1rem 0.5rem;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  /* Ensure cells don't expand beyond their allocated width */
+  max-width: 0;
+  overflow: hidden;
+}
+
+.table-cell-content {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  /* Ensure content doesn't break out of cell */
+  max-width: 100%;
+}
+
+/* Truncation for long content */
+.truncate-text {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Header styles */
+.table-header {
+  background: linear-gradient(to right, #faf5ff, #eef2ff);
+  /* Sticky header for better UX during vertical scroll */
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.header-cell {
+  padding: 1rem;
+  text-align: left;
+}
+
+.sort-button {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 600;
+  color: #374151;
+  transition: color 0.2s ease-in-out;
+}
+
+.sort-button:hover {
+  color: #7c3aed;
+}
+
+/* Row styles */
+.table-row {
+  transition: background-color 0.2s ease-in-out;
+}
+
+.table-row:hover {
+  background-color: #faf5ff;
+}
+
+.table-row.selected {
+  background-color: #faf5ff;
+}
+
+/* Badge styles */
+.status-badge, .gender-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Action buttons */
+.action-button {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.375rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.action-button.view {
+  color: #2563eb;
+}
+
+.action-button.view:hover {
+  color: #1e40af;
+  background-color: #dbeafe;
+}
+
+.action-button.edit {
+  color: #059669;
+}
+
+.action-button.edit:hover {
+  color: #047857;
+  background-color: #d1fae5;
+}
+
+.action-button.delete {
+  color: #dc2626;
+}
+
+.action-button.delete:hover {
+  color: #b91c1c;
+  background-color: #fee2e2;
+}
+
+/* Responsive breakpoints */
+
+/* Large screens (1440px and up) - Full layout */
+@media (min-width: 1440px) {
+  .patient-table-container {
+    max-width: calc(100vw - 320px); /* Account for larger sidebar on big screens */
+  }
+}
+
+/* Standard desktops (1200px to 1439px) */
+@media (max-width: 1439px) {
+  .col-email { width: 22%; min-width: 120px; }
+  .col-name { width: 18%; min-width: 100px; }
+  .col-phone { width: 10%; min-width: 80px; }
+}
+
+/* Small desktops and large tablets (1024px to 1199px) */
+@media (max-width: 1199px) {
+  /* Hide phone column to save space */
+  .col-phone {
+    display: none;
+  }
+
+  /* Redistribute widths */
+  .col-checkbox { width: 6%; }
+  .col-id { width: 12%; }
+  .col-name { width: 22%; }
+  .col-email { width: 28%; }
+  .col-gender { width: 10%; }
+  .col-status { width: 12%; }
+  .col-date { width: 14%; }
+  .col-actions { width: 12%; }
+}
+
+/* Tablets and small laptops (1024px and down) */
+@media (max-width: 1024px) {
+  /* Hide ID and phone columns to save space */
+  .col-id,
+  .col-phone {
+    display: none;
+  }
+
+  /* Redistribute widths for remaining columns */
+  .col-checkbox { width: 7%; }
+  .col-name { width: 25%; }
+  .col-email { width: 32%; }
+  .col-gender { width: 12%; }
+  .col-status { width: 14%; }
+  .col-date { width: 16%; }
+  .col-actions { width: 14%; }
+
+  .table-cell {
+    padding: 0.75rem 0.5rem;
+  }
+
+  .header-cell {
+    padding: 0.75rem 0.5rem;
+  }
+}
+
+/* Small tablets (768px and down) */
+@media (max-width: 768px) {
+  /* Hide date column as well */
+  .col-id,
+  .col-phone,
+  .col-date {
+    display: none;
+  }
+
+  /* Further redistribute widths */
+  .col-checkbox { width: 8%; }
+  .col-name { width: 35%; }
+  .col-email { width: 35%; }
+  .col-gender { width: 12%; }
+  .col-status { width: 15%; }
+  .col-actions { width: 15%; }
+
+  .table-cell {
+    padding: 0.5rem 0.25rem;
+  }
+
+  .header-cell {
+    padding: 0.5rem 0.25rem;
+  }
+
+  /* Adjust avatar size for tablets */
+  .col-name .h-8 {
+    height: 1.5rem;
+    width: 1.5rem;
+  }
+}
+
+/* Very small screens (900px and down) - Ultra compact */
+@media (max-width: 900px) {
+  /* Hide even more columns for very constrained spaces */
+  .col-id,
+  .col-phone,
+  .col-date,
+  .col-gender {
+    display: none;
+  }
+
+  /* Redistribute for essential columns only */
+  .col-checkbox { width: 10%; }
+  .col-name { width: 40%; }
+  .col-email { width: 35%; }
+  .col-status { width: 15%; }
+  .col-actions { width: 15%; }
+
+  .table-cell {
+    padding: 0.5rem 0.25rem;
+    font-size: 0.75rem;
+  }
+
+  .header-cell {
+    padding: 0.5rem 0.25rem;
+    font-size: 0.75rem;
+  }
+}
+
+/* Mobile devices (640px and down) */
+@media (max-width: 640px) {
+  /* Hide table and show card layout */
+  .table-wrapper {
+    display: none;
+  }
+
+  .mobile-card-view {
+    display: block;
+  }
+}
+
+/* Mobile card layout */
+.mobile-card-view {
+  display: none;
+  padding: 1rem;
+  gap: 1rem;
+}
+
+.mobile-card-view > * + * {
+  margin-top: 1rem;
+}
+
+.patient-card {
+  background-color: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
+  padding: 1rem;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.patient-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.card-title {
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.card-checkbox {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #7c3aed;
+  border-color: #d1d5db;
+  border-radius: 0.25rem;
+}
+
+.card-checkbox:focus {
+  outline: 2px solid #a855f7;
+  outline-offset: 2px;
+}
+
+.card-content {
+  gap: 0.5rem;
+}
+
+.card-content > * + * {
+  margin-top: 0.5rem;
+}
+
+.card-field {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.25rem 0;
+}
+
+.card-label {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.card-value {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: #111827;
+}
+
+.card-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+/* Bulk actions bar responsive */
+.bulk-actions-bar {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  background-color: #f9fafb;
+}
+
+@media (max-width: 640px) {
+  .bulk-actions-bar {
+    padding: 0.75rem 1rem;
+  }
+
+  .bulk-actions-content {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .bulk-actions-content > * + * {
+    margin-top: 0.75rem;
+  }
+
+  .bulk-actions-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+}
+
+/* Loading and empty states */
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 0;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem 0;
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  .patient-card,
+  .action-button,
+  .table-row {
+    transition: none;
+  }
+}
+
+/* Focus styles for keyboard navigation */
+.table-cell:focus-within,
+.action-button:focus,
+.sort-button:focus {
+  outline: 2px solid #7c3aed;
+  outline-offset: 2px;
+}
+
+/* Print styles */
+@media print {
+  .patient-table-container {
+    box-shadow: none;
+    border: 0;
+  }
+
+  .table-wrapper {
+    overflow: visible;
+  }
+
+  .patient-table {
+    min-width: auto;
+  }
+
+  .col-actions,
+  .col-checkbox {
+    display: none;
+  }
+}

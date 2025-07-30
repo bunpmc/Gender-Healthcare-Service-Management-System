@@ -1,0 +1,25 @@
+.animated-button-tw:hover {
+  box-shadow: 0 0 0 12px transparent;
+  color: #98d2c0;
+}
+.animated-button-tw:hover .arr-1 {
+  right: -25%;
+}
+.animated-button-tw:hover .arr-2 {
+  left: 16px;
+}
+.animated-button-tw:hover .text-tw {
+  transform: translateX(12px);
+}
+.animated-button-tw:hover svg {
+  fill: #98d2c0;
+}
+.animated-button-tw:active {
+  scale: 0.95;
+  box-shadow: 0 0 0 4px #98d2c0;
+}
+.animated-button-tw:hover .circle-tw {
+  width: 220px;
+  height: 220px;
+  opacity: 1;
+}

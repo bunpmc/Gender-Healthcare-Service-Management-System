@@ -1,0 +1,482 @@
+<app-header />
+<body class="flex-col bg-white">
+  <!-- ========== SECTION: Hero Banner + About Clinic ========== -->
+  <div class="relative w-full h-[64 rem]">
+    <!-- Banner background image with decorations -->
+    <div
+      class="absolute top-0 left-0 w-full h-[50rem] z-0 rounded-4xl bg-cover bg-center"
+      style="background-image: url('./loginBg.png')"
+    >
+      <img
+        src="./Line1.png"
+        class="absolute top-30 left-0 w-[30rem] h-[20rem] object-cover z-10"
+        alt="Ảnh 1"
+      />
+      <img
+        src="./Line2.png"
+        class="absolute top-2 right-0 w-[50rem] h-[50rem] object-cover z-10"
+        alt="Ảnh 2"
+      />
+    </div>
+
+    <!-- Main content area (About section + Contact) -->
+    <div class="relative w-full h-full bg-transparent z-10">
+      <div class="h-full max-w-7xl m-auto px-6 py-[5rem]">
+        <!-- ABOUT: Clinic info with images and CTA -->
+        <div class="h-[29rem] mb-[5rem] flex">
+          <!-- Doctor image (left) -->
+          <div class="h-full w-1/4 bg-green-950 rounded-2xl">
+            <img
+              class="w-full h-full rounded-2xl"
+              src="./Doctor.png"
+              alt="doctor"
+            />
+          </div>
+          <!-- About: Title, desc, CTA buttons (center) -->
+          <div class="h-full w-2/4 flex justify-center items-center">
+            <div
+              class="flex-col flex justify-between items-center w-full h-2/3"
+            >
+              <!-- Clinic headline -->
+              <p class="text-5xl font-bold text-white w-3/4 text-center">
+                {{ "HERO.TITLE" | translate }}
+              </p>
+              <!-- Clinic description -->
+              <p class="w-3/4 text-white text-center">
+                {{ "HERO.DESC" | translate }}
+              </p>
+              <!-- CTAs: Book appointment & All services -->
+              <div class="w-3/4 flex justify-around">
+                <a routerLink="consultation">
+                  <button
+                    class="cursor-pointer relative py-4 px-10 text-white text-base font-bold nded-full overflow-hidden bg-[#98d2c0] rounded-4xl transition-all duration-200 ease-in-out shadow-md hover:scale-105 hover:text-[#98d2c0] hover:shadow-lg active:scale-90 before:absolute before:top-0 before:-left-full before:w-full before:h-full before:bg-gradient-to-r before:from-white before:to-white before:transition-all before:duration-300 before:ease-in-out before:z-[-1] before:rounded-4xl hover:before:left-0"
+                  >
+                    {{ "HERO.CTA.CONTACT" | translate }}
+                  </button>
+                </a>
+                <button
+                  class="animated-button-tw relative flex items-center gap-1 py-3 px-7 border-4 border-transparent text-[16px] bg-inherit rounded-full font-semibold text-white shadow-[0_0_0_2px_#ffffff] cursor-pointer overflow-hidden transition-all duration-[600] ease-[cubic-bezier(0.23,1,0.32,1)]"
+                  routerLink="service"
+                >
+                  <span
+                    class="text-tw relative z-10 -translate-x-3 transition-all duration-[800ms] ease-[cubic-bezier(0.23,1,0.32,1)]"
+                  >
+                    {{ "HERO.CTA.SERVICES" | translate }}
+                  </span>
+                  <span
+                    class="circle-tw absolute top-1/2 left-1/2 w-5 h-5 bg-white rounded-full opacity-0 -translate-x-1/2 -translate-y-1/2 transition-all duration-[800ms] ease-[cubic-bezier(0.23,1,0.32,1)]"
+                  ></span>
+                  <svg
+                    viewBox="0 0 24 24"
+                    class="arr-1 absolute right-2 w-6 fill-white z-10 transition-all duration-[800ms] ease-[cubic-bezier(0.23,1,0.32,1)]"
+                  >
+                    <path
+                      d="M16.1716 10.9999L10.8076 5.63589L12.2218 4.22168L20 11.9999L12.2218 19.778L10.8076 18.3638L16.1716 12.9999H4V10.9999H16.1716Z"
+                    ></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+          <!-- Receptionist image (right) -->
+          <div class="h-full w-1/4 rounded-2xl">
+            <img
+              class="w-full h-full rounded-2xl"
+              src="./letan.png"
+              alt="letan"
+            />
+          </div>
+        </div>
+        <!-- END ABOUT section -->
+
+        <!-- CONTACT: Contact info, Address, Social -->
+        <div class="bg-[#FFF5E7] h-[20rem] rounded-4xl flex text-[#4E6688]">
+          <!-- Contact left: Phone & Email -->
+          <div class="h-full w-3/9 flex justify-center items-center flex-col">
+            <p class="text-center text-3xl w-3/4 font-bold mb-5">
+              {{ "CONTACT.HEADLINE" | translate }}
+            </p>
+            <div class="flex flex-col w-full pl-16 gap-2">
+              <p class="font-semibold text-xl">
+                {{ "CONTACT.PHONE_TITLE" | translate }}
+              </p>
+              <div class="flex gap-1 text-gray-600">
+                <!-- Phone icon -->
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="w-6 h-6 text-blue-600"
+                  fill="none"
+                  viewBox="0 0 27 24"
+                  stroke="#000000"
+                  stroke-width="2"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z"
+                  />
+                </svg>
+                <span class="font-semibold">
+                  {{ "CONTACT.PHONE" | translate }}
+                </span>
+              </div>
+            </div>
+            <div class="mt-6 flex flex-col w-full pl-16 gap-2">
+              <p class="font-semibold text-xl">
+                {{ "CONTACT.EMAIL_TITLE" | translate }}
+              </p>
+              <div class="flex items-center gap-1 text-gray-600">
+                <!-- Email icon -->
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="w-6 h-6 text-blue-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="#000000"
+                  stroke-width="2"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"
+                  />
+                </svg>
+                <span class="font-semibold">
+                  {{ "CONTACT.EMAIL" | translate }}
+                </span>
+              </div>
+            </div>
+          </div>
+          <!-- Contact center: Address & Open hours -->
+          <div class="h-full w-3/9 flex justify-center flex-col">
+            <div class="w-full border-x-[2.5px] border-[#8092ad]">
+              <p class="text-center text-3xl w-3/4 font-bold mb-5">
+                {{ "ADDRESS.HEADLINE" | translate }}
+              </p>
+              <div class="flex flex-col w-full pl-16 gap-2">
+                <p class="font-semibold text-xl">
+                  {{ "ADDRESS.TITLE" | translate }}
+                </p>
+                <div class="flex gap-1 text-gray-600">
+                  <!-- Address icon -->
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="2"
+                    stroke="#000000"
+                    class="size-6"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M8.25 21v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21m0 0h4.5V3.545M12.75 21h7.5V10.75M2.25 21h1.5m18 0h-18M2.25 9l4.5-1.636M18.75 3l-1.5.545m0 6.205 3 1m1.5.5-1.5-.5M6.75 7.364V3h-3v18m3-13.636 10.5-3.819"
+                    />
+                  </svg>
+                  <span class="font-semibold">
+                    {{ "ADDRESS.ADDRESS" | translate }}
+                  </span>
+                </div>
+              </div>
+              <div class="mt-6 flex flex-col w-full pl-16 gap-2">
+                <p class="font-semibold text-xl">
+                  {{ "ADDRESS.OPEN_TITLE" | translate }}
+                </p>
+                <div class="flex items-center gap-1 text-gray-600">
+                  <!-- Time icon -->
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 23 23"
+                    stroke-width="2"
+                    stroke="#000000"
+                    class="size-6"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                    />
+                  </svg>
+                  <span class="font-semibold">
+                    {{ "ADDRESS.OPEN" | translate }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Contact right: Socials -->
+          <div class="h-full w-3/9 flex justify-center items-center flex-col">
+            <p class="ml-3 text-3xl w-3/4 font-bold mb-5">
+              {{ "SOCIALS.HEADLINE" | translate }}
+            </p>
+            <div class="flex flex-col w-full pl-16 gap-2">
+              <p class="font-semibold text-xl">
+                {{ "SOCIALS.FACEBOOK_TITLE" | translate }}
+              </p>
+              <div class="flex gap-1 text-gray-600">
+                <!-- Facebook icon -->
+                <svg
+                  class="h-6 w-6"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+                <span class="font-semibold">
+                  <a
+                    class="hover:text-blue-600"
+                    href="https://web.facebook.com/GenderCare"
+                  >
+                    {{ "SOCIALS.FACEBOOK" | translate }}
+                  </a>
+                </span>
+              </div>
+            </div>
+            <div class="mt-6 flex flex-col w-full pl-16 gap-2">
+              <p class="font-semibold text-xl">
+                {{ "SOCIALS.YOUTUBE_TITLE" | translate }}
+              </p>
+              <div class="flex items-center gap-1 text-gray-600">
+                <!-- Youtube icon -->
+                <svg
+                  class="h-6 w-6"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M19.812 5.418c.861.23 1.538.907 1.768 1.768C21.998 8.746 22 12 22 12s0 3.255-.418 4.814a2.504 2.504 0 0 1-1.768 1.768c-1.56.419-7.814.419-7.814.419s-6.255 0-7.814-.419a2.505 2.505 0 0 1-1.768-1.768C2 15.255 2 12 2 12s0-3.255.417-4.814a2.507 2.507 0 0 1 1.768-1.768C5.744 5 11.998 5 11.998 5s6.255 0 7.814.418ZM15.194 12 10 15V9l5.194 3Z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+                <span class="font-semibold">
+                  <a
+                    class="hover:text-blue-600"
+                    href="https://www.youtube.com/@GenderCare"
+                  >
+                    {{ "SOCIALS.YOUTUBE" | translate }}
+                  </a>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- END CONTACT section -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SECTION: Main Content with Videos & Info ========== -->
+  <div class="h-[34rem] my-[5rem] w-full">
+    <div class="max-w-7xl m-auto h-full px-6 flex justify-between">
+      <!-- Video block 1 -->
+      <div class="w-[19.8rem] h-5/6 flex justify-center items-center">
+        <video class="h-full rounded-4xl" autoplay loop muted>
+          <source src="Video1.mp4" type="video/mp4" />
+          {{ "VIDEO.NOT_SUPPORTED" | translate }}
+        </video>
+      </div>
+      <!-- Main Text Content -->
+      <div class="w-[35rem] h-full flex justify-center items-center">
+        <div
+          class="w-full h-[20rem] flex flex-col justify-between items-center"
+        >
+          <p class="text-4xl font-bold text-[#4E6688] text-center">
+            {{ "SERVICE.TITLE" | translate }}
+          </p>
+          <p class="text-[#4E6688] w-6/8">
+            {{ "SERVICE.DESC" | translate }}
+          </p>
+          <div class="w-full h-[4rem] flex justify-center items-center">
+            <a
+              href=""
+              class="cursor-pointer relative py-4 px-10 text-[#4E6688] text-base font-bold nded-full overflow-hidden bg-[#dedede] rounded-4xl transition-all duration-200 ease-in-out shadow-md hover:scale-105 hover:text-white hover:shadow-lg active:scale-90 before:absolute before:top-0 before:-left-full before:w-full before:h-full before:bg-gradient-to-r before:from-[#98d2c0] before:to-[#98d2c0] before:transition-all before:duration-300 before:ease-in-out before:z-[-1] before:rounded-4xl hover:before:left-0"
+            >
+              {{ "SERVICE.PRICE" | translate }}
+            </a>
+          </div>
+        </div>
+      </div>
+      <!-- Video block 2 -->
+      <div class="w-[19.8rem] h-5/6 flex justify-center items-center self-end">
+        <video class="h-full rounded-4xl" autoplay loop muted>
+          <source src="Video2.mp4" type="video/mp4" />
+          {{ "VIDEO.NOT_SUPPORTED" | translate }}
+        </video>
+      </div>
+    </div>
+  </div>
+  <!-- END SECTION: Main Content with Videos & Info -->
+
+  <!-- ========== SECTION: Doctor  ========== -->
+  <div class="h-[42rem] w-full relative mt-[8rem] mb-[5rem]">
+    <div
+      class="absolute -top-[4rem] rounded-2xl left-0 w-full h-[46rem] z-0 bg-cover bg-center"
+      style="background-image: url('./loginBg.png')"
+    >
+      <img
+        src="./Line1.png"
+        class="absolute top-30 left-0 w-[30rem] h-[20rem] object-cover z-10"
+        alt="Ảnh 1"
+      />
+      <img
+        src="./Line2.png"
+        class="absolute bottom-0 right-0 w-[25rem] h-[25rem] object-cover z-10"
+        alt="Ảnh 2"
+      />
+    </div>
+    <div class="max-w-7xl h-full px-6 m-auto relative">
+      <div class="flex items-center justify-between mb-8 px-6">
+        <h2 class="text-4xl font-extrabold text-white font-serif">
+          {{ "DOCTOR.HEADLINE" | translate }}
+        </h2>
+        <a href="/doctor">
+          <button
+            class="animated-button-tw relative flex items-center gap-1 py-3 px-7 border-4 border-transparent text-[16px] bg-inherit rounded-full font-semibold text-white shadow-[0_0_0_2px_#ffffff] cursor-pointer overflow-hidden transition-all duration-[600] ease-[cubic-bezier(0.23,1,0.32,1)]"
+          >
+            <span
+              class="text-tw relative z-10 -translate-x-3 transition-all duration-[800ms] ease-[cubic-bezier(0.23,1,0.32,1)]"
+            >
+              {{ "DOCTOR.VIEW_ALL" | translate }}
+            </span>
+            <span
+              class="circle-tw absolute top-1/2 left-1/2 w-5 h-5 bg-white rounded-full opacity-0 -translate-x-1/2 -translate-y-1/2 transition-all duration-[800ms] ease-[cubic-bezier(0.23,1,0.32,1)]"
+            ></span>
+            <svg
+              viewBox="0 0 24 24"
+              class="arr-1 absolute right-2 w-6 fill-white z-10 transition-all duration-[800ms] ease-[cubic-bezier(0.23,1,0.32,1)]"
+            >
+              <path
+                d="M16.1716 10.9999L10.8076 5.63589L12.2218 4.22168L20 11.9999L12.2218 19.778L10.8076 18.3638L16.1716 12.9999H4V10.9999H16.1716Z"
+              ></path>
+            </svg>
+          </button>
+        </a>
+      </div>
+      <app-splide />
+    </div>
+  </div>
+  <!-- END SECTION: Doctor -->
+
+  <!-- ========== SECTION: Blog  ========== -->
+  <div class="h-auto w-full mt-[5rem] pb-1">
+    <div class="max-w-7xl h-full m-auto px-6">
+      <div class="flex items-center justify-between mb-10 px-6">
+        <h2 class="text-4xl font-extrabold text-[#29123c] font-serif">
+          {{ "BLOG.HEADLINE" | translate }}
+        </h2>
+        <button
+          class="cursor-pointer px-6 py-4 border-2 border-[#29123c] text-[#29123c] rounded-full font-medium transition-all duration-200 hover:bg-[#29123c] hover:text-white shadow-sm hover:shadow-md"
+          routerLink="blog"
+        >
+          {{ "BLOG.EXPLORE" | translate }}
+        </button>
+      </div>
+
+      <!-- Loading State -->
+      @if (isLoadingBlogs) {
+      <div class="flex justify-center items-center py-20">
+        <div
+          class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#29123c]"
+        ></div>
+        <span class="ml-3 text-gray-600">{{ "BLOG.LOADING" | translate }}</span>
+      </div>
+      } @else if (blogError) {
+      <!-- Error State -->
+      <div class="text-center py-20">
+        <p class="text-red-500 mb-4">{{ blogError | translate }}</p>
+        <button
+          (click)="loadLatestBlogs()"
+          class="px-4 py-2 bg-[#29123c] text-white rounded-lg hover:bg-purple-800 transition"
+        >
+          {{ "BLOG.RETRY" | translate }}
+        </button>
+      </div>
+      } @else if (latestBlogs.length === 0) {
+      <!-- No blogs state -->
+      <div class="text-center py-20">
+        <p class="text-gray-600">{{ "BLOG.NO_DATA" | translate }}</p>
+      </div>
+      } @else {
+      <!-- Dynamic Blog Cards -->
+      @for (blog of latestBlogs; track blog.id) {
+      <div
+        class="w-full h-[20rem] rounded-4xl my-10 flex justify-between group cursor-pointer transition-all duration-300 hover:shadow-xl"
+      >
+        <div class="h-full w-[29.2rem] rounded-4xl overflow-hidden">
+          <img
+            class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+            src="./letan.png"
+            [alt]="blog.title"
+          />
+        </div>
+        <div
+          class="w-[50rem] h-full rounded-4xl bg-white flex flex-col justify-center gap-3 p-8 transition-all duration-300 group-hover:bg-gradient-to-br group-hover:from-white group-hover:to-blue-50"
+        >
+          <p
+            class="text-2xl text-[#1A2233] font-bold mb-2 transition-colors duration-300 group-hover:text-[#29123c]"
+          >
+            {{ blog.title }}
+          </p>
+          <p
+            class="text-base text-[#4E6688] mb-2 transition-colors duration-300 group-hover:text-[#374151]"
+          >
+            {{ blog.desc }}
+            <a
+              [routerLink]="['/blog', blog.id]"
+              class="ml-2 text-[#4299e1] font-semibold underline transition-all duration-300 hover:no-underline hover:bg-[#4299e1] hover:text-white hover:px-2 hover:py-1 hover:rounded-md"
+            >
+              {{ "BLOG.READ_MORE" | translate }}
+            </a>
+          </p>
+          <div
+            class="flex gap-2 items-center text-sm text-[#8BA6C6] font-medium mt-2 transition-colors duration-300 group-hover:text-[#6B7280]"
+          >
+            <span>{{ blog.createdAt | date : "MMM d, y" }}</span>
+            <span
+              class="transition-transform duration-300 group-hover:rotate-12"
+            >
+              <!-- Horizontal line icon -->
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="size-6"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M5 12h14"
+                />
+              </svg>
+            </span>
+            <span>{{ blog.author }}</span>
+          </div>
+          @if (blog.tags.length > 0) {
+          <div class="flex gap-2 mt-2 flex-wrap">
+            @for (tag of blog.tags.slice(0,3); track tag) {
+            <span
+              class="px-2 py-1 bg-[#f0f4f8] text-[#29123c] rounded-full text-xs font-medium transition-all duration-300 group-hover:bg-[#29123c] group-hover:text-white group-hover:shadow-md group-hover:scale-105"
+            >
+              {{ tag }}
+            </span>
+            }
+          </div>
+          }
+        </div>
+      </div>
+      } }
+    </div>
+  </div>
+  <!-- END SECTION: Blog -->
+</body>
+<app-footer />

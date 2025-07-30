@@ -1,0 +1,166 @@
+<app-header />
+
+<body class="w-full min-h-screen bg-[#fefefe] py-10">
+  <!-- Nền ngoài tối -->
+  <!-- ======= BREADCRUMBS ======= -->
+  <div class="max-w-7xl mx-auto px-6 pt-7 text-[#4E6688]">
+    <app-breadcrumbs />
+  </div>
+
+  <!-- ======= SERVICE DETAIL MAIN CONTENT ======= -->
+  <div class="max-w-7xl mx-auto px-4 py-10">
+    @if (isLoading()) {
+    <div class="animate-pulse">
+      <div class="h-8 w-1/2 bg-[#4E668822] shimmer rounded mt-4 mb-3"></div>
+      <div class="h-4 w-32 bg-[#98d2c0] shimmer rounded mb-3"></div>
+      <div class="w-full h-52 bg-[#e9f3fc] shimmer rounded-2xl mb-10"></div>
+      <div class="h-4 w-full bg-[#4E668822] shimmer rounded mb-2"></div>
+      <div class="h-4 w-2/3 bg-[#98d2c0] shimmer rounded mb-2"></div>
+      <div class="h-4 w-1/2 bg-[#4E668822] shimmer rounded"></div>
+    </div>
+    <style>
+      .shimmer {
+        background: linear-gradient(
+          90deg,
+          #f4f7fa 25%,
+          #e8f0fa 37%,
+          #f4f7fa 63%
+        );
+        background-size: 400% 100%;
+        animation: shimmerMove 1.4s ease-in-out infinite;
+      }
+      @keyframes shimmerMove {
+        0% {
+          background-position: 100% 0;
+        }
+        100% {
+          background-position: 0 0;
+        }
+      }
+    </style>
+    } @if (!!error() && !isLoading()) {
+    <div class="py-24 text-center text-red-500 text-lg font-semibold">
+      {{ error() }}
+      <div class="mt-6">
+        <button
+          (click)="backToList()"
+          class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#f3f7fa] text-[#4E6688] font-semibold hover:bg-[#e0eefa] border border-[#d9e7fa] transition-all"
+        >
+          <svg
+            class="w-5 h-5"
+            fill="none"
+            stroke="#4E6688"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M15 19l-7-7 7-7"
+            />
+          </svg>
+          Back to Services
+        </button>
+      </div>
+    </div>
+    } @if (!!service() && !isLoading() && !error()) {
+    <div
+      class="w-full bg-white border border-gray-200 rounded-3xl shadow-xl px-8 py-10"
+    >
+      <!-- Banner/Name -->
+      <div class="flex flex-col md:flex-row gap-8 items-center mb-8">
+        <div class="flex-shrink-0 w-full md:w-72">
+          <div
+            class="rounded-2xl border-2 border-[#d1e9ff] overflow-hidden bg-[#f6f8fc] flex items-center justify-center"
+            style="min-height: 14rem"
+          >
+            <img
+              [src]="service()!.image_link || '/assets/default-service.png'"
+              alt="Service banner"
+              class="w-full h-56 object-cover object-center transition-all duration-300"
+              loading="lazy"
+            />
+          </div>
+        </div>
+        <div class="flex-1">
+          <h1 class="text-4xl font-extrabold text-[#223049] mb-2 leading-tight">
+            {{ service()!.service_name }}
+          </h1>
+          <div class="flex gap-6 items-center mt-3 flex-wrap">
+            <span class="text-xl text-[#1c7f51] font-semibold">
+              {{ service()!.price.toLocaleString("en-US") }} VND
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Service Introduction Section -->
+      <div
+        class="bg-[#f8fafc] border border-gray-100 rounded-2xl shadow-inner p-7 mb-8"
+      >
+        <h2
+          class="text-2xl font-bold text-[#222e5c] mb-5 flex items-center gap-3"
+        >
+          <svg
+            class="w-7 h-7 text-blue-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            stroke-width="2"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M13 16h-1v-4h-1m1-4h.01"
+            />
+          </svg>
+          Service Introduction
+        </h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div>
+            <div class="mb-2">
+              <span class="font-semibold text-[#2563eb]">What:</span>
+              <span class="ml-2 text-gray-700">{{
+                service()!.description.what
+              }}</span>
+            </div>
+            <div class="mb-2">
+              <span class="font-semibold text-[#2563eb]">Why:</span>
+              <span class="ml-2 text-gray-700">{{
+                service()!.description.why
+              }}</span>
+            </div>
+          </div>
+          <div>
+            <div class="mb-2">
+              <span class="font-semibold text-[#2563eb]">Who:</span>
+              <span class="ml-2 text-gray-700">{{
+                service()!.description.who
+              }}</span>
+            </div>
+            <div class="mb-2">
+              <span class="font-semibold text-[#2563eb]">How:</span>
+              <span class="ml-2 text-gray-700">{{
+                service()!.description.how
+              }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex justify-end mt-8">
+        <button
+          (click)="backToList()"
+          class="px-6 py-2 rounded-2xl font-semibold bg-[#223049] text-white hover:bg-[#1c7f51] shadow transition"
+        >
+          Back to Service List
+        </button>
+      </div>
+    </div>
+    }
+  </div>
+</body>
+
+<app-footer />

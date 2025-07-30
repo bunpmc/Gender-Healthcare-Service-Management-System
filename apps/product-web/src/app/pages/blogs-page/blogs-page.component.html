@@ -1,0 +1,261 @@
+<app-header />
+<body class="bg-white relative">
+  <div class="max-w-7xl mx-auto px-6 pt-7 text-[#4E6688]">
+    <app-breadcrumbs />
+  </div>
+  <div class="bg-[#f8f8f8] text-black py-10">
+    <!-- BREADCRUMB START -->
+
+    <div class="max-w-7xl mx-auto pb-10 px-6">
+      <h2 class="text-2xl font-bold text-center mb-6 text-[#222e5c]">
+        Gencare Blogs
+      </h2>
+
+      <!-- Loading State -->
+      @if (isLoading) {
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-8">
+        @for (_ of skeletons; track $index) {
+        <div
+          class="bg-white rounded-xl shadow p-4 flex flex-col justify-between min-h-[340px] h-full animate-pulse"
+        >
+          <div class="w-full h-36 bg-blue-100 mb-4 rounded-lg"></div>
+          <div>
+            <div class="h-4 w-3/4 bg-gray-200 mb-2 rounded"></div>
+            <div class="h-3 w-1/2 bg-gray-100 mb-2 rounded"></div>
+            <div class="h-3 w-5/6 bg-gray-100 mb-4 rounded"></div>
+          </div>
+          <div class="flex gap-2 mt-2 flex-wrap">
+            <div class="h-4 w-16 bg-blue-50 rounded-full"></div>
+            <div class="h-4 w-10 bg-blue-50 rounded-full"></div>
+          </div>
+        </div>
+        }
+      </div>
+      } @else if (error) {
+      <!-- Error State -->
+      <div class="text-center py-20">
+        <div class="text-red-500 mb-4">
+          <svg
+            class="mx-auto h-12 w-12"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+        </div>
+        <p class="text-gray-600 mb-4">{{ error }}</p>
+        <button
+          (click)="retryLoad()"
+          class="px-4 py-2 bg-[#47B1E2] text-white rounded-lg hover:bg-blue-600 transition"
+        >
+          Thử lại
+        </button>
+      </div>
+      } @else {
+      <!-- Main Content -->
+
+      <!-- Search -->
+      <div class="flex justify-center mb-6">
+        <input
+          type="text"
+          placeholder="Search blogs..."
+          class="w-2/3 px-4 py-2 rounded-full border border-gray-300 shadow"
+          (input)="onSearch($event)"
+          [value]="searchValue"
+        />
+      </div>
+
+      <!-- Categories -->
+      <div class="flex flex-wrap gap-3 justify-center mb-5">
+        @for (cat of categories; track cat) {
+        <button
+          (click)="selectCategory(cat); clearTagFilter()"
+          class="px-4 py-2 rounded-full border transition-all"
+          [ngClass]="
+            selectedCategory === cat
+              ? 'bg-blue-100 border-blue-400 text-blue-700 font-bold'
+              : 'bg-white border-gray-300 text-gray-600 hover:bg-blue-50'
+          "
+        >
+          {{ cat }}
+        </button>
+        }
+      </div>
+
+      <!-- Tag Cloud Filter (tất cả tag không trùng) -->
+      @if (allTags.length > 0) {
+      <div class="flex flex-wrap gap-2 mb-8 justify-center">
+        @for (tag of allTags; track tag) {
+        <button
+          (click)="filterByTag(tag)"
+          class="px-3 py-1 bg-[#4E6688]/10 text-[#4E6688] rounded-full text-xs font-medium transition-all hover:bg-[#4E6688] hover:text-white"
+          [ngClass]="{
+            'font-bold bg-[#4E6688] text-white': selectedTag === tag
+          }"
+        >
+          #{{ tag }}
+        </button>
+        } @if (selectedTag) {
+        <button
+          (click)="clearTagFilter()"
+          class="ml-2 px-2 py-1 text-xs rounded bg-gray-100 hover:bg-gray-200 border"
+        >
+          Clear
+        </button>
+        }
+      </div>
+      }
+
+      <!-- Nếu đang filter tag -->
+      @if (selectedTag) {
+      <div class="flex items-center gap-2 justify-center mb-4">
+        <span class="text-sm text-blue-600">Filter by tag:</span>
+        <span
+          class="bg-blue-100 text-blue-700 rounded-full px-3 py-1 text-xs font-bold"
+          >{{ selectedTag }}</span
+        >
+        <button
+          (click)="clearTagFilter()"
+          class="text-xs px-2 py-1 border border-blue-200 rounded hover:bg-blue-50"
+        >
+          Clear
+        </button>
+      </div>
+      }
+
+      <!-- No Results -->
+      @if (filteredBlogs.length === 0) {
+      <div class="text-center py-20">
+        <div class="text-gray-400 mb-4">
+          <svg
+            class="mx-auto h-12 w-12"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+            />
+          </svg>
+        </div>
+        <p class="text-gray-600">Không tìm thấy blog nào phù hợp.</p>
+      </div>
+      } @else {
+      <!-- Blog Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-8">
+        @for (blog of paginatedBlogs; track blog.id) {
+        <div
+          class="bg-white rounded-xl shadow hover:shadow-lg transition-all p-4 flex flex-col justify-between min-h-[340px] h-full cursor-pointer hover:-translate-y-1 duration-200"
+        >
+          <a
+            [routerLink]="['/blog', blog.id]"
+            class="block"
+            style="text-decoration: none"
+          >
+            <img
+              [src]="blog.img"
+              class="w-full h-36 object-cover object-left-top rounded-lg mb-4"
+              alt="Blog banner"
+            />
+            <div>
+              <p class="text-base text-[#245a8d] font-semibold mb-1">
+                {{ blog.title }}
+              </p>
+              <p class="text-gray-500 text-xs mb-2">
+                By {{ blog.author }} ·
+                {{ blog.createdAt | date : "mediumDate" }}
+              </p>
+              <p class="text-gray-500 text-sm mb-2 line-clamp-2">
+                {{ blog.desc }}
+              </p>
+            </div>
+          </a>
+          <div class="flex gap-2 mt-2 flex-wrap">
+            @for (tag of blog.tags.slice(0,2); track tag) {
+            <span
+              class="px-2 py-0.5 bg-blue-50 rounded-full text-xs text-blue-600 whitespace-nowrap cursor-pointer hover:bg-blue-100"
+              (click)="filterByTag(tag); $event.stopPropagation()"
+            >
+              {{ tag }}
+            </span>
+            } @if (blog.tags.length > 2) {
+            <span class="text-xs text-blue-400 select-none">...</span>
+            }
+          </div>
+        </div>
+        }
+      </div>
+
+      <!-- Pagination -->
+      <div
+        class="flex justify-center items-center gap-1 mt-10 flex-wrap text-sm text-gray-700"
+      >
+        <button
+          (click)="goToPage(page - 1)"
+          [disabled]="page === 1"
+          class="px-3 py-1 rounded-md hover:bg-gray-100 transition disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-4 h-4 inline-block"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M15 19l-7-7 7-7"
+            />
+          </svg>
+          Prev
+        </button>
+        @for (i of pageArray; track i) {
+        <button
+          (click)="goToPage(i + 1)"
+          [ngClass]="
+            page === i + 1 ? 'bg-gray-200 font-medium' : 'hover:bg-gray-100'
+          "
+          class="px-3 py-1 rounded-md transition cursor-pointer"
+        >
+          {{ i + 1 }}
+        </button>
+        }
+        <button
+          (click)="goToPage(page + 1)"
+          [disabled]="page === maxPage"
+          class="px-3 py-1 rounded-md hover:bg-gray-100 transition disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+        >
+          Next
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-4 h-4 inline-block"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 5l7 7-7 7"
+            />
+          </svg>
+        </button>
+      </div>
+      } }
+    </div>
+  </div>
+</body>
+
+<app-footer />

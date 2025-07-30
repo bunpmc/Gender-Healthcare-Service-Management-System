@@ -1,0 +1,161 @@
+<!-- Error Page Container -->
+<div class="error-page-container min-h-screen bg-gray-50 flex flex-col">
+  <!-- Header -->
+  <header class="flex items-center justify-between p-6">
+    <div class="flex items-center">
+      <button class="mr-4 p-2">
+        <svg
+          class="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M4 6h16M4 12h16M4 18h16"
+          ></path>
+        </svg>
+        <span class="ml-2 text-sm">MENU</span>
+      </button>
+    </div>
+
+    <div class="text-center">
+      <a routerLink="/" class="text-xl font-semibold text-gray-900">
+        {{ "HERO.TITLE" | translate }}
+      </a>
+    </div>
+
+    <div class="flex items-center">
+      <button class="mr-4 p-2">
+        <svg
+          class="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+          ></path>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 flex flex-col items-center justify-center px-4 py-16">
+    <div class="text-center max-w-lg">
+      <!-- Hanging Monitor Illustration -->
+      <div class="relative mb-8">
+        <!-- Hanging System -->
+        <div class="hanging-system">
+          <!-- Top Hook -->
+          <div class="top-hook"></div>
+          
+          <!-- Left Rope -->
+          <div class="rope left-rope"></div>
+          
+          <!-- Right Rope -->
+          <div class="rope right-rope"></div>
+          
+          <!-- Left Hook -->
+          <div class="side-hook left-hook"></div>
+          
+          <!-- Right Hook -->
+          <div class="side-hook right-hook"></div>
+        </div>
+
+        <!-- Monitor -->
+        <div class="monitor-container">
+          <!-- Monitor Frame -->
+          <div class="monitor-frame">
+            <!-- Browser Bar -->
+            <div class="browser-bar">
+              <div class="browser-controls">
+                <div class="hamburger-menu">
+                  <div class="line"></div>
+                  <div class="line"></div>
+                  <div class="line"></div>
+                </div>
+              </div>
+              <div class="browser-dots">
+                <div class="dot"></div>
+                <div class="dot"></div>
+              </div>
+            </div>
+            
+            <!-- Monitor Screen -->
+            <div class="monitor-screen">
+              <!-- Error Display -->
+              <div class="error-display">
+                <div class="error-code">
+                  <span *ngIf="errorData.type === '404'">404</span>
+                  <span *ngIf="errorData.type === '500'">500</span>
+                  <span *ngIf="errorData.type === 'network'">ERR</span>
+                  <span *ngIf="errorData.type === 'generic'">ERR</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Error Messages -->
+      <div class="text-center space-y-4">
+        <h1 class="text-2xl font-bold text-gray-900 uppercase tracking-wide">
+          {{ getErrorTitleKey() | translate }}
+        </h1>
+        <p class="text-gray-600 text-lg">
+          {{ getErrorMessageKey() | translate }}
+        </p>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+        <button *ngIf="errorData.showRetry" 
+                (click)="onRetry()"
+                class="px-6 py-3 bg-[#4E6688] text-white rounded-lg font-medium hover:bg-[#3d5373] transition-colors">
+          {{ "ERROR.ACTIONS.RETRY" | translate }}
+        </button>
+        
+        <button *ngIf="errorData.showHome" 
+                (click)="onGoHome()"
+                class="px-6 py-3 border-2 border-[#4E6688] text-[#4E6688] rounded-lg font-medium hover:bg-[#4E6688] hover:text-white transition-colors">
+          {{ "ERROR.ACTIONS.HOME" | translate }}
+        </button>
+        
+        <button *ngIf="errorData.showBack" 
+                (click)="onGoBack()"
+                class="px-6 py-3 text-gray-600 rounded-lg font-medium hover:bg-gray-100 transition-colors">
+          {{ "ERROR.ACTIONS.BACK" | translate }}
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="p-6 text-sm text-gray-500">
+    <div class="max-w-6xl mx-auto">
+      <div class="flex flex-col lg:flex-row justify-between items-center space-y-4 lg:space-y-0">
+        <div class="text-center lg:text-left">
+          {{ "FOOTER.SLOGAN" | translate }}
+        </div>
+        
+        <div class="flex flex-wrap justify-center gap-4">
+          <a routerLink="/service" class="hover:underline">{{ "NAV.SERVICES" | translate }}</a>
+          <a routerLink="/doctor" class="hover:underline">{{ "NAV.DOCTORS" | translate }}</a>
+          <a routerLink="/blog" class="hover:underline">{{ "NAV.BLOGS" | translate }}</a>
+          <a href="#" class="hover:underline">{{ "FOOTER.LEGAL.TITLE" | translate }}</a>
+        </div>
+        
+        <div class="text-center lg:text-right">
+          <span>{{ "ERROR.CONTACT_SUPPORT" | translate }}</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+</div>

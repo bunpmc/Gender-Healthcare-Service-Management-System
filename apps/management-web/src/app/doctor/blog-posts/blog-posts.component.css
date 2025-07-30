@@ -1,0 +1,444 @@
+/* Doctor Blog Posts Management Styles */
+
+/* Line clamp utilities for text truncation */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Card hover animations */
+.blog-card {
+  transition: all 0.3s ease;
+}
+
+.blog-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Status badge animations */
+.status-badge {
+  animation: fadeInScale 0.3s ease-out;
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Button hover effects */
+.action-btn {
+  transition: all 0.2s ease;
+}
+
+.action-btn:hover {
+  transform: scale(1.1);
+}
+
+/* Modal animations */
+.modal-backdrop {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.modal-content {
+  animation: slideInFromTop 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInFromTop {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Content editor styles */
+.content-editor {
+  min-height: 300px;
+  max-height: 500px;
+  overflow-y: auto;
+  direction: ltr !important;
+  text-align: left !important;
+  unicode-bidi: normal !important;
+  writing-mode: horizontal-tb !important;
+  -webkit-writing-mode: horizontal-tb !important;
+  -ms-writing-mode: lr-tb !important;
+  text-orientation: mixed !important;
+}
+
+.content-editor:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+.content-editor p {
+  margin-bottom: 1rem;
+}
+
+.content-editor h1,
+.content-editor h2,
+.content-editor h3 {
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  margin-top: 1rem;
+}
+
+.content-editor h1 { font-size: 1.5rem; }
+.content-editor h2 { font-size: 1.25rem; }
+.content-editor h3 { font-size: 1.125rem; }
+
+.content-editor ul,
+.content-editor ol {
+  margin-left: 1.5rem;
+  margin-bottom: 1rem;
+  padding-left: 1rem;
+}
+
+.content-editor ul {
+  list-style-type: disc;
+}
+
+.content-editor ol {
+  list-style-type: decimal;
+}
+
+.content-editor li {
+  margin-bottom: 0.25rem;
+  display: list-item;
+}
+
+/* Placeholder support for contenteditable */
+.content-editor:empty:before {
+  content: attr(data-placeholder);
+  color: #9ca3af;
+  font-style: italic;
+  pointer-events: none;
+}
+
+/* Ensure proper text rendering */
+.content-editor,
+.content-editor * {
+  direction: ltr !important;
+  text-align: left !important;
+  unicode-bidi: normal !important;
+  writing-mode: horizontal-tb !important;
+}
+
+/* Prevent any RTL interference */
+.content-editor {
+  -webkit-writing-mode: horizontal-tb !important;
+  -ms-writing-mode: lr-tb !important;
+}
+
+/* Fix list item display */
+.content-editor ul li,
+.content-editor ol li {
+  display: list-item !important;
+  list-style-position: inside;
+}
+
+/* Ensure proper paragraph spacing */
+.content-editor p:first-child {
+  margin-top: 0;
+}
+
+.content-editor p:last-child {
+  margin-bottom: 0;
+}
+
+/* Fix for empty paragraphs */
+.content-editor p:empty {
+  min-height: 1.2em;
+}
+
+/* Prevent text selection issues */
+.content-editor {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+
+/* Prevent any input method issues */
+.content-editor {
+  ime-mode: auto;
+  -webkit-ime-mode: auto;
+  -moz-ime-mode: auto;
+  -ms-ime-mode: auto;
+}
+
+/* Force text input direction */
+.content-editor input,
+.content-editor textarea {
+  direction: ltr !important;
+  text-align: left !important;
+}
+
+/* Active content editor with proper text direction (display-only, not saved) */
+.content-editor-active,
+.content-editor-active * {
+  direction: ltr !important;
+  text-align: left !important;
+  unicode-bidi: normal !important;
+  writing-mode: horizontal-tb !important;
+}
+
+/* Ensure clean content display without inline styles */
+.content-editor-active p,
+.content-editor-active div,
+.content-editor-active span,
+.content-editor-active ul,
+.content-editor-active ol,
+.content-editor-active li {
+  direction: ltr !important;
+  text-align: left !important;
+  unicode-bidi: normal !important;
+}
+
+.content-editor strong {
+  font-weight: bold;
+}
+
+.content-editor em {
+  font-style: italic;
+}
+
+.content-editor u {
+  text-decoration: underline;
+}
+
+/* Editor toolbar */
+.editor-toolbar {
+  background: linear-gradient(to right, #f8fafc, #f1f5f9);
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.editor-btn {
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.editor-btn:hover {
+  background-color: rgba(99, 102, 241, 0.1);
+  color: #4f46e5;
+}
+
+.editor-btn:active {
+  transform: scale(0.95);
+}
+
+/* Tag input styles */
+.tag-input {
+  transition: all 0.2s ease;
+}
+
+.tag-input:focus {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.tag-item {
+  animation: slideInFromLeft 0.3s ease-out;
+}
+
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Image upload area */
+.image-upload-area {
+  transition: all 0.3s ease;
+}
+
+.image-upload-area:hover {
+  border-color: #4f46e5;
+  background-color: rgba(79, 70, 229, 0.02);
+}
+
+.image-preview {
+  animation: fadeInScale 0.3s ease-out;
+}
+
+/* Loading states */
+.loading-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Statistics cards */
+.stats-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.stats-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* Search and filter section */
+.filter-section {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.8));
+  backdrop-filter: blur(10px);
+}
+
+/* Pagination */
+.pagination-btn {
+  transition: all 0.2s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.pagination-btn.active {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: white;
+  box-shadow: 0 4px 8px rgba(79, 70, 229, 0.3);
+}
+
+/* Empty state */
+.empty-state {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .modal-content {
+    margin: 1rem;
+    max-height: calc(100vh - 2rem);
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .blog-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-section {
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .editor-toolbar {
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+
+  .pagination {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .content-editor {
+    background-color: #1f2937;
+    color: #f9fafb;
+  }
+
+  .editor-toolbar {
+    background: linear-gradient(to right, #374151, #4b5563);
+    border-color: #6b7280;
+  }
+
+  .stats-card {
+    background: linear-gradient(135deg, rgba(31, 41, 55, 0.9), rgba(31, 41, 55, 0.7));
+    border-color: rgba(107, 114, 128, 0.2);
+  }
+}
+
+/* Accessibility improvements */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Focus styles for keyboard navigation */
+button:focus,
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 2px solid #4f46e5;
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .stats-card,
+  .filter-section {
+    border: 2px solid #000;
+  }
+
+  .action-btn:hover {
+    border: 2px solid #000;
+  }
+}

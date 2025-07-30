@@ -1,0 +1,92 @@
+ **Tính năng hệ thống dành cho Bác sĩ (Private Clinic Doctor Portal)**
+
+1. **Xác Thực (Authentication)**
+
+* Đăng nhập dành cho bác sĩ, sử dụng thông tin từ bảng `staff_members` với vai trò là `"doctor"`.
+* Chỉ những người dùng đã xác thực với vai trò bác sĩ mới có quyền truy cập vào hệ thống.
+
+
+ 2. **Bảng Điều Khiển (Dashboard)**
+
+* Hiển thị tổng quan trong ngày: số lượng cuộc hẹn chờ xử lý, bệnh nhân mới, hoạt động gần đây.
+* Xem lịch trình ngày/tuần.
+* Truy cập nhanh vào báo cáo và thông báo quan trọng.
+* Thống kê như: số cuộc hẹn trong ngày.
+* Dữ liệu lấy từ `appointments`, `notifications`.
+
+ 3. **Quản Lý Cuộc Hẹn (Appointments Management)**
+
+* **Xem cuộc hẹn**: danh sách hoặc lịch từ bảng `appointments` (lọc theo `doctor_id`).
+* **Lọc** theo ngày, trạng thái (pending, confirmed…), loại thăm khám.
+* **Tìm kiếm** theo tên bệnh nhân, điện thoại hoặc email.
+* **Tạo cuộc hẹn mới**: Chọn bệnh nhân từ `patients` hoặc thêm mới khách, chọn thời gian và slot khả dụng.
+* **Chi tiết cuộc hẹn**: bao gồm tin nhắn, dịch vụ, trạng thái.
+* **Cập nhật trạng thái**: chuyển giữa các trạng thái như `pending`, `confirmed`, `completed`, `cancelled`.
+* **Hủy cuộc hẹn**: có thể thêm lý do.
+* **Slot**: xem các slot từ `doctor_slot_assignments`, thông tin về `appointments_count`, `max_appointments`.
+* **Giới hạn quyền**: chỉ chỉnh `appointment_status` và `message`, các trường như `doctor_id`, `patient_id` là chỉ đọc.
+
+ 4. **Quản Lý Bệnh Nhân (Patient Management)**
+
+* **Danh sách bệnh nhân**: từ bảng `patients`, có thể lọc theo trạng thái `active/inactive`, tìm kiếm theo tên, điện thoại, email.
+* **Hồ sơ bệnh nhân**: thông tin cá nhân (họ tên, giới tính, ngày sinh...) và thông tin y tế (dị ứng, bệnh mãn tính, tiêm chủng...).
+* **Lịch sử khám bệnh**: liên kết với `appointments`, `patient_reports`, `receipts`.
+* **Báo cáo bệnh nhân**: tạo và chỉnh sửa báo cáo với `report_content`, `report_status`.
+* **Theo dõi chu kỳ kinh nguyệt** (nếu áp dụng): từ bảng `period_tracking`.
+* **Giới hạn quyền**: chỉ xem bệnh nhân liên quan đến bác sĩ; không được xóa báo cáo.
+
+ 5. **Quản Lý Biên Lai (Receipts Management)**
+
+* Xem danh sách biên lai từ `receipts` với số tiền, ngày tạo, trạng thái, dịch vụ.
+* Đánh dấu trạng thái là "đã thanh toán" hoặc "đang chờ xử lý".
+
+ 6. **Quản Lý Lịch Trình (Schedule Viewing)**
+
+* Hiển thị slot được gán cho bác sĩ từ bảng `doctor_slot_assignments`, liên kết `slot_date`, `slot_time`.
+* Hiển thị số lượng cuộc hẹn đã đặt và tối đa cho mỗi slot.
+* **Giới hạn quyền**: chỉ đọc, không chỉnh sửa.
+
+ 7. **Quản Lý Dịch Vụ và Danh Mục (Services and Categories)**
+
+* Xem tất cả các dịch vụ từ bảng `medical_services`: tên, chi phí, thời lượng, mô tả.
+* Xem danh mục dịch vụ từ `service_categories`.
+* Xem các dịch vụ bác sĩ đang cung cấp qua `doctor_services`.
+
+ 8. **Quản Lý Blog (Blog Management)**
+
+* Xem danh sách blog từ `blog_posts`: tiêu đề, trạng thái (draft, published), số lượt xem.
+* Tạo bài blog mới: tiêu đề, nội dung, trích đoạn, hình ảnh, thẻ (tags).
+* Chỉnh sửa và xuất bản hoặc hủy đăng bài viết.
+* Quản lý thẻ của blog.
+* **Giới hạn quyền**: bác sĩ chỉ quản lý bài viết của chính họ (`doctor_id = staff_id`).
+
+9. **Quản Lý Hồ Sơ Bác Sĩ (Doctor Profile Management)**
+
+* Chỉnh sửa thông tin từ `doctor_details`: chuyên khoa, giới thiệu bản thân, slogan, học vấn, chứng chỉ.
+* Chỉnh sửa từ `staff_members`: email, trạng thái làm việc.
+* Quản lý dịch vụ thông qua `doctor_services`.
+* **Giới hạn quyền**: chỉ chỉnh sửa hồ sơ của chính mình; các trường như `license_no`, `department`, `role` là chỉ đọc.
+
+ 10. **Thông Báo (Notifications)**
+
+* Xem danh sách thông báo từ `notifications`, lọc theo loại, liên kết với `appointments` hoặc `staff_id`.
+
+ 11. **Nhật Ký Hoạt Động (Activity Logs)**
+
+* Theo dõi các sự kiện hệ thống và lịch sử thay đổi hồ sơ nhân viên từ bảng `staff_history`, `logs`.
+
+ **Giao Diện & Trải Nghiệm Người Dùng (UI/UX)**
+
+* **Điều hướng**: thanh menu bên trái hoặc trên cùng gồm: Dashboard, Appointments, Patients, Schedule, Reports, Profile, Blog, Notifications.
+* **Dữ liệu bảng**: sắp xếp và lọc được (sortable + filterable).
+* **Biểu mẫu nhập liệu**: rõ ràng, có xác thực.
+* **Thông báo trực tiếp**: khi cập nhật trạng thái, tạo cuộc hẹn, v.v.
+* **Thiết kế responsive**: tương thích cả desktop và mobile.
+
+ **Bảo Mật**
+
+* **Phân quyền theo vai trò**: chỉ cho phép `role = doctor` và lọc theo `staff_id`.
+* **Mã hóa dữ liệu**: đặc biệt là thông tin bệnh nhân và báo cáo.
+* **Xác thực đầu vào**: kiểm tra kỹ input để chống injection.
+* **Ghi log hoạt động**: phục vụ kiểm tra và xử lý sự cố.
+

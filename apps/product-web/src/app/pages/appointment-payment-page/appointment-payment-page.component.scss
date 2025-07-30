@@ -1,0 +1,194 @@
+// Appointment Payment Page Styles
+.appointment-payment-container {
+  font-family: "Source Sans Pro", Arial, sans-serif;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
+// Language Selector Styles
+.language-selector {
+  img {
+    transition: all 0.2s ease-in-out;
+    
+    &:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+    
+    &.active {
+      transform: scale(1.02);
+    }
+  }
+}
+
+// Card Styles
+.payment-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: all 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+  }
+}
+
+// Button Styles
+.payment-button {
+  background: linear-gradient(135deg, #4e6688 0%, #3d5373 100%);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: 600;
+  padding: 12px 24px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: linear-gradient(135deg, #3d5373 0%, #2c3e50 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(78, 102, 136, 0.3);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+.secondary-button {
+  background: transparent;
+  border: 2px solid #4e6688;
+  border-radius: 8px;
+  color: #4e6688;
+  font-weight: 600;
+  padding: 10px 24px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: #4e6688;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(78, 102, 136, 0.3);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+// Loading Animation
+.loading-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Responsive Design
+@media (max-width: 640px) {
+  .appointment-payment-container {
+    padding: 1rem;
+  }
+
+  .payment-card {
+    margin: 0.5rem;
+  }
+
+  .language-selector {
+    top: 1rem;
+    right: 1rem;
+  }
+}
+
+// Animation for card entrance
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.payment-card {
+  animation: slideInUp 0.6s ease-out;
+}
+
+// Error message styles
+.error-message {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  animation: slideInUp 0.3s ease-out;
+}
+
+// Success message styles
+.success-message {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #16a34a;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  animation: slideInUp 0.3s ease-out;
+}
+
+// Payment amount highlight
+.payment-amount {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  border: 2px solid #4e6688;
+  
+  .amount {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #4e6688;
+    text-shadow: 0 2px 4px rgba(78, 102, 136, 0.2);
+  }
+}
+
+// Info grid styles
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  
+  .info-item {
+    padding: 0.75rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #4e6688;
+    
+    .label {
+      font-weight: 600;
+      color: #6b7280;
+      font-size: 0.875rem;
+    }
+    
+    .value {
+      color: #1f2937;
+      font-size: 1rem;
+      margin-top: 0.25rem;
+    }
+  }
+}

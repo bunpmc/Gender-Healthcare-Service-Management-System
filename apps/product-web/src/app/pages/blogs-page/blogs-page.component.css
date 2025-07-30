@@ -1,0 +1,10 @@
+.line-clamp-2 {
+  line-clamp: 2; /* Thuộc tính chuẩn mới */
+  -webkit-line-clamp: 2; /* Vendor prefix cho Safari/Chrome cũ */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.object-left-top {
+  object-position: left top;
+}

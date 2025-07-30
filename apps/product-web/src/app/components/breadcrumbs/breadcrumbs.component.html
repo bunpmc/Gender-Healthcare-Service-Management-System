@@ -1,0 +1,25 @@
+<nav aria-label="Breadcrumb" class="mb-6">
+  <!-- Debug info - xóa sau khi fix
+  <div class="text-xs text-gray-500 mb-2">
+    Debug: {{ breadcrumbs.length }} breadcrumbs found
+  </div> -->
+
+  @if (breadcrumbs.length > 0) {
+  <ol class="flex items-center gap-2 text-sm text-[#4E6688]">
+    @for (bc of breadcrumbs; track bc.url; let last = $last) { @if (!last) {
+    <li>
+      <a [routerLink]="bc.url" class="hover:underline hover:text-[#98d2c0]">{{
+        bc.label
+      }}</a>
+      <span class="mx-1 text-[#b1bad6]">/</span>
+    </li>
+    } @else {
+    <li>
+      <span class="font-semibold text-[#222e5c]">{{ bc.label }}</span>
+    </li>
+    } }
+  </ol>
+  } @else {
+  <div class="text-xs text-red-500">No breadcrumbs to display</div>
+  }
+</nav>

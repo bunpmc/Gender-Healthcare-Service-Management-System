@@ -1,0 +1,592 @@
+<!-- Enhanced Patient Management Content -->
+<div class="space-y-6 animate-fadeIn">
+  <div class="container mx-auto max-w-full">
+    <!-- Enhanced Search Bar -->
+    <app-patient-search-bar
+      [totalResults]="filteredPatients.length"
+      (filterChange)="applyFilters($event)"
+      (exportData)="exportPatients()"
+      class="mb-6"
+    ></app-patient-search-bar>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="flex items-center justify-center py-12">
+      <div class="flex items-center space-x-3">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+        <span class="text-gray-600 font-medium">Loading patients...</span>
+      </div>
+    </div>
+
+    <!-- Enhanced Patient Table -->
+    <app-patient-table
+      *ngIf="!isLoading"
+      [paginatedPatients]="paginatedPatients"
+      [totalPatients]="filteredPatients.length"
+      [currentPage]="currentPage"
+      (viewPatient)="openViewPatientModal($event)"
+      (editPatient)="openEditPatientModal($event)"
+      (deactivatePatient)="onDeactivatePatient($event)"
+      (sortChange)="onSortChange($event)"
+      (bulkAction)="onBulkAction($event)"
+    ></app-patient-table>
+    <!-- Enhanced Pagination -->
+    <div
+      *ngIf="!isLoading && filteredPatients.length > 0"
+      class="bg-white rounded-2xl shadow-xl border border-white/20 px-6 py-4 mt-6"
+    >
+      <div class="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
+        <!-- Results Info -->
+        <div class="text-sm text-gray-700">
+          Showing <span class="font-semibold text-purple-600">{{ (currentPage - 1) * pageSize + 1 }}</span> to
+          <span class="font-semibold text-purple-600">{{ Math.min(currentPage * pageSize, filteredPatients.length) }}</span> of
+          <span class="font-semibold text-purple-600">{{ filteredPatients.length }}</span> patients
+        </div>
+
+        <!-- Pagination Controls -->
+        <div class="flex items-center space-x-2">
+          <button
+            (click)="goToFirstPage()"
+            [disabled]="currentPage === 1"
+            class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+            title="First page"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path>
+            </svg>
+          </button>
+
+          <button
+            (click)="goToPreviousPage()"
+            [disabled]="currentPage === 1"
+            class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+            title="Previous page"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+            <span class="ml-1">Previous</span>
+          </button>
+
+          <!-- Page Numbers -->
+          <div class="flex items-center space-x-1">
+            <span
+              *ngFor="let page of getVisiblePages()"
+              class="inline-flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
+              [class]="page === currentPage
+                ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg'
+                : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 cursor-pointer'"
+              (click)="page !== currentPage && goToPage(page)"
+            >
+              {{ page }}
+            </span>
+          </div>
+
+          <button
+            (click)="goToNextPage()"
+            [disabled]="currentPage === totalPages"
+            class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+            title="Next page"
+          >
+            <span class="mr-1">Next</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </button>
+
+          <button
+            (click)="goToLastPage()"
+            [disabled]="currentPage === totalPages"
+            class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+            title="Last page"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div
+      *ngIf="!isLoading && filteredPatients.length === 0"
+      class="text-center py-4 text-gray-500"
+    >
+      No patients found.
+    </div>
+  </div>
+
+
+
+  <!-- View Patient Modal -->
+  <div
+    *ngIf="showViewModal && selectedPatient"
+    class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50"
+  >
+    <div
+      class="bg-white rounded-lg p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto"
+    >
+      <h2 class="text-2xl font-semibold mb-4">Patient Details</h2>
+      <table class="min-w-full bg-white">
+        <tbody>
+          <tr class="border-b">
+            <td class="py-2 px-4 font-medium text-gray-700">ID</td>
+            <td
+              class="py-2 px-4 truncate max-w-xs"
+              title="{{ selectedPatient.id }}"
+            >
+              {{ selectedPatient.id }}
+            </td>
+          </tr>
+          <tr class="border-b">
+            <td class="py-2 px-4 font-medium text-gray-700">Full Name</td>
+            <td class="py-2 px-4">{{ selectedPatient.full_name }}</td>
+          </tr>
+          <tr class="border-b">
+            <td class="py-2 px-4 font-medium text-gray-700">Phone</td>
+            <td class="py-2 px-4">{{ selectedPatient.phone || "N/A" }}</td>
+          </tr>
+          <tr class="border-b">
+            <td class="py-2 px-4 font-medium text-gray-700">Email</td>
+            <td class="py-2 px-4">{{ selectedPatient.email || "N/A" }}</td>
+          </tr>
+          <tr class="border-b">
+            <td class="py-2 px-4 font-medium text-gray-700">Date of Birth</td>
+            <td class="py-2 px-4">
+              {{
+                selectedPatient.date_of_birth
+                  ? (selectedPatient.date_of_birth | date : "shortDate")
+                  : "N/A"
+              }}
+            </td>
+          </tr>
+          <tr class="border-b">
+            <td class="py-2 px-4 font-medium text-gray-700">Gender</td>
+            <td class="py-2 px-4">{{ selectedPatient.gender || "N/A" }}</td>
+          </tr>
+          <tr class="border-b">
+            <td class="py-2 px-4 font-medium text-gray-700" colspan="2">
+              <div class="font-medium text-gray-700 mb-3">Allergies</div>
+              <div class="space-y-2">
+                <div *ngIf="convertToStringArray(selectedPatient.allergies).length > 0; else noAllergies" class="flex flex-wrap gap-2">
+                  <span
+                    *ngFor="let allergy of convertToStringArray(selectedPatient.allergies)"
+                    class="inline-flex items-center px-3 py-1 bg-red-100 text-red-800 text-sm rounded-full"
+                  >
+                    {{ allergy }}
+                  </span>
+                </div>
+                <ng-template #noAllergies>
+                  <div class="text-sm text-gray-500 italic">No allergies recorded</div>
+                </ng-template>
+              </div>
+            </td>
+          </tr>
+          <tr class="border-b">
+            <td class="py-2 px-4 font-medium text-gray-700" colspan="2">
+              <div class="font-medium text-gray-700 mb-3">Chronic Conditions</div>
+              <div class="space-y-2">
+                <div *ngIf="convertToStringArray(selectedPatient.chronic_conditions).length > 0; else noConditions" class="flex flex-wrap gap-2">
+                  <span
+                    *ngFor="let condition of convertToStringArray(selectedPatient.chronic_conditions)"
+                    class="inline-flex items-center px-3 py-1 bg-orange-100 text-orange-800 text-sm rounded-full"
+                  >
+                    {{ condition }}
+                  </span>
+                </div>
+                <ng-template #noConditions>
+                  <div class="text-sm text-gray-500 italic">No chronic conditions recorded</div>
+                </ng-template>
+              </div>
+            </td>
+          </tr>
+          <tr class="border-b">
+            <td class="py-2 px-4 font-medium text-gray-700" colspan="2">
+              <div class="font-medium text-gray-700 mb-3">Past Surgeries</div>
+              <div class="space-y-2">
+                <div *ngIf="convertToStringArray(selectedPatient.past_surgeries).length > 0; else noSurgeries" class="flex flex-wrap gap-2">
+                  <span
+                    *ngFor="let surgery of convertToStringArray(selectedPatient.past_surgeries)"
+                    class="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full"
+                  >
+                    {{ surgery }}
+                  </span>
+                </div>
+                <ng-template #noSurgeries>
+                  <div class="text-sm text-gray-500 italic">No past surgeries recorded</div>
+                </ng-template>
+              </div>
+            </td>
+          </tr>
+          <tr class="border-b">
+            <td class="py-2 px-4 font-medium text-gray-700">
+              Vaccination Status
+            </td>
+            <td class="py-2 px-4">
+              {{ selectedPatient.vaccination_status || "N/A" }}
+            </td>
+          </tr>
+          <tr class="border-b">
+            <td class="py-2 px-4 font-medium text-gray-700">Patient Status</td>
+            <td class="py-2 px-4">{{ selectedPatient.patient_status }}</td>
+          </tr>
+          <tr class="border-b">
+            <td class="py-2 px-4 font-medium text-gray-700">Created At</td>
+            <td class="py-2 px-4">
+              {{
+                selectedPatient.created_at
+                  ? (selectedPatient.created_at | date : "short")
+                  : "N/A"
+              }}
+            </td>
+          </tr>
+          <tr class="border-b">
+            <td class="py-2 px-4 font-medium text-gray-700">Updated At</td>
+            <td class="py-2 px-4">
+              {{
+                selectedPatient.updated_at
+                  ? (selectedPatient.updated_at | date : "short")
+                  : "N/A"
+              }}
+            </td>
+          </tr>
+          <tr class="border-b">
+            <td class="py-2 px-4 font-medium text-gray-700">Image</td>
+            <td class="py-2 px-4">
+              <a
+                *ngIf="selectedPatient.image_link"
+                [href]="selectedPatient.image_link"
+                target="_blank"
+                class="text-blue-600 hover:underline"
+                >View Image</a
+              >
+              <span *ngIf="!selectedPatient.image_link">N/A</span>
+            </td>
+          </tr>
+          <tr class="border-b">
+            <td class="py-2 px-4 font-medium text-gray-700">Bio</td>
+            <td class="py-2 px-4">{{ selectedPatient.bio || "N/A" }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="mt-6 flex justify-end">
+        <button
+          (click)="closeViewModal()"
+          class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Patient Modal -->
+  <div
+    *ngIf="showEditModal && selectedPatient"
+    class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50"
+  >
+    <div
+      class="bg-white rounded-lg p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto"
+    >
+      <h2 class="text-2xl font-semibold mb-4">Edit Patient</h2>
+      <table class="min-w-full bg-white">
+        <tbody>
+          <tr class="border-b">
+            <td class="py-2 px-4 font-medium text-gray-700">ID</td>
+            <td
+              class="py-2 px-4 truncate max-w-xs"
+              title="{{ selectedPatient.id }}"
+            >
+              {{ selectedPatient.id }}
+            </td>
+          </tr>
+          <tr class="border-b">
+            <td class="py-2 px-4 font-medium text-gray-700">Full Name</td>
+            <td class="py-2 px-4">
+              <input
+                [(ngModel)]="selectedPatient.full_name"
+                class="w-full p-2 border rounded-md"
+              />
+            </td>
+          </tr>
+          <tr class="border-b">
+            <td class="py-2 px-4 font-medium text-gray-700">Phone</td>
+            <td class="py-2 px-4">
+              <input
+                [(ngModel)]="selectedPatient.phone"
+                class="w-full p-2 border rounded-md"
+              />
+            </td>
+          </tr>
+          <tr class="border-b">
+            <td class="py-2 px-4 font-medium text-gray-700">Email</td>
+            <td class="py-2 px-4">
+              <input
+                [(ngModel)]="selectedPatient.email"
+                class="w-full p-2 border rounded-md"
+              />
+            </td>
+          </tr>
+          <tr class="border-b">
+            <td class="py-2 px-4 font-medium text-gray-700">Date of Birth</td>
+            <td class="py-2 px-4">
+              <input
+                [(ngModel)]="selectedPatient.date_of_birth"
+                type="date"
+                class="w-full p-2 border rounded-md"
+              />
+            </td>
+          </tr>
+          <tr class="border-b">
+            <td class="py-2 px-4 font-medium text-gray-700">Gender</td>
+            <td class="py-2 px-4">
+              <select
+                [(ngModel)]="selectedPatient.gender"
+                class="w-full p-2 border rounded-md"
+              >
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+            </td>
+          </tr>
+          <tr class="border-b">
+            <td class="py-2 px-4 font-medium text-gray-700">Allergies</td>
+            <td class="py-2 px-4">
+              <!-- Tag-based Allergies Input -->
+              <div class="space-y-3">
+                <!-- Add New Allergy -->
+                <div class="flex items-center space-x-2">
+                  <input
+                    [(ngModel)]="newAllergy"
+                    (keydown)="onEnterKey($event, 'allergy')"
+                    type="text"
+                    placeholder="Add new allergy..."
+                    class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors text-sm"
+                  />
+                  <button
+                    (click)="addAllergy()"
+                    [disabled]="!newAllergy.trim()"
+                    class="px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                  </button>
+                </div>
+
+                <!-- Allergies Tags -->
+                <div class="flex flex-wrap gap-2" *ngIf="allergiesList.length > 0">
+                  <span
+                    *ngFor="let allergy of allergiesList; let i = index"
+                    class="inline-flex items-center px-3 py-1 bg-red-100 text-red-800 text-sm rounded-full"
+                  >
+                    {{ allergy }}
+                    <button
+                      (click)="removeAllergy(i)"
+                      class="ml-2 text-red-600 hover:text-red-800 transition-colors"
+                    >
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                      </svg>
+                    </button>
+                  </span>
+                </div>
+
+                <!-- Empty State -->
+                <div *ngIf="allergiesList.length === 0" class="text-sm text-gray-500 italic">
+                  No allergies recorded
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr class="border-b">
+            <td class="py-2 px-4 font-medium text-gray-700">
+              Chronic Conditions
+            </td>
+            <td class="py-2 px-4">
+              <!-- Tag-based Chronic Conditions Input -->
+              <div class="space-y-3">
+                <!-- Add New Chronic Condition -->
+                <div class="flex items-center space-x-2">
+                  <input
+                    [(ngModel)]="newChronicCondition"
+                    (keydown)="onEnterKey($event, 'chronic')"
+                    type="text"
+                    placeholder="Add new chronic condition..."
+                    class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors text-sm"
+                  />
+                  <button
+                    (click)="addChronicCondition()"
+                    [disabled]="!newChronicCondition.trim()"
+                    class="px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                  </button>
+                </div>
+
+                <!-- Chronic Conditions Tags -->
+                <div class="flex flex-wrap gap-2" *ngIf="chronicConditionsList.length > 0">
+                  <span
+                    *ngFor="let condition of chronicConditionsList; let i = index"
+                    class="inline-flex items-center px-3 py-1 bg-orange-100 text-orange-800 text-sm rounded-full"
+                  >
+                    {{ condition }}
+                    <button
+                      (click)="removeChronicCondition(i)"
+                      class="ml-2 text-orange-600 hover:text-orange-800 transition-colors"
+                    >
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                      </svg>
+                    </button>
+                  </span>
+                </div>
+
+                <!-- Empty State -->
+                <div *ngIf="chronicConditionsList.length === 0" class="text-sm text-gray-500 italic">
+                  No chronic conditions recorded
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr class="border-b">
+            <td class="py-2 px-4 font-medium text-gray-700">Past Surgeries</td>
+            <td class="py-2 px-4">
+              <!-- Tag-based Past Surgeries Input -->
+              <div class="space-y-3">
+                <!-- Add New Past Surgery -->
+                <div class="flex items-center space-x-2">
+                  <input
+                    [(ngModel)]="newPastSurgery"
+                    (keydown)="onEnterKey($event, 'surgery')"
+                    type="text"
+                    placeholder="Add new past surgery..."
+                    class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors text-sm"
+                  />
+                  <button
+                    (click)="addPastSurgery()"
+                    [disabled]="!newPastSurgery.trim()"
+                    class="px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                  </button>
+                </div>
+
+                <!-- Past Surgeries Tags -->
+                <div class="flex flex-wrap gap-2" *ngIf="pastSurgeriesList.length > 0">
+                  <span
+                    *ngFor="let surgery of pastSurgeriesList; let i = index"
+                    class="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full"
+                  >
+                    {{ surgery }}
+                    <button
+                      (click)="removePastSurgery(i)"
+                      class="ml-2 text-blue-600 hover:text-blue-800 transition-colors"
+                    >
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                      </svg>
+                    </button>
+                  </span>
+                </div>
+
+                <!-- Empty State -->
+                <div *ngIf="pastSurgeriesList.length === 0" class="text-sm text-gray-500 italic">
+                  No past surgeries recorded
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr class="border-b">
+            <td class="py-2 px-4 font-medium text-gray-700">
+              Vaccination Status
+            </td>
+            <td class="py-2 px-4">
+              <select
+                [(ngModel)]="selectedPatient.vaccination_status"
+                class="w-full p-2 border rounded-md"
+              >
+                <option value="not_vaccinated">Not Vaccinated</option>
+                <option value="partially_vaccinated">
+                  Partially Vaccinated
+                </option>
+                <option value="fully_vaccinated">Fully Vaccinated</option>
+              </select>
+            </td>
+          </tr>
+          <tr class="border-b">
+            <td class="py-2 px-4 font-medium text-gray-700">Patient Status</td>
+            <td class="py-2 px-4">
+              <select
+                [(ngModel)]="selectedPatient.patient_status"
+                class="w-full p-2 border rounded-md"
+              >
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </td>
+          </tr>
+          <tr class="border-b">
+            <td class="py-2 px-4 font-medium text-gray-700">Created At</td>
+            <td class="py-2 px-4">
+              {{
+                selectedPatient.created_at
+                  ? (selectedPatient.created_at | date : "short")
+                  : "N/A"
+              }}
+            </td>
+          </tr>
+          <tr class="border-b">
+            <td class="py-2 px-4 font-medium text-gray-700">Updated At</td>
+            <td class="py-2 px-4">
+              {{
+                selectedPatient.updated_at
+                  ? (selectedPatient.updated_at | date : "short")
+                  : "N/A"
+              }}
+            </td>
+          </tr>
+          <tr class="border-b">
+            <td class="py-2 px-4 font-medium text-gray-700">Image Link</td>
+            <td class="py-2 px-4">
+              <input
+                [(ngModel)]="selectedPatient.image_link"
+                placeholder="Image URL"
+                class="w-full p-2 border rounded-md"
+              />
+            </td>
+          </tr>
+          <tr class="border-b">
+            <td class="py-2 px-4 font-medium text-gray-700">Bio</td>
+            <td class="py-2 px-4">
+              <textarea
+                [(ngModel)]="selectedPatient.bio"
+                class="w-full p-2 border rounded-md"
+                rows="4"
+              ></textarea>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="mt-6 flex justify-end space-x-2">
+        <button
+          (click)="closeEditModal()"
+          class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+        >
+          Cancel
+        </button>
+        <button
+          (click)="updatePatient()"
+          class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+        >
+          Save
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+

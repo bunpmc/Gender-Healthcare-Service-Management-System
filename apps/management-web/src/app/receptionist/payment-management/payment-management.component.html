@@ -1,0 +1,580 @@
+<!-- Payment Management Component -->
+<div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-6">
+  <div class="max-w-7xl mx-auto">
+
+    <!-- Header Section -->
+    <div class="mb-8">
+      <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-8">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Payment Management</h1>
+            <p class="text-gray-600">Manage service billing and patient payments</p>
+          </div>
+          <div class="mt-4 lg:mt-0">
+            <button
+              (click)="openPaymentModal()"
+              class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-6 py-3 rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+              <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+              </svg>
+              Create Payment Record
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
+              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+              </svg>
+            </div>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-500">Total Revenue</p>
+            <p class="text-2xl font-bold text-gray-900">{{formatCurrency(stats.totalRevenue)}}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <div class="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-xl flex items-center justify-center">
+              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </div>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-500">Pending Payments</p>
+            <p class="text-2xl font-bold text-gray-900">{{stats.pendingPayments}}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
+              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </div>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-500">Paid Today</p>
+            <p class="text-2xl font-bold text-gray-900">{{stats.paidToday}}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-pink-600 rounded-xl flex items-center justify-center">
+              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+              </svg>
+            </div>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-500">Overdue</p>
+            <p class="text-2xl font-bold text-gray-900">{{stats.overduePayments}}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="mb-6">
+      <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <!-- Search -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+            <input
+              type="text"
+              [(ngModel)]="searchQuery"
+              (input)="onSearchChange()"
+              placeholder="Search by patient, email, or ID..."
+              class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+          </div>
+
+          <!-- Status Filter -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Payment Status</label>
+            <select
+              [(ngModel)]="selectedStatus"
+              (change)="onStatusFilterChange()"
+              class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+              <option value="">All Status</option>
+              <option *ngFor="let status of statusOptions" [value]="status.value">{{status.label}}</option>
+            </select>
+          </div>
+
+          <!-- Date Range Filter -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
+            <select
+              [(ngModel)]="selectedDateRange"
+              (change)="onDateRangeChange()"
+              class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+              <option value="">All Time</option>
+              <option value="today">Today</option>
+              <option value="week">This Week</option>
+              <option value="month">This Month</option>
+            </select>
+          </div>
+
+          <!-- Results Count -->
+          <div class="flex items-end">
+            <div class="text-sm text-gray-600">
+              Showing {{filteredRecords.length}} of {{paymentRecords.length}} records
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    <div *ngIf="errorMessage" class="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl">
+      {{errorMessage}}
+    </div>
+    <div *ngIf="successMessage" class="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl">
+      {{successMessage}}
+    </div>
+
+    <!-- Payment Records Table -->
+    <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 overflow-hidden">
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="flex items-center justify-center py-12">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      </div>
+
+      <!-- Table Content -->
+      <div *ngIf="!isLoading" class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gradient-to-r from-indigo-50 to-purple-50">
+            <tr>
+              <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient</th>
+              <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Services</th>
+              <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+              <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+              <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+              <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr *ngFor="let record of paginatedRecords" class="hover:bg-gray-50 transition-colors duration-200">
+              <!-- Patient Info -->
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div>
+                  <div class="text-sm font-medium text-gray-900">{{record.patient_name}}</div>
+                  <div class="text-sm text-gray-500">{{record.patient_email}}</div>
+                  <div class="text-xs text-gray-400">ID: {{record.payment_id}}</div>
+                </div>
+              </td>
+
+              <!-- Services -->
+              <td class="px-6 py-4">
+                <div class="space-y-1">
+                  <div *ngFor="let service of record.services" class="text-sm">
+                    <span class="font-medium text-gray-900">{{service.service_name}}</span>
+                    <span class="text-gray-500"> x{{service.quantity}}</span>
+                    <span class="text-gray-400"> - {{formatCurrency(service.service_price)}}</span>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Amount -->
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-bold text-gray-900">{{formatCurrency(record.total_amount)}}</div>
+              </td>
+
+              <!-- Status -->
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span [class]="getStatusBadgeClass(record.payment_status)" class="inline-flex px-2 py-1 text-xs font-semibold rounded-full">
+                  {{record.payment_status | titlecase}}
+                </span>
+              </td>
+
+              <!-- Date -->
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <div>{{formatDate(record.created_at)}}</div>
+                <div *ngIf="record.payment_date" class="text-xs text-green-600">
+                  Paid: {{formatDate(record.payment_date)}}
+                </div>
+              </td>
+
+              <!-- Actions -->
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <div class="flex space-x-2">
+                  <button
+                    (click)="openPaymentModal(record)"
+                    class="text-indigo-600 hover:text-indigo-900 p-2 rounded-lg hover:bg-indigo-50 transition-colors duration-200"
+                    title="View Details">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    </svg>
+                  </button>
+
+                  <div class="relative" *ngIf="record.payment_status !== 'paid'">
+                    <select
+                      (change)="updatePaymentStatus(record, $event)"
+                      class="text-sm border border-gray-300 rounded-lg px-2 py-1 focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                      <option value="">Update Status</option>
+                      <option *ngFor="let status of statusOptions" [value]="status.value">
+                        Mark as {{status.label}}
+                      </option>
+                    </select>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Empty State -->
+        <div *ngIf="filteredRecords.length === 0" class="text-center py-12">
+          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+          </svg>
+          <h3 class="mt-2 text-sm font-medium text-gray-900">No payment records found</h3>
+          <p class="mt-1 text-sm text-gray-500">Get started by creating a new payment record.</p>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div *ngIf="totalPages > 1" class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
+        <div class="flex items-center justify-between">
+          <div class="flex-1 flex justify-between sm:hidden">
+            <button
+              (click)="goToPage(currentPage - 1)"
+              [disabled]="currentPage === 1"
+              class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+              Previous
+            </button>
+            <button
+              (click)="goToPage(currentPage + 1)"
+              [disabled]="currentPage === totalPages"
+              class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+              Next
+            </button>
+          </div>
+          <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+            <div>
+              <p class="text-sm text-gray-700">
+                Showing page <span class="font-medium">{{currentPage}}</span> of <span class="font-medium">{{totalPages}}</span>
+              </p>
+            </div>
+            <div>
+              <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                <button
+                  (click)="goToPage(currentPage - 1)"
+                  [disabled]="currentPage === 1"
+                  class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                  <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                  </svg>
+                </button>
+
+                <button
+                  *ngFor="let page of [].constructor(totalPages); let i = index"
+                  (click)="goToPage(i + 1)"
+                  [class]="(i + 1) === currentPage ?
+                    'z-10 bg-indigo-50 border-indigo-500 text-indigo-600 relative inline-flex items-center px-4 py-2 border text-sm font-medium' :
+                    'bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium'">
+                  {{i + 1}}
+                </button>
+
+                <button
+                  (click)="goToPage(currentPage + 1)"
+                  [disabled]="currentPage === totalPages"
+                  class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                  <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                  </svg>
+                </button>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Payment Modal -->
+<div *ngIf="showPaymentModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+    <div class="p-8">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold text-gray-900">
+          {{selectedRecord ? 'Payment Details' : 'Create Payment Record'}}
+        </h2>
+        <button
+          (click)="closePaymentModal()"
+          class="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition-colors duration-200">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- View Mode -->
+      <div *ngIf="selectedRecord" class="space-y-6">
+        <!-- Patient Information -->
+        <div class="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl p-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">Patient Information</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-500">Patient Name</label>
+              <p class="text-lg font-semibold text-gray-900">{{selectedRecord.patient_name}}</p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-500">Email</label>
+              <p class="text-gray-900">{{selectedRecord.patient_email}}</p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-500">Payment ID</label>
+              <p class="text-gray-900 font-mono">{{selectedRecord.payment_id}}</p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-500">Status</label>
+              <span [class]="getStatusBadgeClass(selectedRecord.payment_status)" class="inline-flex px-3 py-1 text-sm font-semibold rounded-full">
+                {{selectedRecord.payment_status | titlecase}}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Services Used -->
+        <div class="bg-gray-50 rounded-2xl p-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">Services Used</h3>
+          <div class="space-y-3">
+            <div *ngFor="let service of selectedRecord.services" class="flex justify-between items-center bg-white rounded-xl p-4">
+              <div>
+                <h4 class="font-medium text-gray-900">{{service.service_name}}</h4>
+                <p class="text-sm text-gray-500">Quantity: {{service.quantity}}</p>
+                <p class="text-xs text-gray-400">{{formatDate(service.usage_date)}}</p>
+              </div>
+              <div class="text-right">
+                <p class="font-semibold text-gray-900">{{formatCurrency(service.service_price)}}</p>
+                <p class="text-sm text-gray-500">per unit</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Total -->
+          <div class="border-t border-gray-200 mt-4 pt-4">
+            <div class="flex justify-between items-center">
+              <span class="text-lg font-semibold text-gray-900">Total Amount</span>
+              <span class="text-2xl font-bold text-indigo-600">{{formatCurrency(selectedRecord.total_amount)}}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Information -->
+        <div class="bg-gray-50 rounded-2xl p-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">Payment Information</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-500">Created Date</label>
+              <p class="text-gray-900">{{formatDate(selectedRecord.created_at)}}</p>
+            </div>
+            <div *ngIf="selectedRecord.payment_date">
+              <label class="block text-sm font-medium text-gray-500">Payment Date</label>
+              <p class="text-gray-900">{{formatDate(selectedRecord.payment_date)}}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Create Mode -->
+      <div *ngIf="!selectedRecord">
+        <form (ngSubmit)="createPayment()" #paymentForm="ngForm">
+          <!-- Patient Selection -->
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Select Patient *</label>
+            <select
+              [(ngModel)]="newPayment.patient_id"
+              name="patientId"
+              required
+              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+              <option value="">Choose a patient</option>
+              <option *ngFor="let patient of patients" [value]="patient.id">
+                {{patient.full_name}} - {{patient.email}}
+              </option>
+            </select>
+          </div>
+
+          <!-- Services Section -->
+          <div class="mb-6">
+            <div class="flex items-center justify-between mb-4">
+              <label class="block text-sm font-medium text-gray-700">Services *</label>
+              <button
+                type="button"
+                (click)="openServiceModal()"
+                class="bg-indigo-600 text-white px-4 py-2 rounded-xl hover:bg-indigo-700 transition-colors duration-200">
+                <svg class="w-4 h-4 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                Add Service
+              </button>
+            </div>
+
+            <div class="space-y-3">
+              <div *ngFor="let service of newPayment.services; let i = index" class="flex justify-between items-center bg-gray-50 rounded-xl p-4">
+                <div>
+                  <h4 class="font-medium text-gray-900">{{service.service_name}}</h4>
+                  <p class="text-sm text-gray-500">Quantity: {{service.quantity}} × {{formatCurrency(service.service_price)}}</p>
+                </div>
+                <div class="flex items-center space-x-2">
+                  <span class="font-semibold text-gray-900">{{formatCurrency(service.service_price * service.quantity)}}</span>
+                  <button
+                    type="button"
+                    (click)="removeServiceFromPayment(i)"
+                    class="text-red-600 hover:text-red-800 p-1 rounded">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <div *ngIf="newPayment.services.length === 0" class="text-center py-8 text-gray-500">
+                No services added yet. Click "Add Service" to get started.
+              </div>
+            </div>
+
+            <!-- Total Amount -->
+            <div *ngIf="newPayment.services.length > 0" class="border-t border-gray-200 mt-4 pt-4">
+              <div class="flex justify-between items-center">
+                <span class="text-lg font-semibold text-gray-900">Total Amount</span>
+                <span class="text-2xl font-bold text-indigo-600">{{formatCurrency(getTotalAmount())}}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Payment Status -->
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Payment Status</label>
+            <select
+              [(ngModel)]="newPayment.payment_status"
+              name="paymentStatus"
+              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+              <option *ngFor="let status of statusOptions" [value]="status.value">{{status.label}}</option>
+            </select>
+          </div>
+
+          <!-- Form Actions -->
+          <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+            <button
+              type="button"
+              (click)="closePaymentModal()"
+              class="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors duration-200">
+              Cancel
+            </button>
+            <button
+              type="submit"
+              [disabled]="isLoading || !paymentForm.form.valid || newPayment.services.length === 0"
+              class="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200">
+              <span *ngIf="!isLoading">Create Payment Record</span>
+              <span *ngIf="isLoading" class="flex items-center">
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Creating...
+              </span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Service Selection Modal -->
+<div *ngIf="showServiceModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div class="p-8">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold text-gray-900">Add Service</h2>
+        <button
+          (click)="closeServiceModal()"
+          class="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition-colors duration-200">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Service Selection Form -->
+      <div class="space-y-6">
+        <!-- Service Selection -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Select Service *</label>
+          <select
+            [(ngModel)]="selectedService"
+            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+            <option [ngValue]="null">Choose a service</option>
+            <option *ngFor="let service of services" [ngValue]="service">
+              {{service.service_name}} - {{formatCurrency(service.service_cost || 0)}}
+            </option>
+          </select>
+        </div>
+
+        <!-- Service Details -->
+        <div *ngIf="selectedService" class="bg-gray-50 rounded-xl p-4">
+          <h3 class="font-medium text-gray-900 mb-2">{{selectedService.service_name}}</h3>
+          <p class="text-sm text-gray-600 mb-2">{{selectedService.service_description}}</p>
+          <p class="text-lg font-semibold text-indigo-600">{{formatCurrency(selectedService.service_cost || 0)}}</p>
+        </div>
+
+        <!-- Quantity -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Quantity *</label>
+          <input
+            type="number"
+            [(ngModel)]="serviceQuantity"
+            min="1"
+            max="10"
+            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+        </div>
+
+        <!-- Total for this service -->
+        <div *ngIf="selectedService" class="bg-indigo-50 rounded-xl p-4">
+          <div class="flex justify-between items-center">
+            <span class="font-medium text-gray-900">Total for this service</span>
+            <span class="text-xl font-bold text-indigo-600">{{formatCurrency((selectedService.service_cost || 0) * serviceQuantity)}}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="flex justify-end space-x-4 mt-8 pt-6 border-t border-gray-200">
+        <button
+          (click)="closeServiceModal()"
+          class="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors duration-200">
+          Cancel
+        </button>
+        <button
+          (click)="addServiceToPayment()"
+          [disabled]="!selectedService || serviceQuantity < 1"
+          class="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200">
+          Add Service
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

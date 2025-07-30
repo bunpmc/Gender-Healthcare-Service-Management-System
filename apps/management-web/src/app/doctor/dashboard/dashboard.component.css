@@ -1,0 +1,79 @@
+/* Dashboard specific styles */
+.dashboard-card {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.stat-number {
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.recent-appointment-item {
+  transition: background-color 0.2s ease-in-out;
+}
+
+.recent-appointment-item:hover {
+  background-color: #f8fafc;
+}
+
+/* Loading animation */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Status badge styles */
+.status-badge {
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .stat-number {
+    font-size: 2rem;
+  }
+  
+  .dashboard-card {
+    padding: 1rem;
+  }
+}
+
+/* Custom scrollbar for appointment list */
+.appointment-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.appointment-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.appointment-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.appointment-list::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.appointment-list::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}

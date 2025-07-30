@@ -1,0 +1,48 @@
+<div class="bg-white p-6 rounded-lg shadow-md">
+  <h2 class="text-lg font-semibold mb-1">Recent Activity</h2>
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm text-left text-gray-500">
+      <tbody>
+        @if (isLoading) {
+          <tr class="border-b">
+            <td colspan="3" class="py-4 text-center">Loading...</td>
+          </tr>
+        } @else {
+          @for (activity of activities; track activity.title) {
+            <tr class="border-b">
+              <td class="py-0 px-1">
+                <div class="flex items-center">
+                  <svg
+                    class="w-5 h-5"
+                    [ngClass]="{
+                      'text-blue-500': activity.type === 'info',
+                      'text-green-500': activity.type === 'success',
+                      'text-red-500': activity.type === 'error',
+                      'hover:text-blue-700': activity.type === 'info' && activity.iconHover,
+                      'hover:text-green-700': activity.type === 'success' && activity.iconHover,
+                      'hover:text-red-700': activity.type === 'error' && activity.iconHover
+                    }"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    (mouseenter)="activity.iconHover = true"
+                    (mouseleave)="activity.iconHover = false"
+                  >
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="activity.iconPath" />
+                  </svg>
+                </div>
+              </td>
+              <td class="py-4 px-6 font-medium text-gray-900">{{ activity.title }}</td>
+              <td class="py-4 px-6">{{ activity.description }}</td>
+            </tr>
+          }
+          @empty {
+            <tr class="border-b">
+              <td colspan="3" class="py-4 text-center">No recent activities</td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

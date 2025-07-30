@@ -1,0 +1,473 @@
+<!-- Icons made by fulmal from www.flaticon.com -->
+<div class="tgdd-chat-container">
+  <div class="tgdd-chat-panel" [class.active]="showChatPanel">
+    <!-- Header -->
+    <div class="tgdd-header">
+      <div class="header-left">
+        <div class="support-avatar">
+          <!-- AI Service Icon by fulmal from Flaticon -->
+          <img
+            src="https://cdn-icons-png.flaticon.com/512/17062/17062495.png"
+            alt="AI Service"
+            width="30"
+            height="30"
+            class="support-icon"
+            style="filter: brightness(0) invert(1)"
+          />
+        </div>
+        <span class="header-title">{{ "AI_CHAT.BRAND_NAME" | translate }}</span>
+      </div>
+      <div class="header-actions">
+        <button
+          class="action-btn refresh-btn"
+          (click)="clearChat()"
+          [title]="'AI_CHAT.REFRESH' | translate"
+          [style.display]="showClearBtn ? 'flex' : 'none'"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <polyline points="23,4 23,10 17,10"></polyline>
+            <polyline points="1,20 1,14 7,14"></polyline>
+            <path
+              d="M20.49,9A9,9,0,0,0,5.64,5.64L1,10m22,4L18.36,18.36A9,9,0,0,1,3.51,15"
+            ></path>
+          </svg>
+        </button>
+        <button
+          class="action-btn minimize-btn"
+          (click)="toggleChat()"
+          [title]="'AI_CHAT.MINIMIZE' | translate"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <!-- Body -->
+    <div
+      class="tgdd-chat-body flex-1 overflow-y-auto p-6 bg-gradient-to-br from-slate-50 to-slate-100 flex flex-col"
+      #chatBody
+    >
+      <!-- Connection Status -->
+      @if (!isConnected) {
+      <div
+        class="connection-alert flex items-center gap-3 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm font-medium mb-4"
+      >
+        <div class="alert-icon">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+        </div>
+        <span>{{ "AI_CHAT.CONNECTION_LOST" | translate }}</span>
+      </div>
+      }
+
+      <!-- Chat Messages -->
+      <div class="chat-conversation">
+        @if (currentMsg) {
+        <div class="message-container mb-4">
+          <div
+            class="message flex gap-3 items-start"
+            [ngClass]="'message-' + currentMsg.from"
+          >
+            @if (currentMsg.from === 'bot') {
+            <div class="message-avatar">
+              <div
+                class="bot-avatar w-8 h-8 rounded-full bg-gradient-to-br from-blue-100/20 to-blue-200/10 border-2 border-blue-400/20 shadow-sm flex items-center justify-center transition-all duration-200 hover:scale-105"
+              >
+                <!-- AI Service Icon by fulmal from Flaticon -->
+                <img
+                  src="https://cdn-icons-png.flaticon.com/512/17062/17062495.png"
+                  alt="AI Service"
+                  width="16"
+                  height="16"
+                  class="bot-support-icon block"
+                />
+              </div>
+            </div>
+            }
+            <div class="message-content flex-1">
+              <div
+                class="message-text bg-white border border-gray-200 rounded-2xl px-4 py-3 text-sm leading-relaxed text-gray-700 shadow-sm transition-all duration-200 hover:shadow-md max-w-xs"
+                [innerHTML]="currentMsg.text"
+              ></div>
+              <div class="message-meta mt-1 flex items-center gap-2">
+                <span class="message-time text-xs text-gray-500 font-medium">{{
+                  formatTime(currentMsg.timestamp)
+                }}</span>
+                @if (currentMsg.from === 'bot') {
+                <span class="message-sender text-xs text-gray-500"
+                  >AI Assistant</span
+                >
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+        }
+
+        <!-- Typing Indicator -->
+        @if (isTyping) {
+        <div class="typing-container">
+          <div class="message message-bot">
+            <div class="message-avatar">
+              <div class="bot-avatar">
+                <!-- AI Service Icon by fulmal from Flaticon -->
+                <img
+                  src="https://cdn-icons-png.flaticon.com/512/17062/17062495.png"
+                  alt="AI Service"
+                  width="16"
+                  height="16"
+                  class="bot-support-icon"
+                />
+              </div>
+            </div>
+            <div class="message-content">
+              <div class="typing-indicator">
+                <div class="typing-dots">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+                <span class="typing-text">{{
+                  currentThinkingMessage || ("AI_CHAT.TYPING" | translate)
+                }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        }
+
+        <!-- Quick Replies -->
+        @if (showQuickReplies && !isTyping) {
+        <div class="quick-suggestions">
+          <div class="suggestions-label">
+            {{ "AI_CHAT.QUICK_REPLIES_TITLE" | translate }}
+          </div>
+          <div class="suggestion-chips">
+            @for (reply of getQuickReplies(); track reply; let i = $index) {
+            <button class="suggestion-chip" (click)="sendQuickReply(reply)">
+              {{ reply }}
+            </button>
+            }
+          </div>
+        </div>
+        }
+      </div>
+    </div>
+    <!-- Input -->
+    <div class="tgdd-input-section bg-white border-t border-gray-200 p-6">
+      <div class="input-wrapper" [class.disabled]="!isConnected">
+        <div
+          class="input-field flex items-end gap-3 bg-gray-50 border border-gray-300 rounded-3xl px-4 py-2.5 transition-all duration-300 focus-within:border-blue-500 focus-within:bg-white focus-within:shadow-lg"
+        >
+          <textarea
+            #messageInput
+            [(ngModel)]="message"
+            (keydown)="onKeyDown($event)"
+            [placeholder]="'AI_CHAT.PLACEHOLDER' | translate"
+            rows="1"
+            [disabled]="!isConnected"
+            class="message-input flex-1 resize-none border-none outline-none bg-transparent text-sm leading-relaxed text-gray-700 min-h-[20px] max-h-[120px] placeholder-gray-400"
+          ></textarea>
+          <button
+            class="send-button w-9 h-9 border-none bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-full cursor-pointer flex items-center justify-center transition-all duration-300 flex-shrink-0 shadow-md hover:scale-110 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+            (click)="sendMessage()"
+            [disabled]="!message.trim() || !isConnected || isTyping"
+            [class.sending]="isTyping"
+            [title]="'AI_CHAT.SEND' | translate"
+          >
+            @if (!isTyping) {
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22,2 15,22 11,13 2,9 22,2"></polygon>
+            </svg>
+            } @if (isTyping) {
+            <div class="loading-spinner">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="3" fill="currentColor">
+                  <animate
+                    attributeName="opacity"
+                    values="1;0.2;1"
+                    dur="1s"
+                    repeatCount="indefinite"
+                  />
+                </circle>
+              </svg>
+            </div>
+            }
+          </button>
+        </div>
+        @if (isConnected) {
+        <div class="input-footer">
+          <span class="input-hint">{{ "AI_CHAT.INPUT_HINT" | translate }}</span>
+        </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Action Button -->
+  <div
+    class="tgdd-fab"
+    (click)="toggleChat()"
+    [class.active]="showChatPanel"
+    [class.has-unread]="unreadCount > 0"
+  >
+    <div class="fab-content">
+      @if (!showChatPanel) {
+      <div class="fab-icon">
+        <!-- AI Service Icon by fulmal from Flaticon -->
+        <img
+          src="https://cdn-icons-png.flaticon.com/512/17062/17062495.png"
+          alt="AI Service"
+          width="24"
+          height="24"
+          class="fab-support-icon"
+          style="filter: brightness(0) invert(1)"
+        />
+      </div>
+      } @if (showChatPanel) {
+      <div class="fab-close">
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </div>
+      }
+    </div>
+    @if (unreadCount > 0 && !showChatPanel) {
+    <div class="unread-badge">
+      {{ unreadCount > 9 ? "9+" : unreadCount }}
+    </div>
+    }
+  </div>
+</div>
+
+<!-- Patient Form Modal -->
+@if (showPatientForm) {
+<div class="form-modal-overlay" (click)="showPatientForm = false">
+  <div class="form-modal" (click)="$event.stopPropagation()">
+    <div class="form-header">
+      <h3>Patient Information</h3>
+      <button class="close-btn" (click)="showPatientForm = false">×</button>
+    </div>
+    <form
+      class="patient-form"
+      (ngSubmit)="onPatientFormSubmit(patientFormData)"
+    >
+      <div class="form-group">
+        <label>Full Name *</label>
+        <input
+          type="text"
+          [(ngModel)]="patientFormData.fullName"
+          name="fullName"
+          required
+        />
+      </div>
+      <div class="form-group">
+        <label>Phone Number *</label>
+        <input
+          type="tel"
+          [(ngModel)]="patientFormData.phone"
+          name="phone"
+          required
+        />
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" [(ngModel)]="patientFormData.email" name="email" />
+      </div>
+      <div class="form-group">
+        <label>Date of Birth</label>
+        <input
+          type="date"
+          [(ngModel)]="patientFormData.dateOfBirth"
+          name="dateOfBirth"
+        />
+      </div>
+      <div class="form-group">
+        <label>Reason for Visit</label>
+        <textarea
+          [(ngModel)]="patientFormData.reason"
+          name="reason"
+          rows="3"
+        ></textarea>
+      </div>
+      <button type="submit" class="submit-btn">Continue to Calendar</button>
+    </form>
+  </div>
+</div>
+}
+
+<!-- Calendar Modal -->
+@if (showCalendar) {
+<div class="calendar-modal-overlay" (click)="showCalendar = false">
+  <div class="calendar-modal" (click)="$event.stopPropagation()">
+    <div class="calendar-header">
+      <h3>Select Appointment Date</h3>
+      <button class="close-btn" (click)="showCalendar = false">×</button>
+    </div>
+    <div class="calendar-content">
+      @for (slot of availableSlots; track slot.date) {
+      <div class="date-card" (click)="onDateSelected(slot.displayDate)">
+        <div class="date-display">{{ slot.displayDate }}</div>
+        <div class="available-times">
+          @for (time of slot.timeSlots; track time) {
+          <span class="time-chip">{{ time }}</span>
+          }
+        </div>
+      </div>
+      }
+    </div>
+  </div>
+</div>
+}
+
+<!-- Appointment Time Selection -->
+@if (showAppointmentFlow) {
+<div class="appointment-modal-overlay" (click)="showAppointmentFlow = false">
+  <div class="appointment-modal" (click)="$event.stopPropagation()">
+    <div class="appointment-header">
+      <h3>Select Time Slot</h3>
+      <p>{{ selectedDate }}</p>
+      <button class="close-btn" (click)="showAppointmentFlow = false">×</button>
+    </div>
+    <div class="time-slots">
+      @for (slot of availableSlots; track slot.date) { @if (slot.displayDate ===
+      selectedDate) { @for (time of slot.timeSlots; track time) {
+      <button class="time-slot-btn" (click)="onTimeSlotSelected(time)">
+        {{ time }}
+      </button>
+      } } }
+    </div>
+  </div>
+</div>
+}
+
+<!-- Period Tracking Calendar -->
+@if (showPeriodTracker) {
+<div class="period-tracker-overlay" (click)="closePeriodTracker()">
+  <div class="period-tracker-modal" (click)="$event.stopPropagation()">
+    <div class="period-tracker-header">
+      <h3>Period Tracking Calendar</h3>
+      <button class="close-btn" (click)="closePeriodTracker()">×</button>
+    </div>
+
+    <!-- Period Stats -->
+    @if (periodStats) {
+    <div class="period-stats">
+      <div class="stat-card">
+        <div class="stat-value">{{ periodStats.daysUntilNextPeriod }}</div>
+        <div class="stat-label">Days until next period</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">{{ periodStats.averageCycleLength }}</div>
+        <div class="stat-label">Average cycle length</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">{{ periodStats.totalCyclesTracked }}</div>
+        <div class="stat-label">Cycles tracked</div>
+      </div>
+    </div>
+    }
+
+    <!-- Calendar Navigation -->
+    <div class="calendar-navigation">
+      <button class="nav-btn" (click)="previousMonth()">‹</button>
+      <h4 class="month-year">{{ getMonthYearDisplay() }}</h4>
+      <button class="nav-btn" (click)="nextMonth()">›</button>
+    </div>
+
+    <!-- Calendar Grid -->
+    <div class="period-calendar">
+      <div class="calendar-header">
+        <div class="day-header">Sun</div>
+        <div class="day-header">Mon</div>
+        <div class="day-header">Tue</div>
+        <div class="day-header">Wed</div>
+        <div class="day-header">Thu</div>
+        <div class="day-header">Fri</div>
+        <div class="day-header">Sat</div>
+      </div>
+
+      <div class="calendar-body">
+        @for (day of calendarDays; track day.dateString) {
+        <div
+          class="calendar-day"
+          [ngClass]="{
+            'current-month': day.isCurrentMonth,
+            'other-month': !day.isCurrentMonth,
+            today: day.isToday,
+            'period-day': day.isPeriodDay,
+            'predicted-period': day.isPredictedPeriod,
+            selected: selectedPeriodDate === day.dateString
+          }"
+          (click)="onPeriodDayClick(day)"
+        >
+          <span class="day-number">{{ day.dayNumber }}</span>
+          @if (day.isPeriodDay) {
+          <div class="period-indicator">🔴</div>
+          } @if (day.isPredictedPeriod) {
+          <div class="predicted-indicator">📅</div>
+          }
+        </div>
+        }
+      </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="calendar-legend">
+      <div class="legend-item">
+        <div class="legend-color period-color"></div>
+        <span>Period Days</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color predicted-color"></div>
+        <span>Predicted Period</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color today-color"></div>
+        <span>Today</span>
+      </div>
+    </div>
+  </div>
+</div>
+}

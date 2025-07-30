@@ -1,0 +1,192 @@
+<!-- Appointment Payment Page Container -->
+<div class="appointment-payment-container min-h-screen bg-gray-50 flex flex-col relative">
+  <!-- Language Selector -->
+  <div class="absolute top-6 right-6 z-10">
+    <div class="flex items-center gap-3 bg-white rounded-lg shadow-md p-2">
+      <img
+        class="h-6 w-8 rounded object-cover shadow cursor-pointer transition-all duration-200 hover:scale-105"
+        src="./America.webp"
+        alt="English"
+        (click)="changeLang('en')"
+        [class.ring-2]="currentLang === 'en'"
+        [class.ring-blue-500]="currentLang === 'en'"
+        [class.opacity-60]="currentLang !== 'en'"
+      />
+      <img
+        class="h-6 w-8 rounded object-cover shadow cursor-pointer transition-all duration-200 hover:scale-105"
+        src="./VietNam.jpg"
+        alt="Tiếng Việt"
+        (click)="changeLang('vi')"
+        [class.ring-2]="currentLang === 'vi'"
+        [class.ring-red-500]="currentLang === 'vi'"
+        [class.opacity-60]="currentLang !== 'vi'"
+      />
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <main class="flex-1 flex flex-col items-center justify-center px-4 py-8">
+    <div class="max-w-2xl w-full">
+      <!-- Header -->
+      <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-[#4e6688] mb-4">
+          {{ "APPOINTMENT.PAYMENT.TITLE" | translate }}
+        </h1>
+        <p class="text-gray-600">
+          {{ "APPOINTMENT.PAYMENT.SUBTITLE" | translate }}
+        </p>
+      </div>
+
+      @if (appointmentData) {
+      <!-- Payment Summary Card -->
+      <div class="bg-white rounded-2xl shadow-lg overflow-hidden mb-6">
+        <!-- Header -->
+        <div class="bg-[#4e6688] text-white px-6 py-4">
+          <h2 class="text-xl font-semibold flex items-center">
+            <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+              </path>
+            </svg>
+            {{ "APPOINTMENT.PAYMENT.APPOINTMENT_DETAILS" | translate }}
+          </h2>
+        </div>
+
+        <!-- Content -->
+        <div class="p-6 space-y-6">
+          <!-- Patient Information -->
+          <div class="border-b border-gray-200 pb-4">
+            <h3 class="text-lg font-semibold text-gray-800 mb-3">
+              {{ "APPOINTMENT.PAYMENT.PATIENT_INFO" | translate }}
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div>
+                <span class="font-medium text-gray-600">{{ "APPOINTMENT.FORM.FULL_NAME" | translate }}:</span>
+                <span class="ml-2 text-gray-800">{{ appointmentData.appointment_data.full_name }}</span>
+              </div>
+              <div>
+                <span class="font-medium text-gray-600">{{ "APPOINTMENT.FORM.PHONE" | translate }}:</span>
+                <span class="ml-2 text-gray-800">{{ appointmentData.appointment_data.phone }}</span>
+              </div>
+              <div>
+                <span class="font-medium text-gray-600">{{ "APPOINTMENT.FORM.EMAIL" | translate }}:</span>
+                <span class="ml-2 text-gray-800">{{ appointmentData.appointment_data.email || 'N/A' }}</span>
+              </div>
+              <div>
+                <span class="font-medium text-gray-600">{{ "APPOINTMENT.FORM.GENDER" | translate }}:</span>
+                <span class="ml-2 text-gray-800">{{ appointmentData.appointment_data.gender }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Appointment Details -->
+          <div class="border-b border-gray-200 pb-4">
+            <h3 class="text-lg font-semibold text-gray-800 mb-3">
+              {{ "APPOINTMENT.PAYMENT.APPOINTMENT_INFO" | translate }}
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div>
+                <span class="font-medium text-gray-600">{{ "APPOINTMENT.PAYMENT.DOCTOR" | translate }}:</span>
+                <span class="ml-2 text-gray-800">{{ appointmentData.doctor_name }}</span>
+              </div>
+              <div>
+                <span class="font-medium text-gray-600">{{ "APPOINTMENT.PAYMENT.SERVICE" | translate }}:</span>
+                <span class="ml-2 text-gray-800">{{ appointmentData.service_name }}</span>
+              </div>
+              <div>
+                <span class="font-medium text-gray-600">{{ "APPOINTMENT.PAYMENT.DATE" | translate }}:</span>
+                <span class="ml-2 text-gray-800">{{ formatDate(appointmentData.appointment_date!) }}</span>
+              </div>
+              <div>
+                <span class="font-medium text-gray-600">{{ "APPOINTMENT.PAYMENT.TIME" | translate }}:</span>
+                <span class="ml-2 text-gray-800">{{ formatTime(appointmentData.appointment_time!) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Payment Amount -->
+          <div class="bg-blue-50 rounded-lg p-4">
+            <div class="flex justify-between items-center">
+              <span class="text-lg font-semibold text-gray-800">
+                {{ "APPOINTMENT.PAYMENT.TOTAL_AMOUNT" | translate }}:
+              </span>
+              <span class="text-2xl font-bold text-[#4e6688]">
+                {{ formatCurrency(appointmentData.payment_amount) }}
+              </span>
+            </div>
+            <p class="text-sm text-gray-600 mt-2">
+              {{ "APPOINTMENT.PAYMENT.PAYMENT_NOTE" | translate }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Error Message -->
+      @if (errorMessage) {
+      <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+        <div class="flex items-center">
+          <svg class="w-5 h-5 text-red-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+            </path>
+          </svg>
+          <span class="text-red-700">{{ errorMessage }}</span>
+        </div>
+      </div>
+      }
+
+      <!-- Action Buttons -->
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <button
+          (click)="processPayment()"
+          [disabled]="isProcessing"
+          class="px-8 py-3 bg-[#4e6688] text-white rounded-lg font-medium hover:bg-[#3d5373] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+        >
+          @if (isProcessing) {
+          <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          {{ "APPOINTMENT.PAYMENT.PROCESSING" | translate }}
+          } @else {
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z">
+            </path>
+          </svg>
+          {{ "APPOINTMENT.PAYMENT.PAY_NOW" | translate }}
+          }
+        </button>
+        
+        <button
+          (click)="goBack()"
+          [disabled]="isProcessing"
+          class="px-8 py-3 border-2 border-[#4e6688] text-[#4e6688] rounded-lg font-medium hover:bg-[#4e6688] hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {{ "APPOINTMENT.PAYMENT.GO_BACK" | translate }}
+        </button>
+      </div>
+      }
+
+      @if (!appointmentData) {
+      <!-- Loading State -->
+      <div class="text-center">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#4e6688] mx-auto mb-4"></div>
+        <p class="text-gray-600">{{ "APPOINTMENT.PAYMENT.LOADING" | translate }}</p>
+      </div>
+      }
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="mt-auto p-6 bg-gray-100 border-t border-gray-200">
+    <div class="max-w-4xl mx-auto text-center">
+      <div class="text-sm text-gray-600 mb-2">
+        {{ "APPOINTMENT.PAYMENT.SECURE_PAYMENT" | translate }}
+      </div>
+      <div class="text-xs text-gray-500">
+        © 2024 {{ "HERO.TITLE" | translate }}. All rights reserved.
+      </div>
+    </div>
+  </footer>
+</div>

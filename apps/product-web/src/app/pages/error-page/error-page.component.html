@@ -1,0 +1,163 @@
+<!-- Error Page Container -->
+<div
+  class="error-page-container min-h-screen bg-gray-50 flex flex-col relative"
+>
+  <!-- Language Selector -->
+  <div class="absolute top-6 right-6 z-10">
+    <div class="flex items-center gap-3 bg-white rounded-lg shadow-md p-2">
+      <img
+        class="h-6 w-8 rounded object-cover shadow cursor-pointer transition-all duration-200 hover:scale-105"
+        src="./America.webp"
+        alt="English"
+        (click)="changeLang('en')"
+        [class.ring-2]="currentLang === 'en'"
+        [class.ring-blue-500]="currentLang === 'en'"
+        [class.opacity-60]="currentLang !== 'en'"
+      />
+      <img
+        class="h-6 w-8 rounded object-cover shadow cursor-pointer transition-all duration-200 hover:scale-105"
+        src="./VietNam.jpg"
+        alt="Tiếng Việt"
+        (click)="changeLang('vi')"
+        [class.ring-2]="currentLang === 'vi'"
+        [class.ring-red-500]="currentLang === 'vi'"
+        [class.opacity-60]="currentLang !== 'vi'"
+      />
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <main class="flex-1 flex flex-col items-center justify-center px-4 py-8">
+    <div class="text-center max-w-lg">
+      <!-- Hanging Monitor Illustration -->
+      <div class="relative mb-8">
+        <!-- Hanging System -->
+        <div class="hanging-system">
+          <!-- Top Hook -->
+          <div class="top-hook"></div>
+
+          <!-- Left Rope -->
+          <div class="rope left-rope"></div>
+
+          <!-- Right Rope -->
+          <div class="rope right-rope"></div>
+
+          <!-- Left Hook -->
+          <div class="side-hook left-hook"></div>
+
+          <!-- Right Hook -->
+          <div class="side-hook right-hook"></div>
+        </div>
+
+        <!-- Monitor -->
+        <div class="monitor-container">
+          <!-- Monitor Frame -->
+          <div class="monitor-frame">
+            <!-- Browser Bar -->
+            <div class="browser-bar">
+              <div class="browser-controls">
+                <div class="hamburger-menu">
+                  <div class="line"></div>
+                  <div class="line"></div>
+                  <div class="line"></div>
+                </div>
+              </div>
+              <div class="browser-dots">
+                <div class="dot"></div>
+                <div class="dot"></div>
+              </div>
+            </div>
+
+            <!-- Monitor Screen -->
+            <div class="monitor-screen">
+              <!-- Error Display -->
+              <div class="error-display">
+                <div class="error-code">
+                  <span *ngIf="errorData.type === '404'">404</span>
+                  <span *ngIf="errorData.type === '500'">500</span>
+                  <span *ngIf="errorData.type === 'network'">ERR</span>
+                  <span *ngIf="errorData.type === 'generic'">ERR</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Error Messages -->
+      <div class="text-center space-y-4">
+        <h1 class="text-2xl font-bold text-gray-900 uppercase tracking-wide">
+          {{ getErrorTitleKey() | translate }}
+        </h1>
+        <p class="text-gray-600 text-lg">
+          {{ getErrorMessageKey() | translate }}
+        </p>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+        <button
+          *ngIf="errorData.showRetry"
+          (click)="onRetry()"
+          class="px-6 py-3 bg-[#4E6688] text-white rounded-lg font-medium hover:bg-[#3d5373] transition-colors"
+        >
+          {{ "ERROR.ACTIONS.RETRY" | translate }}
+        </button>
+
+        <button
+          *ngIf="errorData.showHome"
+          (click)="onGoHome()"
+          class="px-6 py-3 border-2 border-[#4E6688] text-[#4E6688] rounded-lg font-medium hover:bg-[#4E6688] hover:text-white transition-colors"
+        >
+          {{ "ERROR.ACTIONS.HOME" | translate }}
+        </button>
+
+        <button
+          *ngIf="errorData.showBack"
+          (click)="onGoBack()"
+          class="px-6 py-3 text-gray-600 rounded-lg font-medium hover:bg-gray-100 transition-colors"
+        >
+          {{ "ERROR.ACTIONS.BACK" | translate }}
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="mt-auto p-6 bg-gray-100 border-t border-gray-200">
+    <div class="max-w-4xl mx-auto">
+      <div class="text-center space-y-4">
+        <!-- Main Footer Content -->
+        <div class="text-sm text-gray-600">
+          {{ "ERROR.HELP_TEXT" | translate }}
+        </div>
+
+        <!-- Navigation Links -->
+        <div class="flex flex-wrap justify-center gap-6 text-sm">
+          <a routerLink="/" class="text-[#4e6688] hover:underline font-medium">
+            {{ "NAV.HOME" | translate }}
+          </a>
+          <a routerLink="/service" class="text-[#4e6688] hover:underline">
+            {{ "NAV.SERVICES" | translate }}
+          </a>
+          <a routerLink="/doctor" class="text-[#4e6688] hover:underline">
+            {{ "NAV.DOCTORS" | translate }}
+          </a>
+          <a routerLink="/blog" class="text-[#4e6688] hover:underline">
+            {{ "NAV.BLOGS" | translate }}
+          </a>
+        </div>
+
+        <!-- Contact Information -->
+        <div class="text-sm text-gray-500 border-t border-gray-300 pt-4">
+          <div class="mb-2">
+            {{ "ERROR.CONTACT_SUPPORT" | translate }}
+          </div>
+          <div class="text-xs">
+            © 2024 {{ "HERO.TITLE" | translate }}. All rights reserved.
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+</div>

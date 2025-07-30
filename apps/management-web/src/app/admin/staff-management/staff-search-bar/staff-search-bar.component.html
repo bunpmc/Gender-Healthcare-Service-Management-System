@@ -1,0 +1,126 @@
+<!-- Enhanced Staff Search Bar with Modern Healthcare Design -->
+<div class="space-y-4">
+  <!-- Search and Quick Actions Row -->
+  <div class="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+    <!-- Enhanced Search Input -->
+    <div class="flex-1 max-w-md">
+      <div class="relative">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+        </div>
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
+          (input)="onSearch()"
+          placeholder="Search staff by name, email, or role..."
+          class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors text-sm placeholder-gray-500"
+        />
+        <div *ngIf="searchTerm" class="absolute inset-y-0 right-0 pr-3 flex items-center">
+          <button (click)="clearSearch()" class="text-gray-400 hover:text-gray-600 transition-colors">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex items-center space-x-3">
+      <button
+        (click)="onExportData()"
+        class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors"
+      >
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+        </svg>
+        Export
+      </button>
+
+      <button
+        (click)="onAddStaff()"
+        class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg text-sm font-medium hover:from-purple-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-all duration-200"
+      >
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+        </svg>
+        Add Staff Member
+      </button>
+    </div>
+  </div>
+
+  <!-- Advanced Filters Row -->
+  <div class="flex flex-wrap gap-3 items-center">
+    <span class="text-sm font-medium text-gray-700">Filters:</span>
+
+    <!-- Role Filter -->
+    <div class="relative">
+      <select
+        [(ngModel)]="selectedRole"
+        (change)="onFilter()"
+        class="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+      >
+        <option value="">All Roles</option>
+        <option *ngFor="let role of roles" [value]="role.value">
+          {{ role.label }}
+        </option>
+      </select>
+      <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Status Filter -->
+    <div class="relative">
+      <select
+        [(ngModel)]="selectedStatus"
+        (change)="onFilter()"
+        class="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+      >
+        <option value="">All Statuses</option>
+        <option value="active">Active</option>
+        <option value="inactive">Inactive</option>
+        <option value="on_leave">On Leave</option>
+      </select>
+      <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Availability Filter -->
+    <div class="relative">
+      <select
+        [(ngModel)]="selectedAvailability"
+        (change)="onFilter()"
+        class="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+      >
+        <option value="">All Availability</option>
+        <option value="true">Available</option>
+        <option value="false">Unavailable</option>
+      </select>
+      <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Clear Filters Button -->
+    <button
+      *ngIf="hasActiveFilters()"
+      (click)="clearFilters()"
+      class="inline-flex items-center px-3 py-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+    >
+      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+      </svg>
+      Clear Filters
+    </button>
+  </div>
+</div>

@@ -1,0 +1,177 @@
+<app-header />
+<body class="bg-white">
+  <!-- BREADCRUMB START -->
+  <div class="max-w-7xl mx-auto px-6 pt-7 text-[#4E6688]">
+    <app-breadcrumbs />
+  </div>
+
+  <div class="bg-[#f8f8f8] min-h-screen">
+    <div class="max-w-7xl mx-auto px-4 sm:px-8 mt-4 py-10">
+      <div
+        class="bg-white rounded-[2rem] border border-[#f2f4f8] px-6 py-9 shadow-md"
+        style="box-shadow: 0 6px 32px 0 rgba(91, 136, 182, 0.07)"
+      >
+        <!-- SKELETON LOADING -->
+        @if (isLoading) {
+        <div class="animate-pulse">
+          <div class="h-8 w-1/2 bg-[#4E668822] shimmer rounded mt-4 mb-3"></div>
+          <div class="h-4 w-32 bg-[#98d2c0] shimmer rounded mb-3"></div>
+          <div class="w-full h-52 bg-[#e9f3fc] shimmer rounded-2xl mb-10"></div>
+          <div class="h-4 w-full bg-[#4E668822] shimmer rounded mb-2"></div>
+          <div class="h-4 w-2/3 bg-[#98d2c0] shimmer rounded mb-2"></div>
+          <div class="h-4 w-1/2 bg-[#4E668822] shimmer rounded"></div>
+        </div>
+        <style>
+          .shimmer {
+            background: linear-gradient(
+              90deg,
+              #f4f7fa 25%,
+              #e8f0fa 37%,
+              #f4f7fa 63%
+            );
+            background-size: 400% 100%;
+            animation: shimmerMove 1.4s ease-in-out infinite;
+          }
+          @keyframes shimmerMove {
+            0% {
+              background-position: 100% 0;
+            }
+            100% {
+              background-position: 0 0;
+            }
+          }
+        </style>
+        } @else if (error) {
+        <div class="py-24 text-center">
+          <p class="text-[#4E6688] text-lg mb-4 font-semibold">{{ error }}</p>
+          <button
+            (click)="backToList()"
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#f3f7fa] text-[#4E6688] font-semibold hover:bg-[#e0eefa] border border-[#d9e7fa] transition-all"
+            aria-label="Back to Blogs"
+          >
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="#4E6688"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+            Back to Blogs
+          </button>
+        </div>
+        } @else if (blog) {
+
+        <!-- Title -->
+        <h1
+          class="text-3xl md:text-5xl font-extrabold text-[#4E6688] leading-tight mb-1 pb-2 border-b border-[#f0f2f7]"
+        >
+          {{ blog.blog_title }}
+        </h1>
+
+        <!-- Meta: Author, Date, Tag, Updated -->
+        <div
+          class="flex flex-wrap items-center gap-x-4 gap-y-2 text-[15px] text-[#758bad] font-medium mb-8 mt-3 border-b border-[#f3f3fa] pb-3"
+        >
+          <div class="flex items-center gap-2">
+            <img
+              [src]="
+                blog.doctor_details.image_link || '/assets/default-doctor.png'
+              "
+              alt="Author photo"
+              class="w-8 h-8 rounded-full object-cover border border-[#e6eaf3] bg-white"
+              loading="lazy"
+              style="box-shadow: 0 0 0 3px #fff"
+            />
+            <a
+              class="font-semibold text-[#4E6688]"
+              [routerLink]="['/doctor', blog.doctor_details.staff_id]"
+            >
+              {{ blog.doctor_details.full_name }}
+            </a>
+          </div>
+          <span class="text-[#b1bad6] text-base">|</span>
+          <span>
+            <svg
+              class="w-4 h-4 inline -mt-1 mr-1"
+              fill="none"
+              stroke="#98d2c0"
+              stroke-width="1.8"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M8 7V3m8 4V3m-9 8h10m-13 7a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v12z"
+              />
+            </svg>
+            {{ blog.created_at | date : "MMM d, y" }}
+          </span>
+          <span
+            class="text-[#b1bad6] text-base"
+            *ngIf="blog.updated_at && blog.updated_at !== blog.created_at"
+            >|</span
+          >
+          <span
+            class="text-[#98d2c0] italic"
+            *ngIf="blog.updated_at && blog.updated_at !== blog.created_at"
+          >
+            Updated: {{ blog.updated_at | date : "MMM d, y 'at' HH:mm" }}
+          </span>
+          <span
+            class="flex flex-wrap gap-2 items-center ml-auto"
+            *ngIf="getTags().length > 0"
+          >
+            <ng-container *ngFor="let tag of getTags()">
+              <span
+                class="bg-[#f3f7fa] text-[#4E6688] rounded-full px-3 py-1 text-xs font-semibold transition-all hover:bg-[#4E6688] hover:text-white cursor-pointer select-none"
+              >
+                #{{ tag }}
+              </span>
+            </ng-container>
+          </span>
+        </div>
+
+        <!-- Banner Image -->
+        <div
+          class="w-full h-52 md:h-80 rounded-2xl mb-10 overflow-hidden flex justify-center items-center border border-[#eef2f8] bg-[#f6f8fc] group relative"
+        >
+          @if (blog.image_link) {
+          <img
+            [src]="blog.image_link"
+            alt="Blog banner"
+            class="w-full h-full object-cover rounded-[16px] transition-all duration-300 group-hover:blur-[2px] group-hover:brightness-90"
+            loading="lazy"
+          />
+          } @else {
+          <svg
+            class="w-20 h-20 text-[#e3e8f0] opacity-70"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            viewBox="0 0 48 48"
+          >
+            <rect x="6" y="10" width="36" height="28" rx="4" />
+            <path d="M12 28l7-7 9 9 7-7" />
+          </svg>
+          }
+        </div>
+
+        <!-- Content -->
+        <div
+          class="prose prose-lg max-w-none text-[#34405a] my-6 prose-img:rounded-2xl prose-img:shadow-none prose-img:mx-auto prose-p:leading-8 prose-h2:font-black prose-h2:mt-10 prose-h3:font-bold prose-h3:mt-7 prose-a:text-[#4E6688] prose-a:underline-offset-2"
+          [innerHTML]="blog.blog_content"
+          style="font-size: 1.14rem"
+        ></div>
+        }
+      </div>
+    </div>
+  </div>
+</body>
+
+<app-footer />

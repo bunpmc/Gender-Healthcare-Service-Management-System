@@ -1,0 +1,96 @@
+
+
+    <!-- Loading State -->
+    @if (loading) {
+    <div class="flex justify-center items-center py-20">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1e3a8a]"></div>
+    </div>
+    }
+
+    <!-- Splide Carousel -->
+    @if (!loading && doctors.length > 0) {
+    <div class="relative">
+      <!-- Custom Navigation Buttons -->
+      <button 
+        (click)="prev()" 
+        class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-12 h-12 bg-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center group hover:bg-[#1e3a8a]"
+      >
+        <svg class="w-6 h-6 text-[#1e3a8a] group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+      </button>
+      
+      <button 
+        (click)="next()" 
+        class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-12 h-12 bg-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center group hover:bg-[#1e3a8a]"
+      >
+        <svg class="w-6 h-6 text-[#1e3a8a] group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+      </button>
+
+      <!-- Splide Container -->
+      <div #splideRef class="splide">
+        <div class="splide__track">
+          <ul class="splide__list">
+            @for (doc of doctors; track doc.doctor_id) {
+            <li class="splide__slide px-3">
+              <a
+                [routerLink]="['/doctor', doc.doctor_id]"
+                class="group relative block w-full aspect-[3/4] overflow-hidden rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-500 bg-gradient-to-br from-white to-gray-50"
+              >
+                <!-- Doctor Image -->
+                <img
+                  [src]="getImageUrl(doc.staff_members.image_link)"
+                  [alt]="doc.staff_members.full_name"
+                  class="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-110"
+                />
+                
+                <!-- Overlay -->
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500"></div>
+                
+                <!-- Content Overlay -->
+                <div class="absolute inset-x-0 bottom-0 p-6 text-white transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
+                  <h3 class="text-xl font-bold mb-2 leading-tight">
+                    {{ doc.staff_members.full_name }}
+                  </h3>
+                  <p class="text-sm text-gray-200 capitalize mb-3">
+                    {{ doc.speciality.replace('_', ' ') }}
+                  </p>
+                  
+                  <!-- Tags -->
+                  <div class="flex gap-2 flex-wrap">
+                    <span
+                      class="px-3 py-1 rounded-full text-xs font-medium text-white capitalize"
+                      [ngClass]="{
+                        'bg-blue-500/80': doc.staff_members.gender === 'male',
+                        'bg-pink-500/80': doc.staff_members.gender === 'female',
+                        'bg-gray-600/80': doc.staff_members.gender !== 'male' && doc.staff_members.gender !== 'female'
+                      }"
+                    >
+                      {{ doc.staff_members.gender }}
+                    </span>
+                    <span class="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-xs capitalize">
+                      {{ doc.department.replace('_', ' ') }}
+                    </span>
+                  </div>
+                </div>
+                
+                <!-- Hover Effect Border -->
+                <div class="absolute inset-0 rounded-3xl border-2 border-transparent group-hover:border-[#1e3a8a]/30 transition-colors duration-500"></div>
+              </a>
+            </li>
+            }
+          </ul>
+        </div>
+      </div>
+    </div>
+    }
+
+    <!-- Empty State -->
+    @if (!loading && doctors.length === 0) {
+    <div class="text-center py-20">
+      <div class="text-gray-400 text-6xl mb-4">👨‍⚕️</div>
+      <p class="text-gray-500 text-lg">No doctors available at the moment</p>
+    </div>
+    }

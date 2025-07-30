@@ -1,0 +1,484 @@
+/* Patient Management Component Styles */
+
+/* Custom scrollbar for modals */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 6px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Enhanced table styles */
+.table-container {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Patient row highlighting */
+.patient-row {
+  transition: all 0.3s ease;
+}
+
+.patient-row:hover {
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.patient-row.new {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border-left: 4px solid #22c55e;
+}
+
+.patient-row.inactive {
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  border-left: 4px solid #ef4444;
+}
+
+/* Status badges with animations */
+.status-badge {
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.status-badge:hover {
+  transform: scale(1.05);
+}
+
+.status-badge::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transition: left 0.5s;
+}
+
+.status-badge:hover::before {
+  left: 100%;
+}
+
+/* Gender badges */
+.gender-badge {
+  transition: all 0.2s ease;
+}
+
+.gender-badge:hover {
+  transform: scale(1.05);
+}
+
+/* Statistics cards animation */
+.stats-card {
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.stats-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.stats-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.stats-card:hover::before {
+  transform: scaleX(1);
+}
+
+/* Modal backdrop animation */
+.modal-backdrop {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Modal content animation */
+.modal-content {
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Enhanced button hover effects */
+.btn-primary {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3);
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.btn-primary:hover::before {
+  left: 100%;
+}
+
+/* Medical tag styling */
+.medical-tag {
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.medical-tag:hover {
+  transform: scale(1.05);
+}
+
+.medical-tag.allergy {
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  border: 1px solid #fca5a5;
+  color: #dc2626;
+}
+
+.medical-tag.condition {
+  background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%);
+  border: 1px solid #fcd34d;
+  color: #d97706;
+}
+
+.medical-tag.surgery {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border: 1px solid #93c5fd;
+  color: #2563eb;
+}
+
+/* Form input focus effects */
+.form-input {
+  transition: all 0.3s ease;
+}
+
+.form-input:focus {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+}
+
+/* Loading spinner enhancement */
+.loading-spinner {
+  background: conic-gradient(from 0deg, transparent, #6366f1);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Card hover effects */
+.card {
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+/* Pagination button styles */
+.pagination-btn {
+  transition: all 0.2s ease;
+}
+
+.pagination-btn:hover {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
+  transform: translateY(-1px);
+}
+
+.pagination-btn.active {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
+}
+
+/* Action button styles */
+.action-btn {
+  transition: all 0.2s ease;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+}
+
+.action-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.action-btn.view:hover {
+  background-color: rgba(99, 102, 241, 0.1);
+  color: #4f46e5;
+}
+
+.action-btn.edit:hover {
+  background-color: rgba(34, 197, 94, 0.1);
+  color: #16a34a;
+}
+
+/* Note: No delete button styling as per CRU requirement */
+
+/* Filter section styles */
+.filter-section {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Header gradient */
+.header-gradient {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.9) 100%);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Empty state styles */
+.empty-state {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 2px dashed #cbd5e1;
+  border-radius: 1rem;
+  padding: 3rem;
+  text-align: center;
+}
+
+/* Age display styling */
+.age-display {
+  font-weight: 600;
+  color: #374151;
+}
+
+/* Patient ID styling */
+.patient-id {
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+  background: #f3f4f6;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+}
+
+/* Emergency contact styling */
+.emergency-contact {
+  background: linear-gradient(135deg, #fef7ff 0%, #fae8ff 100%);
+  border: 1px solid #d8b4fe;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+}
+
+/* Medical history section */
+.medical-history {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 1rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+/* Tag input styling */
+.tag-input {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 0.75rem;
+  background: white;
+  transition: all 0.3s ease;
+}
+
+.tag-input:focus-within {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.tag-input input {
+  border: none;
+  outline: none;
+  flex: 1;
+  min-width: 120px;
+  padding: 0.25rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .modal-content {
+    margin: 1rem;
+    max-height: calc(100vh - 2rem);
+  }
+  
+  .table-container {
+    overflow-x: auto;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .patient-row {
+    transform: none;
+  }
+  
+  .patient-row:hover {
+    transform: none;
+  }
+  
+  .medical-tag {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+  }
+}
+
+/* Dark mode support (if needed) */
+@media (prefers-color-scheme: dark) {
+  .card {
+    background: rgba(30, 41, 59, 0.8);
+    border-color: rgba(71, 85, 105, 0.3);
+  }
+  
+  .form-input {
+    background: rgba(30, 41, 59, 0.5);
+    border-color: rgba(71, 85, 105, 0.3);
+    color: #f1f5f9;
+  }
+}
+
+/* Success and error message styles */
+.message {
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Patient status indicators */
+.status-indicator {
+  position: relative;
+}
+
+.status-indicator.active::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -8px;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 4px;
+  background: #22c55e;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+.status-indicator.inactive::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -8px;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 4px;
+  background: #ef4444;
+  border-radius: 50%;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: translateY(-50%) scale(1.2);
+  }
+}
+
+/* Form section styling */
+.form-section {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid #e2e8f0;
+}
+
+.form-section h3 {
+  color: #374151;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+/* Contact info styling */
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.contact-info .primary {
+  font-weight: 600;
+  color: #111827;
+}
+
+.contact-info .secondary {
+  color: #6b7280;
+  font-size: 0.875rem;
+}

@@ -1,0 +1,223 @@
+/* Enhanced Patient Create Modal Styles */
+
+/* Modal Animation */
+.modal-enter {
+  animation: modalFadeIn 0.3s ease-out;
+}
+
+.modal-leave {
+  animation: modalFadeOut 0.3s ease-in;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes modalFadeOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+/* Form Field Enhancements */
+.form-field-group {
+  position: relative;
+}
+
+.form-field-group input:focus + .form-field-label,
+.form-field-group input:not(:placeholder-shown) + .form-field-label {
+  transform: translateY(-1.5rem) scale(0.875);
+  color: #7c3aed;
+}
+
+.form-field-label {
+  position: absolute;
+  left: 1rem;
+  top: 0.75rem;
+  transition: all 0.2s ease-in-out;
+  pointer-events: none;
+  color: #6b7280;
+}
+
+/* Custom Scrollbar */
+.modal-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Progress Bar Animation */
+.progress-bar {
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Step Transition Animation */
+.step-content {
+  animation: stepSlideIn 0.4s ease-out;
+}
+
+@keyframes stepSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Form Validation Styles */
+.field-error {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.field-success {
+  border-color: #10b981 !important;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+/* Button Hover Effects */
+.btn-primary {
+  background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #6d28d9 0%, #4338ca 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 25px rgba(124, 58, 237, 0.3);
+}
+
+.btn-secondary {
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-secondary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Auto-save Indicator */
+.auto-save-indicator {
+  display: flex;
+  align-items: center;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.auto-save-spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid #e5e7eb;
+  border-top: 2px solid #7c3aed;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 0.5rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .modal-container {
+    margin: 1rem;
+    max-height: 95vh;
+  }
+  
+  .modal-content {
+    max-height: 70vh;
+  }
+  
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .modal-footer {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .modal-footer .btn-group {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+/* Focus Management */
+.modal-container:focus {
+  outline: none;
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .form-field {
+    border-width: 2px;
+  }
+  
+  .btn-primary {
+    border: 2px solid #1f2937;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .modal-enter,
+  .modal-leave,
+  .step-content,
+  .progress-bar,
+  .btn-primary,
+  .btn-secondary {
+    animation: none;
+    transition: none;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .modal-container {
+    position: static;
+    background: white;
+    box-shadow: none;
+    max-width: 100%;
+    margin: 0;
+  }
+  
+  .modal-header,
+  .modal-footer {
+    display: none;
+  }
+  
+  .modal-content {
+    max-height: none;
+    overflow: visible;
+  }
+}

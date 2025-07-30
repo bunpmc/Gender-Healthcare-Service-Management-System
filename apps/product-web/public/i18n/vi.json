@@ -1,0 +1,548 @@
+{
+  "CONTACT": {
+    "EMAIL": "Gendercare123@gmail.com",
+    "PHONE": "+84 909 157 997",
+    "HEADLINE": "Hãy để chúng tôi chăm sóc bạn",
+    "PHONE_TITLE": "Gọi cho chúng tôi",
+    "EMAIL_TITLE": "Gửi email cho chúng tôi"
+  },
+  "NAV": {
+    "HOME": "Trang chủ",
+    "FORM": "Biểu mẫu",
+    "TRACKER": "Theo dõi",
+    "SERVICES": "Dịch vụ",
+    "DOCTORS": "Bác sĩ",
+    "BLOGS": "Tin tức"
+  },
+  "USER": {
+    "DASHBOARD": "Bảng điều khiển",
+    "LOGOUT": "Đăng xuất",
+    "LOGIN": "Đăng nhập",
+    "REGISTER": "Đăng ký",
+    "BOOK_NOW": "Đặt lịch ngay"
+  },
+  "FOOTER": {
+    "TITLE": "Chân trang",
+    "SLOGAN": "Chúng tôi tận tâm cung cấp dịch vụ y tế tận tình và giải pháp chuyên nghiệp cho mọi giai đoạn cuộc đời bạn.",
+    "ALL_RIGHTS": "Đã đăng ký bản quyền.",
+    "SOLUTIONS": {
+      "TITLE": "Giải pháp",
+      "MARKETING": "Tiếp thị",
+      "EVENTS": "Sự kiện",
+      "COMMERCE": "Thương mại",
+      "INSIGHTS": "Phân tích"
+    },
+    "SUPPORT": {
+      "TITLE": "Hỗ trợ",
+      "PRICING": "Bảng giá",
+      "DOCS": "Tài liệu",
+      "GUIDES": "Hướng dẫn"
+    },
+    "CLINIC": {
+      "TITLE": "Phòng khám",
+      "ABOUT": "Giới thiệu",
+      "BLOG": "Tin tức",
+      "DOCTORS": "Bác sĩ",
+      "PARTNERS": "Đối tác"
+    },
+    "LEGAL": {
+      "TITLE": "Pháp lý",
+      "CLAIM": "Khiếu nại",
+      "PRIVACY": "Chính sách",
+      "TERMS": "Điều khoản"
+    }
+  },
+  "HERO": {
+    "TITLE": "Phòng khám sức khỏe giới tính tư nhân",
+    "DESC": "Tại GenCare, chúng tôi luôn đồng hành và hỗ trợ bạn trên mọi hành trình. Phòng khám của chúng tôi là nơi an toàn, hòa nhập cho tất cả mọi người cần chăm sóc sức khỏe giới tính chuyên biệt.",
+    "CTA": {
+      "CONTACT": "Liên hệ",
+      "SERVICES": "Dịch vụ của chúng tôi"
+    }
+  },
+  "ADDRESS": {
+    "HEADLINE": "Đến thăm phòng khám của chúng tôi",
+    "TITLE": "Bạn có thể tìm chúng tôi tại",
+    "ADDRESS": "12 Chu Văn An, Thủ Đức, TP.HCM",
+    "OPEN_TITLE": "Giờ làm việc",
+    "OPEN": "Thứ 2 – Thứ 7: 7:30 – 17:30"
+  },
+  "SOCIALS": {
+    "HEADLINE": "Kết nối với chúng tôi",
+    "FACEBOOK_TITLE": "Facebook",
+    "FACEBOOK": "Trang Facebook GenderCare",
+    "YOUTUBE_TITLE": "Youtube",
+    "YOUTUBE": "Kênh GenderCare"
+  },
+  "VIDEO": {
+    "NOT_SUPPORTED": "Trình duyệt của bạn không hỗ trợ video này."
+  },
+  "SERVICE": {
+    "TITLE": "Chăm sóc toàn diện cho mọi nhu cầu sức khỏe",
+    "DESC": "Chúng tôi cam kết mang lại môi trường an toàn, hòa nhập và hỗ trợ cho tất cả mọi người. Đội ngũ y tế giàu kinh nghiệm cung cấp dịch vụ chăm sóc toàn diện, bảo mật và không phán xét, phù hợp với nhu cầu của bạn bất kể bản dạng giới hay xu hướng tính dục.",
+    "PRICE": "Bảng giá dịch vụ"
+  },
+  "DOCTOR": {
+    "HEADLINE": "Đội ngũ y bác sĩ",
+    "VIEW_ALL": "Xem tất cả",
+    "DESCRIPTION": "Gặp gỡ đội ngũ bác sĩ giàu kinh nghiệm và tận tâm của chúng tôi, luôn sẵn sàng chăm sóc sức khỏe cho bạn.",
+    "YEARS_EXP": "năm kinh nghiệm",
+    "TABS": {
+      "ABOUT": "Giới thiệu",
+      "EDUCATION": "Học vấn",
+      "CERTIFICATIONS": "Chứng chỉ",
+      "LICENSE": "Giấy phép hành nghề"
+    },
+    "ABOUT": {
+      "ABOUT": "Giới thiệu",
+      "EXPERIENCE": "Kinh nghiệm",
+      "LANGUAGES": "Ngôn ngữ"
+    },
+    "EDUCATION": {
+      "TITLE": "Học vấn",
+      "NO_EDUCATION": "Chưa có thông tin học vấn."
+    },
+    "CERTIFICATIONS": {
+      "TITLE": "Chứng chỉ",
+      "NO_CERT": "Chưa có thông tin chứng chỉ."
+    },
+    "LICENSE": {
+      "TITLE": "GIẤY PHÉP HÀNH NGHỀ Y",
+      "FULL_NAME": "Họ tên",
+      "LICENSE_NO": "Số giấy phép",
+      "SPECIALTY": "Chuyên khoa"
+    },
+    "FILTER": {
+      "SHOW": "Hiện bộ lọc",
+      "HIDE": "Ẩn bộ lọc",
+      "SEARCH_PLACEHOLDER": "Tìm kiếm bác sĩ...",
+      "SPECIALTY_LABEL": "Chuyên khoa",
+      "GENDER_LABEL": "Giới tính",
+      "ALL_SPECIALTIES": "Tất cả chuyên khoa",
+      "ALL_GENDERS": "Tất cả giới tính"
+    },
+    "GENDER": {
+      "MALE": "Nam",
+      "FEMALE": "Nữ",
+      "OTHER": "Khác"
+    },
+    "DEPARTMENT": "Khoa",
+    "LOADING": "Đang tải danh sách bác sĩ...",
+    "NOT_FOUND": "Không tìm thấy bác sĩ nào",
+    "PAGINATION": {
+      "PREV": "Trước",
+      "NEXT": "Tiếp"
+    },
+    "PROFILE": {
+      "VIEW_PROFILE": "Xem hồ sơ",
+      "SPECIALTY": "Chuyên khoa",
+      "BOOK": "Đặt lịch khám"
+    },
+    "BLOGS_BY_DOCTOR": "Bài viết nổi bật của bác sĩ {{doctor}}",
+    "NO_BLOGS": "Chưa có bài viết nào của bác sĩ này."
+  },
+  "BLOG": {
+    "HEADLINE": "Khám phá các bài viết mới nhất về sức khỏe & chăm sóc",
+    "EXPLORE": "Xem thêm",
+    "LOADING": "Đang tải các bài viết...",
+    "RETRY": "Tải lại",
+    "NO_DATA": "Chưa có bài viết nào.",
+    "READ_MORE": "Xem chi tiết →",
+    "LOAD_ERROR": "Không tải được bài viết. Vui lòng thử lại.",
+    "CATEGORIES": {
+      "COMMUNITY": "Cộng đồng",
+      "MENTAL_HEALTH": "Sức khỏe tâm thần",
+      "GENDER_STORIES": "Câu chuyện giới tính",
+      "LEGAL": "Pháp lý",
+      "EDUCATION": "Giáo dục"
+    },
+    "ERRORS": {
+      "LOAD_FAILED": "Không thể tải bài viết. Vui lòng thử lại."
+    }
+  },
+  "AI_CHAT": {
+    "TITLE": "Trợ lý AI",
+    "BRAND_NAME": "GenderCare",
+    "BOT_NAME": "Trợ lý AI",
+    "PLACEHOLDER": "Nhập tin nhắn của bạn...",
+    "SEND": "Gửi",
+    "CLEAR": "Xóa cuộc trò chuyện",
+    "REFRESH": "Làm mới",
+    "CLOSE": "Đóng cửa sổ",
+    "MINIMIZE": "Thu nhỏ",
+    "ONLINE": "Trực tuyến",
+    "OFFLINE": "Ngoại tuyến",
+    "CONNECTION_LOST": "Mất kết nối. Đang cố gắng kết nối lại...",
+    "QUICK_REPLIES_TITLE": "Câu hỏi gợi ý",
+    "QUICK_REPLIES": [
+      "Tìm bác sĩ phụ khoa cho tôi",
+      "Tôi cần bác sĩ nội tiết",
+      "Các dịch vụ chăm sóc giới tính nào có sẵn?",
+      "Làm thế nào để bắt đầu liệu pháp hormone?",
+      "Tôi cần hỗ trợ sức khỏe tâm thần cho rối loạn giới tính",
+      "Yêu cầu cho phẫu thuật xác nhận giới tính là gì?",
+      "Tôi có kinh nguyệt không đều, phải làm gì?",
+      "Làm thế nào để giảm đau bụng kinh?",
+      "Khi nào tôi nên lo lắng về chu kỳ kinh nguyệt?",
+      "Hiện danh sách bác sĩ"
+    ],
+    "TYPING": "AI đang suy nghĩ...",
+    "THINKING": {
+      "DEFAULT": "AI đang suy nghĩ... 🤔",
+      "PROCESSING": "Đang xử lý yêu cầu của bạn... ⚡",
+      "ALMOST_DONE": "Sắp xong rồi! Chờ chút nhé... ⏳",
+      "OOPS_LONGER": "Ôi... mất thời gian hơn tôi nghĩ! 😅",
+      "BEAR_WITH_ME": "Kiên nhẫn chút nhé, tôi đang làm việc... 🐻",
+      "WORKING_HARD": "Đang cố gắng hết sức để đưa ra câu trả lời tốt nhất! 💪"
+    },
+    "WELCOME": "Xin chào! Tôi là trợ lý sức khỏe của bạn. Tôi có thể giúp gì cho bạn hôm nay? 😊",
+    "INPUT_HINT": "Nhấn Enter để gửi • Shift + Enter để xuống dòng",
+    "CHAT_ERROR": {
+      "CONNECTION_LOST": "Mất kết nối. Đang thử lại... Vui lòng kiểm tra server.",
+      "SERVER": "Lỗi server. Vui lòng thử lại sau.",
+      "TOO_MANY": "Quá nhiều yêu cầu. Vui lòng chờ một chút.",
+      "SERVICE_UNAVAILABLE": "Dịch vụ tạm thời không khả dụng. Hệ thống đang tải, vui lòng thử lại sau.",
+      "NOT_FOUND": "Không tìm thấy dịch vụ chat. Vui lòng kiểm tra lại server.",
+      "DEFAULT": "Có lỗi xảy ra. Vui lòng thử lại."
+    },
+    "ERROR_0": "Mất kết nối. Đang thử lại... Vui lòng kiểm tra server.",
+    "ERROR_500": "Lỗi server. Vui lòng thử lại sau.",
+    "ERROR_429": "Quá nhiều yêu cầu. Vui lòng chờ một chút.",
+    "ERROR_503": "Dịch vụ tạm thời không khả dụng. Hệ thống đang tải, vui lòng thử lại sau.",
+    "ERROR_404": "Không tìm thấy dịch vụ chat. Vui lòng kiểm tra lại server.",
+    "ERROR_DEFAULT": "Có lỗi xảy ra. Vui lòng thử lại.",
+    "RECOMMEND_SUMMARY": "Tôi đã tìm thấy {{count}} bác sĩ có thể phù hợp với bạn. Bạn có thể liên hệ trực tiếp hoặc hỏi tôi để nhận tư vấn cụ thể hơn!",
+    "COPY_SUCCESS": "Đã sao chép email liên hệ",
+    "COPY_FAIL": "Sao chép thông tin thất bại",
+    "DOCTOR_LIST_TITLE": "Danh sách bác sĩ gợi ý",
+    "MESSAGE_TIME_FORMAT": "HH:mm"
+  },
+  "APPOINTMENT": {
+    "TITLE": "Đặt lịch hẹn",
+    "BOOKING_TYPE": {
+      "TITLE": "Bạn muốn đặt lịch hẹn như thế nào?",
+      "SERVICE_FIRST": {
+        "TITLE": "Đặt theo dịch vụ",
+        "DESCRIPTION": "Chọn loại chăm sóc bạn cần — chúng tôi sẽ kết nối bạn với nhà cung cấp phù hợp."
+      },
+      "DOCTOR_FIRST": {
+        "TITLE": "Đặt theo bác sĩ",
+        "DESCRIPTION": "Chọn bác sĩ ưa thích của bạn và xem thời gian có sẵn để khám."
+      }
+    },
+    "PATIENT_INFO": {
+      "TITLE": "Thông tin bệnh nhân",
+      "FULL_NAME": "Họ và tên",
+      "EMAIL": "Email",
+      "EMAIL_OPTIONAL": "(Tùy chọn)",
+      "PHONE": "Số điện thoại",
+      "GENDER": "Giới tính",
+      "REASON": "Lý do khám",
+      "PLACEHOLDERS": {
+        "FULL_NAME": "vd. Nguyễn Văn A",
+        "EMAIL": "vd. johndoe@email.com",
+        "REASON": "Mô tả lý do chính để khám (vd. đau đầu, kiểm tra sức khỏe, ...)"
+      },
+      "GENDER_OPTIONS": {
+        "SELECT": "--- Chọn giới tính ---",
+        "MALE": "Nam",
+        "FEMALE": "Nữ",
+        "OTHER": "Khác / Không muốn nói"
+      }
+    },
+    "ERRORS": {
+      "FULL_NAME_REQUIRED": "Vui lòng nhập họ và tên.",
+      "EMAIL_INVALID": "Vui lòng nhập địa chỉ email hợp lệ.",
+      "PHONE_INVALID": "Vui lòng nhập số điện thoại hợp lệ.",
+      "REASON_REQUIRED": "Vui lòng cung cấp lý do khám.",
+      "SERVICE_REQUIRED": "Vui lòng chọn một dịch vụ để tiếp tục.",
+      "DOCTOR_REQUIRED": "Vui lòng chọn một bác sĩ để tiếp tục.",
+      "SLOT_REQUIRED": "Vui lòng chọn một khung giờ để tiếp tục."
+    },
+    "BUTTONS": {
+      "CONTINUE": "TIẾP TỤC",
+      "BACK": "Quay lại"
+    },
+    "STEPS": {
+      "SELECT_SERVICE": "Chọn dịch vụ",
+      "SELECT_DOCTOR": "Chọn bác sĩ",
+      "SELECT_TIME": "Chọn thời gian hẹn",
+      "SELECT_SERVICE_FOR": "Chọn dịch vụ cho",
+      "SELECT_DOCTOR_FOR": "Chọn bác sĩ cho dịch vụ"
+    },
+    "SEARCH": {
+      "SERVICE": "Tìm kiếm dịch vụ theo tên hoặc mô tả...",
+      "DOCTOR": "Tìm kiếm bác sĩ theo tên hoặc chuyên khoa..."
+    },
+    "FILTERS": {
+      "SORT_BY": "Sắp xếp theo:",
+      "GENDER": "Giới tính:",
+      "ALL": "Tất cả",
+      "MALE": "Nam",
+      "FEMALE": "Nữ",
+      "NAME_AZ": "Tên (A-Z)",
+      "DESCRIPTION": "Mô tả",
+      "SPECIALIZATION": "Chuyên khoa"
+    },
+    "NO_RESULTS": {
+      "SERVICE": "Không tìm thấy dịch vụ.",
+      "DOCTOR": "Không tìm thấy bác sĩ."
+    },
+    "TIME_SLOT": {
+      "TITLE": "Chọn thời gian hẹn",
+      "DATE": "Ngày",
+      "AVAILABLE_SLOTS": "Khung giờ có sẵn",
+      "FULL": "(Đầy)"
+    },
+    "CONFIRM_LEAVE": "Bạn có thay đổi chưa được lưu. Bạn có chắc chắn muốn rời khỏi trang này không?",
+    "PROFILE_SELECTION": {
+      "TITLE": "Cuộc hẹn này dành cho ai?",
+      "SUBTITLE": "Chọn xem bạn đặt lịch cho chính mình hay cho người khác",
+      "USE_MY_PROFILE": "Đặt cho tôi",
+      "USE_MY_PROFILE_DESC": "Sử dụng thông tin hồ sơ đã lưu của tôi",
+      "BOOK_FOR_ANOTHER": "Đặt cho người khác",
+      "BOOK_FOR_ANOTHER_DESC": "Nhập thông tin bệnh nhân khác"
+    },
+    "PAYMENT": {
+      "TITLE": "Thanh toán lịch hẹn",
+      "SUBTITLE": "Vui lòng xem lại thông tin lịch hẹn và hoàn tất thanh toán",
+      "APPOINTMENT_DETAILS": "Chi tiết lịch hẹn",
+      "PATIENT_INFO": "Thông tin bệnh nhân",
+      "APPOINTMENT_INFO": "Thông tin cuộc hẹn",
+      "DOCTOR": "Bác sĩ",
+      "SERVICE": "Dịch vụ",
+      "DATE": "Ngày",
+      "TIME": "Giờ",
+      "TOTAL_AMOUNT": "Tổng tiền",
+      "PAYMENT_NOTE": "Thanh toán là bắt buộc để xác nhận lịch hẹn của bạn",
+      "PAY_NOW": "Thanh toán với VNPay",
+      "PROCESSING": "Đang xử lý thanh toán...",
+      "GO_BACK": "Quay lại đặt lịch",
+      "LOADING": "Đang tải thông tin lịch hẹn...",
+      "SECURE_PAYMENT": "Thanh toán an toàn được hỗ trợ bởi VNPay"
+    },
+    "RESULT": {
+      "SUCCESS_TITLE": "Đặt lịch hẹn thành công!",
+      "SUCCESS_MESSAGE": "Lịch hẹn của bạn đã được xác nhận. Chúng tôi sẽ gửi xác nhận cho bạn sớm.",
+      "ERROR_TITLE": "Đặt lịch thất bại",
+      "ERROR_MESSAGE": "Chúng tôi không thể hoàn tất việc đặt lịch hẹn của bạn. Vui lòng thử lại.",
+      "APPOINTMENT_DETAILS": "Chi tiết lịch hẹn",
+      "APPOINTMENT_ID": "Mã lịch hẹn",
+      "DATE": "Ngày",
+      "TIME": "Giờ",
+      "STATUS": "Trạng thái",
+      "PATIENT_INFO": "Thông tin bệnh nhân",
+      "FULL_NAME": "Họ và tên",
+      "PHONE": "Số điện thoại",
+      "EMAIL": "Email",
+      "SCHEDULE": "Lịch trình",
+      "REASON": "Lý do khám",
+      "NEXT_STEPS": "Các bước tiếp theo",
+      "STEP1": "Bạn sẽ nhận được email/SMS xác nhận sớm",
+      "STEP2": "Vui lòng đến sớm 15 phút trước giờ hẹn",
+      "STEP3": "Mang theo CMND/CCCD và các tài liệu y tế liên quan",
+      "ERROR_DETAILS": "Chi tiết lỗi",
+      "TECHNICAL_DETAILS": "Chi tiết kỹ thuật",
+      "SUBMITTED_DATA": "Thông tin đã gửi",
+      "GO_HOME": "Về trang chủ",
+      "TRY_AGAIN": "Thử lại",
+      "CREATING_APPOINTMENT": "Đang tạo lịch hẹn của bạn...",
+      "PROCESSING_BOOKING": "Vui lòng chờ trong khi chúng tôi xử lý đặt lịch của bạn",
+      "LOADING": "Đang tải..."
+    }
+  },
+  "SERVICES": {
+    "TITLE": "Chúng tôi có thể giúp gì cho bạn?",
+    "SEARCH_PLACEHOLDER": "Tìm kiếm dịch vụ...",
+    "ALL_CATEGORIES": "Tất cả",
+    "LOADING": "Đang tải dịch vụ...",
+    "NO_SERVICES": "Không tìm thấy dịch vụ nào.",
+    "BOOK_NOW": "Đặt lịch ngay",
+    "PRICE": "Giá",
+    "VND": "VNĐ",
+    "PAGINATION": {
+      "PREV": "Trước",
+      "NEXT": "Tiếp"
+    }
+  },
+  "CONTACT_SUPPORT": {
+    "PHONE_TITLE": "Gọi điện thoại",
+    "ZALO_TITLE": "Chat Zalo",
+    "ZALO_CHAT": "Nhắn tin Zalo"
+  },
+  "BACK_TO_TOP": {
+    "TITLE": "Lên đầu trang"
+  },
+  "PERIOD": {
+    "TITLE": "Theo dõi chu kỳ kinh nguyệt",
+    "SUBTITLE": "Theo dõi chu kỳ kinh nguyệt và thông tin sức khỏe",
+    "DASHBOARD": {
+      "CURRENT_CYCLE_DAY": "Ngày của chu kỳ",
+      "NEXT_PERIOD": "Kỳ kinh tiếp theo",
+      "DAYS_UNTIL": "trong {{days}} ngày",
+      "CALCULATING": "Đang tính toán...",
+      "AVERAGE_CYCLE": "Chu kỳ TB",
+      "PERIOD_LENGTH": "Thời gian kinh",
+      "TRACKING_CYCLES": "Chu kỳ theo dõi",
+      "DAYS": "ngày",
+      "CYCLES": "chu kỳ"
+    },
+    "FORM": {
+      "LOG_PERIOD": "Ghi nhận kinh nguyệt",
+      "START_DATE": "Ngày bắt đầu",
+      "END_DATE": "Ngày kết thúc (Tùy chọn)",
+      "FLOW_INTENSITY": "Cường độ kinh",
+      "SYMPTOMS": "Triệu chứng",
+      "NOTES": "Ghi chú",
+      "NOTES_PLACEHOLDER": "Ghi chú thêm...",
+      "SAVE": "Lưu dữ liệu kinh nguyệt",
+      "SAVING": "Đang lưu..."
+    },
+    "CALENDAR": {
+      "TITLE": "Lịch theo dõi",
+      "SUBTITLE": "Nhấp vào ngày để ghi nhận kinh nguyệt",
+      "PREVIOUS_MONTH": "Tháng trước",
+      "NEXT_MONTH": "Tháng sau",
+      "LEGEND": "Chú thích lịch",
+      "PERIOD_DAY": "Ngày có kinh",
+      "FERTILE_DAY": "Ngày dễ thụ thai",
+      "OVULATION_DAY": "Ngày rụng trứng",
+      "PREDICTED_DAY": "Dự đoán kinh"
+    },
+    "HISTORY": {
+      "TITLE": "Lịch sử kinh nguyệt",
+      "RECENT_PERIODS": "Kỳ kinh gần đây",
+      "NO_DATA": "Chưa có dữ liệu kinh nguyệt",
+      "FLOW": "Cường độ",
+      "SYMPTOMS_COUNT": "{{count}} triệu chứng"
+    },
+    "FLOW": {
+      "LIGHT": "Nhẹ",
+      "MEDIUM": "Vừa",
+      "HEAVY": "Nhiều",
+      "VERY_HEAVY": "Rất nhiều"
+    },
+    "SYMPTOMS": {
+      "CRAMPS": "Đau bụng kinh",
+      "HEADACHE": "Đau đầu",
+      "MOOD_SWINGS": "Thay đổi tâm trạng",
+      "BLOATING": "Đầy hơi",
+      "BREAST_TENDERNESS": "Đau ngực",
+      "FATIGUE": "Mệt mỏi",
+      "NAUSEA": "Buồn nôn",
+      "BACK_PAIN": "Đau lưng",
+      "ACNE": "Mụn trứng cá",
+      "FOOD_CRAVINGS": "Thèm ăn",
+      "INSOMNIA": "Mất ngủ",
+      "DIARRHEA": "Tiêu chảy",
+      "CONSTIPATION": "Táo bón",
+      "HOT_FLASHES": "Bốc hỏa",
+      "DIZZINESS": "Chóng mặt"
+    },
+    "ERRORS": {
+      "LOAD_HISTORY_FAILED": "Không thể tải lịch sử kinh nguyệt",
+      "LOAD_STATS_FAILED": "Không thể tải thống kê chu kỳ",
+      "START_DATE_REQUIRED": "Vui lòng chọn ngày bắt đầu",
+      "LOG_FAILED": "Không thể lưu dữ liệu kinh nguyệt",
+      "SAVE_FAILED": "Lưu thất bại, vui lòng thử lại"
+    },
+    "SUCCESS": {
+      "LOGGED": "Đã lưu dữ liệu kinh nguyệt thành công",
+      "UPDATED": "Đã cập nhật dữ liệu thành công",
+      "DELETED": "Đã xóa dữ liệu thành công"
+    }
+  },
+  "ERROR": {
+    "SUBTITLE": "Đừng lo lắng, chúng tôi sẽ giúp bạn quay lại đúng hướng",
+    "HELP_TEXT": "Nếu vấn đề này vẫn tiếp tục, vui lòng thử làm mới trang hoặc liên hệ với đội ngũ hỗ trợ của chúng tôi.",
+    "CONTACT_SUPPORT": "Cần hỗ trợ? Liên hệ với chúng tôi tại Gendercare123@gmail.com hoặc +84 909 157 997",
+    "NETWORK": {
+      "TITLE": "Lỗi Kết Nối",
+      "MESSAGE": "Chúng tôi đang gặp sự cố kết nối đến máy chủ. Vui lòng kiểm tra kết nối internet và thử lại."
+    },
+    "404": {
+      "TITLE": "Không Tìm Thấy Trang",
+      "MESSAGE": "Trang bạn đang tìm kiếm không tồn tại hoặc đã được di chuyển. Hãy để chúng tôi đưa bạn về đúng nơi."
+    },
+    "500": {
+      "TITLE": "Lỗi Máy Chủ",
+      "MESSAGE": "Máy chủ của chúng tôi đang gặp một số khó khăn kỹ thuật. Đội ngũ của chúng tôi đã được thông báo và đang làm việc để khắc phục."
+    },
+    "GENERIC": {
+      "TITLE": "Đã Xảy Ra Lỗi",
+      "MESSAGE": "Đã xảy ra lỗi không mong muốn. Vui lòng thử lại hoặc liên hệ với đội ngũ hỗ trợ nếu vấn đề vẫn tiếp tục."
+    },
+    "ACTIONS": {
+      "RETRY": "Thử Lại",
+      "HOME": "Về Trang Chủ",
+      "BACK": "Quay Lại"
+    }
+  },
+  "CART": {
+    "TITLE": "Giỏ hàng",
+    "ITEMS": "sản phẩm",
+    "EMPTY TITLE": "Giỏ hàng của bạn đang trống",
+    "EMPTY MESSAGE": "Thêm một số dịch vụ để bắt đầu",
+    "BROWSE SERVICES": "Duyệt dịch vụ",
+    "REMOVE ITEM": "Xóa sản phẩm",
+    "TOTAL DURATION": "Tổng thời gian",
+    "SUBTOTAL": "Tạm tính",
+    "TOTAL": "Tổng cộng",
+    "CLEAR CART": "Xóa giỏ hàng",
+    "CONTINUE SHOPPING": "Tiếp tục mua sắm",
+    "PROCEED TO PAYMENT": "Tiến hành thanh toán"
+  },
+  "DASHBOARD": {
+    "OVERVIEW": "Tổng quan bảng điều khiển",
+    "REFRESH": "Làm mới",
+    "LOADING": "Đang tải...",
+    "PROFILE": "Hồ sơ",
+    "APPOINTMENTS": "Lịch hẹn",
+    "PENDING": "Chờ xử lý",
+    "CONFIRMED": "Đã xác nhận",
+    "COMPLETED": "Hoàn thành",
+    "LOADING_TEXT": "Đang tải dữ liệu bảng điều khiển...",
+    "TRY_AGAIN": "Thử lại",
+    "DEBUG_TOKEN": "Debug Token",
+    "REFRESH_TOKEN": "Làm mới Token"
+  },
+  "PAYMENT": {
+    "VERIFYING": "Đang xác minh thanh toán",
+    "PLEASE_WAIT": "Vui lòng chờ trong khi chúng tôi xác minh thanh toán của bạn...",
+    "ERROR_TITLE": "Lỗi thanh toán",
+    "GO_HOME": "Về trang chủ",
+    "CONTINUE_SHOPPING": "Tiếp tục mua sắm",
+    "SUCCESS_TITLE": "Thanh toán thành công!",
+    "SUCCESS_MESSAGE": "Thanh toán của bạn đã được xử lý thành công.",
+    "TRANSACTION_DETAILS": "Chi tiết giao dịch",
+    "TRANSACTION_ID": "Mã giao dịch",
+    "AMOUNT": "Số tiền",
+    "BANK_CODE": "Mã ngân hàng",
+    "PAYMENT_DATE": "Ngày thanh toán",
+    "ORDER_INFO": "Thông tin đơn hàng",
+    "PRINT_RECEIPT": "In hóa đơn",
+    "FAILURE_TITLE": "Thanh toán thất bại",
+    "REFERENCE_ID": "Mã tham chiếu",
+    "RESPONSE_CODE": "Mã phản hồi",
+    "ATTEMPT_DATE": "Ngày thử",
+    "TRY_AGAIN": "Thử lại",
+    "NEED_HELP": "Cần hỗ trợ?",
+    "SUPPORT_MESSAGE": "Nếu bạn có bất kỳ câu hỏi nào về thanh toán, vui lòng liên hệ đội ngũ hỗ trợ của chúng tôi."
+  },
+  "CONSULTATION": {
+    "SUCCESS": {
+      "MESSAGE_SENT": "Tin nhắn của bạn đã được gửi thành công! Chúng tôi sẽ phản hồi sớm nhất có thể."
+    },
+    "ERRORS": {
+      "SEND_FAILED": "Không thể gửi tin nhắn. Vui lòng thử lại."
+    }
+  },
+  "COMMON": {
+    "BACK": "Quay lại",
+    "CONTINUE": "Tiếp tục",
+    "ALL": "Tất cả",
+    "MALE": "Nam",
+    "FEMALE": "Nữ",
+    "OTHER": "Khác"
+  }
+}

@@ -1,0 +1,548 @@
+{
+  "CONTACT": {
+    "EMAIL": "Gendercare123@gmail.com",
+    "PHONE": "+84 909 157 997",
+    "HEADLINE": "Let us take care of you",
+    "PHONE_TITLE": "Give us a call",
+    "EMAIL_TITLE": "Send us an email"
+  },
+  "NAV": {
+    "HOME": "Home",
+    "FORM": "Form",
+    "TRACKER": "Tracker",
+    "SERVICES": "Services",
+    "DOCTORS": "Doctors",
+    "BLOGS": "Blogs"
+  },
+  "USER": {
+    "DASHBOARD": "Dashboard",
+    "LOGOUT": "Logout",
+    "LOGIN": "Login",
+    "REGISTER": "Register",
+    "BOOK_NOW": "Book now"
+  },
+  "FOOTER": {
+    "TITLE": "Footer",
+    "SLOGAN": "We are dedicated to providing compassionate care and expert medical solutions for every stage of your life.",
+    "ALL_RIGHTS": "All rights reserved.",
+    "SOLUTIONS": {
+      "TITLE": "Solutions",
+      "MARKETING": "Marketing",
+      "EVENTS": "Events",
+      "COMMERCE": "Commerce",
+      "INSIGHTS": "Insights"
+    },
+    "SUPPORT": {
+      "TITLE": "Support",
+      "PRICING": "Pricing",
+      "DOCS": "Documentation",
+      "GUIDES": "Guides"
+    },
+    "CLINIC": {
+      "TITLE": "Clinic",
+      "ABOUT": "About",
+      "BLOG": "Blog",
+      "DOCTORS": "Doctors",
+      "PARTNERS": "Partners"
+    },
+    "LEGAL": {
+      "TITLE": "Legal",
+      "CLAIM": "Claim",
+      "PRIVACY": "Privacy",
+      "TERMS": "Terms"
+    }
+  },
+  "HERO": {
+    "TITLE": "A Gender healthcare private clinic",
+    "DESC": "At GenCare, we’re all about supporting you through every stage of your journey. Our clinic offers a safe, inclusive space for everyone seeking specialized gender healthcare.",
+    "CTA": {
+      "CONTACT": "Contact Us",
+      "SERVICES": "Our Services"
+    }
+  },
+  "ADDRESS": {
+    "HEADLINE": "Visit our clinic",
+    "TITLE": "You can find us at",
+    "ADDRESS": "12 Chu Van An street, Thu Duc, HCMC",
+    "OPEN_TITLE": "We’re open",
+    "OPEN": "Monday – Saturday: 7:30 AM – 5:30 PM"
+  },
+  "SOCIALS": {
+    "HEADLINE": "Connected with us",
+    "FACEBOOK_TITLE": "Facebook",
+    "FACEBOOK": "GenderCare Facebook page",
+    "YOUTUBE_TITLE": "Youtube",
+    "YOUTUBE": "GenderCare Channel"
+  },
+  "VIDEO": {
+    "NOT_SUPPORTED": "Your browser does not support video."
+  },
+  "SERVICE": {
+    "TITLE": "Comprehensive care to meet all your health needs",
+    "DESC": "We are dedicated to providing a safe, inclusive, and supportive environment for everyone. Our experienced healthcare professionals offer comprehensive, confidential, and non-judgmental care tailored to your unique needs, regardless of your gender identity or sexual orientation.",
+    "PRICE": "Services Price"
+  },
+  "DOCTOR": {
+    "HEADLINE": "Our Medical Team",
+    "VIEW_ALL": "View All",
+    "DESCRIPTION": "Meet our team of experienced and compassionate doctors, here to provide exceptional care tailored to your needs.",
+    "YEARS_EXP": "years exp",
+    "TABS": {
+      "ABOUT": "About",
+      "EDUCATION": "Education",
+      "CERTIFICATIONS": "Certifications",
+      "LICENSE": "Medical License"
+    },
+    "ABOUT": {
+      "ABOUT": "About",
+      "EXPERIENCE": "Experience",
+      "LANGUAGES": "Languages"
+    },
+    "EDUCATION": {
+      "TITLE": "Education",
+      "NO_EDUCATION": "No education info available."
+    },
+    "CERTIFICATIONS": {
+      "TITLE": "Certifications",
+      "NO_CERT": "No certifications info available."
+    },
+    "LICENSE": {
+      "TITLE": "MEDICAL PRACTICE LICENSE",
+      "FULL_NAME": "Full name",
+      "LICENSE_NO": "License No.",
+      "SPECIALTY": "Specialty"
+    },
+    "FILTER": {
+      "SHOW": "Show Filters",
+      "HIDE": "Hide Filters",
+      "SEARCH_PLACEHOLDER": "Search doctors...",
+      "SPECIALTY_LABEL": "Specialty",
+      "GENDER_LABEL": "Gender",
+      "ALL_SPECIALTIES": "All Specialties",
+      "ALL_GENDERS": "All Genders"
+    },
+    "GENDER": {
+      "MALE": "Male",
+      "FEMALE": "Female",
+      "OTHER": "Other"
+    },
+    "DEPARTMENT": "Department",
+    "LOADING": "Loading doctors...",
+    "NOT_FOUND": "No doctors found",
+    "PAGINATION": {
+      "PREV": "Prev",
+      "NEXT": "Next"
+    },
+    "PROFILE": {
+      "VIEW_PROFILE": "View Profile",
+      "SPECIALTY": "Specialty",
+      "BOOK": "Book appointment"
+    },
+    "BLOGS_BY_DOCTOR": "Featured articles by Dr. {{doctor}}",
+    "NO_BLOGS": "No articles by this doctor yet."
+  },
+  "BLOG": {
+    "HEADLINE": "Browse our latest blogs on healthcare & wellness",
+    "EXPLORE": "Explore More",
+    "LOADING": "Loading latest blogs...",
+    "RETRY": "Retry",
+    "NO_DATA": "No blogs available at the moment.",
+    "READ_MORE": "Read more →",
+    "LOAD_ERROR": "Unable to load latest blogs. Please try again.",
+    "CATEGORIES": {
+      "COMMUNITY": "Community",
+      "MENTAL_HEALTH": "Mental Health",
+      "GENDER_STORIES": "Gender Stories",
+      "LEGAL": "Legal",
+      "EDUCATION": "Education"
+    },
+    "ERRORS": {
+      "LOAD_FAILED": "Failed to load blogs. Please try again."
+    }
+  },
+  "AI_CHAT": {
+    "TITLE": "AI Assistant",
+    "BRAND_NAME": "GenderCare",
+    "BOT_NAME": "AI Assistant",
+    "PLACEHOLDER": "Type your message...",
+    "SEND": "Send",
+    "CLEAR": "Clear chat",
+    "REFRESH": "Refresh",
+    "CLOSE": "Close chat",
+    "MINIMIZE": "Minimize",
+    "ONLINE": "Online",
+    "OFFLINE": "Offline",
+    "CONNECTION_LOST": "Connection lost. Trying to reconnect...",
+    "QUICK_REPLIES_TITLE": "Suggested questions",
+    "QUICK_REPLIES": [
+      "Find me a gynecologist",
+      "I need a hormone specialist",
+      "What gender-affirming services do you offer?",
+      "How do I start hormone therapy?",
+      "I need mental health support for gender dysphoria",
+      "What are the requirements for gender confirmation surgery?",
+      "I have irregular periods, what should I do?",
+      "How to manage period pain and cramps?",
+      "When should I be concerned about my menstrual cycle?",
+      "Show me available doctors"
+    ],
+    "TYPING": "AI is thinking...",
+    "THINKING": {
+      "DEFAULT": "AI is thinking... 🤔",
+      "PROCESSING": "Processing your request... ⚡",
+      "ALMOST_DONE": "Almost done! Just a moment... ⏳",
+      "OOPS_LONGER": "Oops... it took more than I expected! 😅",
+      "BEAR_WITH_ME": "Bear with me, I'm working on it... 🐻",
+      "WORKING_HARD": "Working hard to give you the best answer! 💪"
+    },
+    "WELCOME": "Hello! I'm your healthcare assistant. How can I help you today? 😊",
+    "INPUT_HINT": "Press Enter to send • Shift + Enter for new line",
+    "CHAT_ERROR": {
+      "CONNECTION_LOST": "Connection lost. Trying to reconnect... Please check if the server is running.",
+      "SERVER": "Server error. Please try again in a moment.",
+      "TOO_MANY": "Too many requests. Please wait a moment.",
+      "SERVICE_UNAVAILABLE": "Service temporarily unavailable. The system is still loading, please try again in a few moments.",
+      "NOT_FOUND": "Chat service not found. Please check if the server is running properly.",
+      "DEFAULT": "Something went wrong. Please try again."
+    },
+    "ERROR_0": "Connection lost. Trying to reconnect... Please check if the server is running.",
+    "ERROR_500": "Server error. Please try again in a moment.",
+    "ERROR_429": "Too many requests. Please wait a moment.",
+    "ERROR_503": "Service temporarily unavailable. The system is still loading, please try again in a few moments.",
+    "ERROR_404": "Chat service not found. Please check if the server is running properly.",
+    "ERROR_DEFAULT": "Something went wrong. Please try again.",
+    "RECOMMEND_SUMMARY": "I found {{count}} doctor(s) that might help you. You can contact them directly using the information provided above, or ask me for more specific recommendations!",
+    "COPY_SUCCESS": "Contact email copied to clipboard",
+    "COPY_FAIL": "Failed to copy contact info",
+    "DOCTOR_LIST_TITLE": "Doctor Recommendations",
+    "MESSAGE_TIME_FORMAT": "HH:mm"
+  },
+  "APPOINTMENT": {
+    "TITLE": "Book Appointment",
+    "BOOKING_TYPE": {
+      "TITLE": "How would you like to book your appointment?",
+      "SERVICE_FIRST": {
+        "TITLE": "Book by Service",
+        "DESCRIPTION": "Select the type of care you need — we'll match you with the right provider."
+      },
+      "DOCTOR_FIRST": {
+        "TITLE": "Book by Doctor",
+        "DESCRIPTION": "Pick your preferred doctor and see available times for a visit."
+      }
+    },
+    "PATIENT_INFO": {
+      "TITLE": "Patient Information",
+      "FULL_NAME": "Full Name",
+      "EMAIL": "Email",
+      "EMAIL_OPTIONAL": "(Optional)",
+      "PHONE": "Phone Number",
+      "GENDER": "Gender",
+      "REASON": "Reason for Visit",
+      "PLACEHOLDERS": {
+        "FULL_NAME": "e.g. John Doe",
+        "EMAIL": "e.g. johndoe@email.com",
+        "REASON": "Describe the main reason for your visit (e.g. headache, checkup, ...)"
+      },
+      "GENDER_OPTIONS": {
+        "SELECT": "--- Select gender ---",
+        "MALE": "Male",
+        "FEMALE": "Female",
+        "OTHER": "Other / Prefer not to say"
+      }
+    },
+    "ERRORS": {
+      "FULL_NAME_REQUIRED": "Please enter your full name.",
+      "EMAIL_INVALID": "Please enter a valid email address.",
+      "PHONE_INVALID": "Please enter a valid phone number.",
+      "REASON_REQUIRED": "Please provide a reason for your visit.",
+      "SERVICE_REQUIRED": "Please select a service to continue.",
+      "DOCTOR_REQUIRED": "Please select a doctor to continue.",
+      "SLOT_REQUIRED": "Please select a time slot to continue."
+    },
+    "BUTTONS": {
+      "CONTINUE": "CONTINUE",
+      "BACK": "Back"
+    },
+    "STEPS": {
+      "SELECT_SERVICE": "Select Service",
+      "SELECT_DOCTOR": "Select Doctor",
+      "SELECT_TIME": "Select an appointment time",
+      "SELECT_SERVICE_FOR": "Select service for",
+      "SELECT_DOCTOR_FOR": "Select doctor for service"
+    },
+    "SEARCH": {
+      "SERVICE": "Search service by name or description...",
+      "DOCTOR": "Search doctor by name or specialization..."
+    },
+    "FILTERS": {
+      "SORT_BY": "Sort by:",
+      "GENDER": "Gender:",
+      "ALL": "All",
+      "MALE": "Male",
+      "FEMALE": "Female",
+      "NAME_AZ": "Name (A-Z)",
+      "DESCRIPTION": "Description",
+      "SPECIALIZATION": "Specialization"
+    },
+    "NO_RESULTS": {
+      "SERVICE": "No service found.",
+      "DOCTOR": "No doctor found."
+    },
+    "TIME_SLOT": {
+      "TITLE": "Select an appointment time",
+      "DATE": "Date",
+      "AVAILABLE_SLOTS": "Available time slots",
+      "FULL": "(Full)"
+    },
+    "CONFIRM_LEAVE": "You have unsaved changes. Are you sure you want to leave?",
+    "PROFILE_SELECTION": {
+      "TITLE": "Who is this appointment for?",
+      "SUBTITLE": "Choose whether you're booking for yourself or someone else",
+      "USE_MY_PROFILE": "Book for myself",
+      "USE_MY_PROFILE_DESC": "Use my saved profile information",
+      "BOOK_FOR_ANOTHER": "Book for someone else",
+      "BOOK_FOR_ANOTHER_DESC": "Enter different patient information"
+    },
+    "PAYMENT": {
+      "TITLE": "Appointment Payment",
+      "SUBTITLE": "Please review your appointment details and complete payment",
+      "APPOINTMENT_DETAILS": "Appointment Details",
+      "PATIENT_INFO": "Patient Information",
+      "APPOINTMENT_INFO": "Appointment Information",
+      "DOCTOR": "Doctor",
+      "SERVICE": "Service",
+      "DATE": "Date",
+      "TIME": "Time",
+      "TOTAL_AMOUNT": "Total Amount",
+      "PAYMENT_NOTE": "Payment is required to confirm your appointment",
+      "PAY_NOW": "Pay with VNPay",
+      "PROCESSING": "Processing Payment...",
+      "GO_BACK": "Back to Appointment",
+      "LOADING": "Loading appointment details...",
+      "SECURE_PAYMENT": "Secure payment powered by VNPay"
+    },
+    "RESULT": {
+      "SUCCESS_TITLE": "Appointment Booked Successfully!",
+      "SUCCESS_MESSAGE": "Your appointment has been confirmed. We'll send you a confirmation shortly.",
+      "ERROR_TITLE": "Booking Failed",
+      "ERROR_MESSAGE": "We couldn't complete your appointment booking. Please try again.",
+      "APPOINTMENT_DETAILS": "Appointment Details",
+      "APPOINTMENT_ID": "Appointment ID",
+      "DATE": "Date",
+      "TIME": "Time",
+      "STATUS": "Status",
+      "PATIENT_INFO": "Patient Information",
+      "FULL_NAME": "Full Name",
+      "PHONE": "Phone",
+      "EMAIL": "Email",
+      "SCHEDULE": "Schedule",
+      "REASON": "Reason for Visit",
+      "NEXT_STEPS": "Next Steps",
+      "STEP1": "You will receive a confirmation email/SMS shortly",
+      "STEP2": "Please arrive 15 minutes before your appointment time",
+      "STEP3": "Bring a valid ID and any relevant medical documents",
+      "ERROR_DETAILS": "Error Details",
+      "TECHNICAL_DETAILS": "Technical Details",
+      "SUBMITTED_DATA": "Submitted Information",
+      "GO_HOME": "Go Home",
+      "TRY_AGAIN": "Try Again",
+      "CREATING_APPOINTMENT": "Creating your appointment...",
+      "PROCESSING_BOOKING": "Please wait while we process your booking",
+      "LOADING": "Loading..."
+    }
+  },
+  "SERVICES": {
+    "TITLE": "How can we help you?",
+    "SEARCH_PLACEHOLDER": "Search services...",
+    "ALL_CATEGORIES": "All",
+    "LOADING": "Loading services...",
+    "NO_SERVICES": "No services found.",
+    "BOOK_NOW": "Book Now",
+    "PRICE": "Price",
+    "VND": "VND",
+    "PAGINATION": {
+      "PREV": "Previous",
+      "NEXT": "Next"
+    }
+  },
+  "CONTACT_SUPPORT": {
+    "PHONE_TITLE": "Call Phone",
+    "ZALO_TITLE": "Chat Zalo",
+    "ZALO_CHAT": "Message on Zalo"
+  },
+  "BACK_TO_TOP": {
+    "TITLE": "Back to Top"
+  },
+  "PERIOD": {
+    "TITLE": "Period Tracking",
+    "SUBTITLE": "Track your menstrual cycle and health insights",
+    "DASHBOARD": {
+      "CURRENT_CYCLE_DAY": "Day of Cycle",
+      "NEXT_PERIOD": "Next Period",
+      "DAYS_UNTIL": "in {{days}} days",
+      "CALCULATING": "Calculating...",
+      "AVERAGE_CYCLE": "Avg Cycle",
+      "PERIOD_LENGTH": "Period Length",
+      "TRACKING_CYCLES": "Tracking",
+      "DAYS": "days",
+      "CYCLES": "cycles"
+    },
+    "FORM": {
+      "LOG_PERIOD": "Log Period",
+      "START_DATE": "Start Date",
+      "END_DATE": "End Date (Optional)",
+      "FLOW_INTENSITY": "Flow Intensity",
+      "SYMPTOMS": "Symptoms",
+      "NOTES": "Notes",
+      "NOTES_PLACEHOLDER": "Any additional notes...",
+      "SAVE": "Save Period Data",
+      "SAVING": "Saving..."
+    },
+    "CALENDAR": {
+      "TITLE": "Calendar View",
+      "SUBTITLE": "Click on dates to log periods",
+      "PREVIOUS_MONTH": "Previous Month",
+      "NEXT_MONTH": "Next Month",
+      "LEGEND": "Calendar Legend",
+      "PERIOD_DAY": "Period",
+      "FERTILE_DAY": "Fertile",
+      "OVULATION_DAY": "Ovulation",
+      "PREDICTED_DAY": "Predicted"
+    },
+    "HISTORY": {
+      "TITLE": "Period History",
+      "RECENT_PERIODS": "Recent Periods",
+      "NO_DATA": "No period data logged yet",
+      "FLOW": "Flow",
+      "SYMPTOMS_COUNT": "{{count}} symptoms"
+    },
+    "FLOW": {
+      "LIGHT": "Light",
+      "MEDIUM": "Medium",
+      "HEAVY": "Heavy",
+      "VERY_HEAVY": "Very Heavy"
+    },
+    "SYMPTOMS": {
+      "CRAMPS": "Cramps",
+      "HEADACHE": "Headache",
+      "MOOD_SWINGS": "Mood Swings",
+      "BLOATING": "Bloating",
+      "BREAST_TENDERNESS": "Breast Tenderness",
+      "FATIGUE": "Fatigue",
+      "NAUSEA": "Nausea",
+      "BACK_PAIN": "Back Pain",
+      "ACNE": "Acne",
+      "FOOD_CRAVINGS": "Food Cravings",
+      "INSOMNIA": "Insomnia",
+      "DIARRHEA": "Diarrhea",
+      "CONSTIPATION": "Constipation",
+      "HOT_FLASHES": "Hot Flashes",
+      "DIZZINESS": "Dizziness"
+    },
+    "ERRORS": {
+      "LOAD_HISTORY_FAILED": "Failed to load period history",
+      "LOAD_STATS_FAILED": "Failed to load cycle statistics",
+      "START_DATE_REQUIRED": "Please select a start date",
+      "LOG_FAILED": "Failed to save period data",
+      "SAVE_FAILED": "Save failed, please try again"
+    },
+    "SUCCESS": {
+      "LOGGED": "Period data saved successfully",
+      "UPDATED": "Data updated successfully",
+      "DELETED": "Data deleted successfully"
+    }
+  },
+  "ERROR": {
+    "SUBTITLE": "Don't worry, we're here to help you get back on track",
+    "HELP_TEXT": "If this problem persists, please try refreshing the page or contact our support team.",
+    "CONTACT_SUPPORT": "Need help? Contact us at Gendercare123@gmail.com or +84 909 157 997",
+    "NETWORK": {
+      "TITLE": "Connection Problem",
+      "MESSAGE": "We're having trouble connecting to our servers. Please check your internet connection and try again."
+    },
+    "404": {
+      "TITLE": "Page Not Found",
+      "MESSAGE": "The page you're looking for doesn't exist or has been moved. Let's get you back to where you need to be."
+    },
+    "500": {
+      "TITLE": "Server Error",
+      "MESSAGE": "Our servers are experiencing some technical difficulties. Our team has been notified and is working to fix this."
+    },
+    "GENERIC": {
+      "TITLE": "Something Went Wrong",
+      "MESSAGE": "An unexpected error occurred. Please try again or contact our support team if the problem continues."
+    },
+    "ACTIONS": {
+      "RETRY": "Try Again",
+      "HOME": "Go Home",
+      "BACK": "Go Back"
+    }
+  },
+  "CART": {
+    "TITLE": "Shopping Cart",
+    "ITEMS": "items",
+    "EMPTY TITLE": "Your cart is empty",
+    "EMPTY MESSAGE": "Add some services to get started",
+    "BROWSE SERVICES": "Browse Services",
+    "REMOVE ITEM": "Remove item",
+    "TOTAL DURATION": "Total Duration",
+    "SUBTOTAL": "Subtotal",
+    "TOTAL": "Total",
+    "CLEAR CART": "Clear Cart",
+    "CONTINUE SHOPPING": "Continue Shopping",
+    "PROCEED TO PAYMENT": "Proceed to Payment"
+  },
+  "DASHBOARD": {
+    "OVERVIEW": "Dashboard Overview",
+    "REFRESH": "Refresh",
+    "LOADING": "Loading...",
+    "PROFILE": "Profile",
+    "APPOINTMENTS": "Appointments",
+    "PENDING": "Pending",
+    "CONFIRMED": "Confirmed",
+    "COMPLETED": "Completed",
+    "LOADING_TEXT": "Loading dashboard data...",
+    "TRY_AGAIN": "Try Again",
+    "DEBUG_TOKEN": "Debug Token",
+    "REFRESH_TOKEN": "Refresh Token"
+  },
+  "PAYMENT": {
+    "VERIFYING": "Verifying Payment",
+    "PLEASE_WAIT": "Please wait while we verify your payment...",
+    "ERROR_TITLE": "Payment Error",
+    "GO_HOME": "Go Home",
+    "CONTINUE_SHOPPING": "Continue Shopping",
+    "SUCCESS_TITLE": "Payment Successful!",
+    "SUCCESS_MESSAGE": "Your payment has been processed successfully.",
+    "TRANSACTION_DETAILS": "Transaction Details",
+    "TRANSACTION_ID": "Transaction ID",
+    "AMOUNT": "Amount",
+    "BANK_CODE": "Bank Code",
+    "PAYMENT_DATE": "Payment Date",
+    "ORDER_INFO": "Order Information",
+    "PRINT_RECEIPT": "Print Receipt",
+    "FAILURE_TITLE": "Payment Failed",
+    "REFERENCE_ID": "Reference ID",
+    "RESPONSE_CODE": "Response Code",
+    "ATTEMPT_DATE": "Attempt Date",
+    "TRY_AGAIN": "Try Again",
+    "NEED_HELP": "Need Help?",
+    "SUPPORT_MESSAGE": "If you have any questions about your payment, please contact our support team."
+  },
+  "CONSULTATION": {
+    "SUCCESS": {
+      "MESSAGE_SENT": "Your message has been sent successfully! We will get back to you soon."
+    },
+    "ERRORS": {
+      "SEND_FAILED": "Failed to send message. Please try again."
+    }
+  },
+  "COMMON": {
+    "BACK": "Back",
+    "CONTINUE": "Continue",
+    "ALL": "All",
+    "MALE": "Male",
+    "FEMALE": "Female",
+    "OTHER": "Other"
+  }
+}

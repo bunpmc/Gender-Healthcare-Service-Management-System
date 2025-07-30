@@ -1,0 +1,143 @@
+/* Custom styles for appointment search bar component */
+
+/* Enhanced focus states */
+.focus\:ring-2:focus {
+  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
+}
+
+/* Smooth transitions */
+.transition-all {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
+}
+
+/* Custom select arrow */
+select {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: 2.5rem;
+}
+
+/* Filter tag animations */
+.filter-tag {
+  animation: fadeInScale 0.2s ease-out;
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Hover effects for buttons */
+.hover\:bg-gray-50:hover {
+  background-color: rgb(249 250 251);
+}
+
+.hover\:bg-indigo-700:hover {
+  background-color: rgb(67 56 202);
+}
+
+/* Custom scrollbar for filter tags */
+.filter-tags-container {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(209 213 219) transparent;
+}
+
+.filter-tags-container::-webkit-scrollbar {
+  height: 4px;
+}
+
+.filter-tags-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.filter-tags-container::-webkit-scrollbar-thumb {
+  background-color: rgb(209 213 219);
+  border-radius: 2px;
+}
+
+.filter-tags-container::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(156 163 175);
+}
+
+/* Enhanced shadow effects */
+.shadow-xl {
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+/* Border effects */
+.border-white\/20 {
+  border-color: rgb(255 255 255 / 0.2);
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .filter-controls {
+    flex-direction: column;
+  }
+  
+  .filter-controls > div {
+    min-width: 100%;
+  }
+}
+
+/* Loading state styles */
+.loading-shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Custom focus ring colors */
+.focus\:ring-indigo-500:focus {
+  --tw-ring-color: rgb(99 102 241);
+}
+
+.focus\:border-indigo-500:focus {
+  border-color: rgb(99 102 241);
+}
+
+/* Enhanced button styles */
+.btn-primary {
+  background: linear-gradient(135deg, rgb(99 102 241) 0%, rgb(67 56 202) 100%);
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, rgb(67 56 202) 0%, rgb(55 48 163) 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px -5px rgb(99 102 241 / 0.3);
+}
+
+.btn-secondary {
+  background: white;
+  border: 1px solid rgb(209 213 219);
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: rgb(249 250 251);
+  border-color: rgb(156 163 175);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px -2px rgb(0 0 0 / 0.1);
+}

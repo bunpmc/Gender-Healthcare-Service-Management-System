@@ -1,0 +1,549 @@
+<!-- Enhanced Service Management Content -->
+<div class="space-y-6 animate-fadeIn">
+  <div class="container mx-auto max-w-full">
+    <!-- Enhanced Search Bar -->
+    <app-service-search-bar
+      [categories]="categories"
+      [totalResults]="filteredServices.length"
+      (filterChange)="applyFilters($event)"
+      (addService)="openAddServiceModal()"
+      (addCategory)="openAddCategoryModal()"
+      (exportData)="exportServices()"
+      class="mb-6"
+    ></app-service-search-bar>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="flex items-center justify-center py-12">
+      <div class="flex items-center space-x-3">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+        <span class="text-gray-600 font-medium">Loading services...</span>
+      </div>
+    </div>
+
+    <!-- Enhanced Service Table -->
+    <app-service-table
+      *ngIf="!isLoading"
+      [paginatedServices]="paginatedServices"
+      [totalServices]="filteredServices.length"
+      [currentPage]="currentPage"
+      [categories]="categories"
+      (viewService)="openViewServiceModal($event)"
+      (editService)="openEditServiceModal($event)"
+      (deleteService)="onDeleteService($event)"
+      (toggleStatus)="onToggleServiceStatus($event)"
+      (sortChange)="onSortChange($event)"
+    ></app-service-table>
+    <!-- Enhanced Pagination -->
+    <div
+      *ngIf="!isLoading && filteredServices.length > 0"
+      class="bg-white rounded-2xl shadow-xl border border-white/20 px-6 py-4 mt-6"
+    >
+      <div class="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
+        <!-- Results Info -->
+        <div class="text-sm text-gray-700">
+          Showing {{ (currentPage - 1) * pageSize + 1 }} to {{ Math.min(currentPage * pageSize, filteredServices.length) }} of {{ filteredServices.length }} services
+        </div>
+
+        <!-- Pagination Controls -->
+        <div class="flex items-center space-x-2">
+          <button
+            (click)="goToFirstPage()"
+            [disabled]="currentPage === 1"
+            class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+          >
+            First
+          </button>
+          <button
+            (click)="goToPreviousPage()"
+            [disabled]="currentPage === 1"
+            class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+          >
+            Previous
+          </button>
+
+          <!-- Page Numbers -->
+          <div class="flex items-center space-x-1">
+            <span class="px-3 py-2 text-sm font-medium text-purple-600 bg-purple-50 border border-purple-200 rounded-lg">
+              {{ currentPage }}
+            </span>
+            <span class="text-gray-500">of</span>
+            <span class="px-3 py-2 text-sm font-medium text-gray-700">{{ totalPages }}</span>
+          </div>
+
+          <button
+            (click)="goToNextPage()"
+            [disabled]="currentPage === totalPages"
+            class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+          >
+            Next
+          </button>
+          <button
+            (click)="goToLastPage()"
+            [disabled]="currentPage === totalPages"
+            class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+          >
+            Last
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoading && filteredServices.length === 0" class="bg-white rounded-2xl shadow-xl border border-white/20 p-12 text-center">
+      <div class="max-w-md mx-auto">
+        <div class="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+          <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+          </svg>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">No services found</h3>
+        <p class="text-gray-600 mb-6">There are no services matching your current filters. Try adjusting your search criteria or add a new service.</p>
+        <button
+          (click)="openAddServiceModal()"
+          class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all duration-200 transform hover:scale-105"
+        >
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+          </svg>
+          Add New Service
+        </button>
+      </div>
+    </div>
+
+        <!-- Add Service Modal -->
+        <div *ngIf="showAddModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+          <div class="bg-white rounded-lg p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto">
+            <h2 class="text-2xl font-semibold mb-4">Add New Service</h2>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Service Name *</label>
+                <input
+                  [(ngModel)]="newService.service_name"
+                  type="text"
+                  class="mt-1 w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  required
+                  [class.border-red-500]="errors['service_name']"
+                />
+                <p *ngIf="errors['service_name']" class="text-red-500 text-sm mt-1">Service name is required</p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Category *</label>
+                <select
+                  [(ngModel)]="newService.category_id"
+                  class="mt-1 w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  required
+                  [class.border-red-500]="errors['category_id']"
+                >
+                  <option value="">Select Category</option>
+                  <option *ngFor="let category of categories" [value]="category.category_id">
+                    {{ category.category_name }}
+                  </option>
+                </select>
+                <p *ngIf="errors['category_id']" class="text-red-500 text-sm mt-1">Category is required</p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                <table class="min-w-full bg-white border">
+                  <thead>
+                    <tr>
+                      <th class="py-2 px-4 border-b text-left text-sm font-medium text-gray-700">Field</th>
+                      <th class="py-2 px-4 border-b text-left text-sm font-medium text-gray-700">Value</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let key of descriptionKeys">
+                      <td class="py-2 px-4 border-b capitalize">{{ key }}</td>
+                      <td class="py-2 px-4 border-b">
+                        <input
+                          [(ngModel)]="newServiceDescription[key]"
+                          type="text"
+                          class="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Cost ($) *</label>
+                <input
+                  [(ngModel)]="newService.service_cost"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  class="mt-1 w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  [class.border-red-500]="errors['service_cost']"
+                />
+                <p *ngIf="errors['service_cost']" class="text-red-500 text-sm mt-1">Cost must be non-negative</p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Duration (minutes) *</label>
+                <input
+                  [(ngModel)]="newService.duration_minutes"
+                  type="number"
+                  min="1"
+                  max="60"
+                  class="mt-1 w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  [class.border-red-500]="errors['duration_minutes']"
+                />
+                <p *ngIf="errors['duration_minutes']" class="text-red-500 text-sm mt-1">Duration must be between 1 and 60 minutes</p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Active</label>
+                <input
+                  [(ngModel)]="newService.is_active"
+                  type="checkbox"
+                  class="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Image Link</label>
+                <input
+                  [(ngModel)]="newService.image_link"
+                  type="text"
+                  class="mt-1 w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Excerpt</label>
+                <textarea
+                  [(ngModel)]="newService.excerpt"
+                  class="mt-1 w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  rows="4"
+                ></textarea>
+              </div>
+            </div>
+            <div class="mt-6 flex justify-end space-x-2">
+              <button
+                (click)="closeAddServiceModal()"
+                class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+              >
+                Cancel
+              </button>
+              <button
+                (click)="addService()"
+                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                [disabled]="hasErrors()"
+              >
+                Add Service
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Edit Service Modal -->
+        <div *ngIf="showEditModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+          <div class="bg-white rounded-lg p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto">
+            <h2 class="text-2xl font-semibold mb-4">Edit Service</h2>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Service Name *</label>
+                <input
+                  [(ngModel)]="selectedService.service_name"
+                  type="text"
+                  class="mt-1 w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  required
+                  [class.border-red-500]="errors['service_name']"
+                />
+                <p *ngIf="errors['service_name']" class="text-red-500 text-sm mt-1">Service name is required</p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Category *</label>
+                <select
+                  [(ngModel)]="selectedService.category_id"
+                  class="mt-1 w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  required
+                  [class.border-red-500]="errors['category_id']"
+                >
+                  <option value="">Select Category</option>
+                  <option *ngFor="let category of categories" [value]="category.category_id">
+                    {{ category.category_name }}
+                  </option>
+                </select>
+                <p *ngIf="errors['category_id']" class="text-red-500 text-sm mt-1">Category is required</p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                <table class="min-w-full bg-white border">
+                  <thead>
+                    <tr>
+                      <th class="py-2 px-4 border-b text-left text-sm font-medium text-gray-700">Field</th>
+                      <th class="py-2 px-4 border-b text-left text-sm font-medium text-gray-700">Value</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let key of descriptionKeys">
+                      <td class="py-2 px-4 border-b capitalize">{{ key }}</td>
+                      <td class="py-2 px-4 border-b">
+                        <input
+                          [(ngModel)]="selectedServiceDescription[key]"
+                          type="text"
+                          class="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Cost ($) *</label>
+                <input
+                  [(ngModel)]="selectedService.service_cost"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  class="mt-1 w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  [class.border-red-500]="errors['service_cost']"
+                />
+                <p *ngIf="errors['service_cost']" class="text-red-500 text-sm mt-1">Cost must be non-negative</p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Duration (minutes) *</label>
+                <input
+                  [(ngModel)]="selectedService.duration_minutes"
+                  type="number"
+                  min="1"
+                  max="60"
+                  class="mt-1 w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  [class.border-red-500]="errors['duration_minutes']"
+                />
+                <p *ngIf="errors['duration_minutes']" class="text-red-500 text-sm mt-1">Duration must be between 1 and 60 minutes</p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Active</label>
+                <input
+                  [(ngModel)]="selectedService.is_active"
+                  type="checkbox"
+                  class="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Image Link</label>
+                <input
+                  [(ngModel)]="selectedService.image_link"
+                  type="text"
+                  class="mt-1 w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Excerpt</label>
+                <textarea
+                  [(ngModel)]="selectedService.excerpt"
+                  class="mt-1 w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  rows="4"
+                ></textarea>
+              </div>
+            </div>
+            <div class="mt-6 flex justify-end space-x-2">
+              <button
+                (click)="closeEditServiceModal()"
+                class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+              >
+                Cancel
+              </button>
+              <button
+                (click)="updateService()"
+                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                [disabled]="hasErrors()"
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- View Service Modal -->
+        <div *ngIf="showViewModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+          <div class="bg-white rounded-lg p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto">
+            <h2 class="text-2xl font-semibold mb-4">Service Details</h2>
+            <table class="min-w-full bg-white">
+              <tbody>
+                <tr class="border-b">
+                  <td class="py-2 px-4 font-medium text-gray-700">ID</td>
+                  <td class="py-2 px-4">{{ selectedService.service_id }}</td>
+                </tr>
+                <tr class="border-b">
+                  <td class="py-2 px-4 font-medium text-gray-700">Name</td>
+                  <td class="py-2 px-4">{{ selectedService.service_name }}</td>
+                </tr>
+                <tr class="border-b">
+                  <td class="py-2 px-4 font-medium text-gray-700">Category</td>
+                  <td class="py-2 px-4">{{ getCategoryName(selectedService.category_id) }}</td>
+                </tr>
+                <tr class="border-b">
+                  <td class="py-2 px-4 font-medium text-gray-700" colspan="2">
+                    <div class="font-medium text-gray-700 mb-2">Description</div>
+                    <table class="min-w-full bg-white border">
+                      <thead>
+                        <tr>
+                          <th class="py-2 px-4 border-b text-left text-sm font-medium text-gray-700 w-1/3">Field</th>
+                          <th class="py-2 px-4 border-b text-left text-sm font-medium text-gray-700 w-2/3">Value</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let key of descriptionKeys">
+                          <td class="py-2 px-4 border-b text-sm text-gray-700 capitalize">{{ key }}</td>
+                          <td class="py-2 px-4 border-b text-sm text-gray-700">{{ (selectedService.service_description && selectedService.service_description[key]) || 'N/A' }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </td>
+                </tr>
+                <tr class="border-b">
+                  <td class="py-2 px-4 font-medium text-gray-700">Cost</td>
+                  <td class="py-2 px-4">${{ selectedService.service_cost?.toFixed(2) || 'N/A' }}</td>
+                </tr>
+                <tr class="border-b">
+                  <td class="py-2 px-4 font-medium text-gray-700">Duration</td>
+                  <td class="py-2 px-4">{{ selectedService.duration_minutes || 'N/A' }} min</td>
+                </tr>
+                <tr class="border-b">
+                  <td class="py-2 px-4 font-medium text-gray-700">Active</td>
+                  <td class="py-2 px-4">{{ selectedService.is_active ? 'Yes' : 'No' }}</td>
+                </tr>
+                <tr class="border-b">
+                  <td class="py-2 px-4 font-medium text-gray-700">Image</td>
+                  <td class="py-2 px-4">
+                    <a *ngIf="selectedService.image_link" [href]="selectedService.image_link" target="_blank" class="text-blue-600 hover:underline">View Image</a>
+                    <span *ngIf="!selectedService.image_link">N/A</span>
+                  </td>
+                </tr>
+                <tr class="border-b">
+                  <td class="py-2 px-4 font-medium text-gray-700">Excerpt</td>
+                  <td class="py-2 px-4">{{ selectedService.excerpt || 'N/A' }}</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="mt-6 flex justify-end">
+              <button
+                (click)="closeViewServiceModal()"
+                class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Add Category Modal -->
+        <div *ngIf="showCategoryModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+          <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md mx-4">
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-2xl font-bold text-gray-900">Add New Category</h2>
+              <button
+                (click)="closeAddCategoryModal()"
+                class="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+              >
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Category Name *</label>
+                <input
+                  [(ngModel)]="newCategory.category_name"
+                  type="text"
+                  placeholder="Enter category name"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200"
+                  [class.border-red-500]="categoryErrors.category_name"
+                />
+                <p *ngIf="categoryErrors.category_name" class="text-red-500 text-sm mt-1">Category name is required</p>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                <textarea
+                  [(ngModel)]="newCategory.description"
+                  placeholder="Enter category description (optional)"
+                  rows="3"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200"
+                ></textarea>
+              </div>
+            </div>
+
+            <div class="flex justify-end space-x-3 mt-6">
+              <button
+                (click)="closeAddCategoryModal()"
+                class="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors duration-200"
+              >
+                Cancel
+              </button>
+              <button
+                (click)="addCategory()"
+                [disabled]="!newCategory.category_name || isLoading"
+                class="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+              >
+                <span *ngIf="isLoading" class="inline-flex items-center">
+                  <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Adding...
+                </span>
+                <span *ngIf="!isLoading">Add Category</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notification Toast -->
+        <div
+          *ngIf="showNotification"
+          class="fixed top-4 right-4 z-50 max-w-sm w-full bg-white rounded-lg shadow-lg border-l-4 p-4 transition-all duration-300 transform"
+          [class.border-green-500]="notificationType === 'success'"
+          [class.border-red-500]="notificationType === 'error'"
+          [class.border-yellow-500]="notificationType === 'warning'"
+        >
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <!-- Success Icon -->
+              <svg
+                *ngIf="notificationType === 'success'"
+                class="w-5 h-5 text-green-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+              <!-- Error Icon -->
+              <svg
+                *ngIf="notificationType === 'error'"
+                class="w-5 h-5 text-red-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+              <!-- Warning Icon -->
+              <svg
+                *ngIf="notificationType === 'warning'"
+                class="w-5 h-5 text-yellow-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+              </svg>
+            </div>
+            <div class="ml-3 flex-1">
+              <p class="text-sm font-medium text-gray-900">{{ notificationMessage }}</p>
+            </div>
+            <div class="ml-4 flex-shrink-0">
+              <button
+                (click)="closeNotification()"
+                class="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+  </div>
+</div>

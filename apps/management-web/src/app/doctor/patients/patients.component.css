@@ -1,0 +1,211 @@
+/* Patients component specific styles */
+
+.patient-card {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.patient-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Gender icon styles */
+.gender-icon {
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+
+/* Status badge styles */
+.status-badge {
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Modal styles */
+.modal-overlay {
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  animation: modalSlideIn 0.3s ease-out;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Patient info section */
+.patient-info-section {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+}
+
+/* Reports section */
+.reports-section {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.reports-section::-webkit-scrollbar {
+  width: 6px;
+}
+
+.reports-section::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.reports-section::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.reports-section::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Period tracking styles */
+.period-tracking-item {
+  background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%);
+  border: 1px solid #f9a8d4;
+}
+
+/* Loading animation */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Filter section styles */
+.filter-section {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.filter-input {
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.filter-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Button styles */
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.btn-secondary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .patient-card {
+    padding: 1rem;
+  }
+  
+  .modal-content {
+    margin: 1rem;
+    max-height: 95vh;
+  }
+  
+  .patient-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Empty state styles */
+.empty-state {
+  padding: 3rem 1rem;
+}
+
+.empty-state svg {
+  opacity: 0.5;
+}
+
+/* Form styles */
+.form-input {
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.form-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  outline: none;
+}
+
+/* Contact info styles */
+.contact-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.contact-info svg {
+  margin-right: 0.5rem;
+  opacity: 0.7;
+}
+
+/* Patient details grid */
+.patient-details-grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+  .patient-details-grid {
+    grid-template-columns: 1fr 2fr;
+  }
+}
+
+/* Report item styles */
+.report-item {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+  transition: box-shadow 0.2s ease-in-out;
+}
+
+.report-item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Age display */
+.age-display {
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-weight: 500;
+}

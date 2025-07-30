@@ -1,0 +1,461 @@
+/* Appointment Management Component Styles */
+
+/* Custom scrollbar for modals */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 6px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Enhanced table styles */
+.table-container {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Appointment status highlighting */
+.appointment-row {
+  transition: all 0.3s ease;
+}
+
+.appointment-row:hover {
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.appointment-row.pending {
+  background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%);
+  border-left: 4px solid #f59e0b;
+}
+
+.appointment-row.today {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border-left: 4px solid #0ea5e9;
+}
+
+.appointment-row.overdue {
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  border-left: 4px solid #ef4444;
+}
+
+/* Status badges with animations */
+.status-badge {
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.status-badge:hover {
+  transform: scale(1.05);
+}
+
+.status-badge::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transition: left 0.5s;
+}
+
+.status-badge:hover::before {
+  left: 100%;
+}
+
+/* Statistics cards animation */
+.stats-card {
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.stats-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.stats-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.stats-card:hover::before {
+  transform: scaleX(1);
+}
+
+/* Modal backdrop animation */
+.modal-backdrop {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Modal content animation */
+.modal-content {
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Enhanced button hover effects */
+.btn-primary {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3);
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.btn-primary:hover::before {
+  left: 100%;
+}
+
+/* Approval button special styling */
+.btn-approve {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  transition: all 0.3s ease;
+}
+
+.btn-approve:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+}
+
+/* Pending appointments highlight */
+.pending-highlight {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+/* Time slot styling */
+.time-slot {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 2px solid #e2e8f0;
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.time-slot:hover {
+  border-color: #6366f1;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  transform: translateY(-1px);
+}
+
+.time-slot.selected {
+  border-color: #6366f1;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
+}
+
+/* Form input focus effects */
+.form-input {
+  transition: all 0.3s ease;
+}
+
+.form-input:focus {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+}
+
+/* Loading spinner enhancement */
+.loading-spinner {
+  background: conic-gradient(from 0deg, transparent, #6366f1);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Card hover effects */
+.card {
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+/* Pagination button styles */
+.pagination-btn {
+  transition: all 0.2s ease;
+}
+
+.pagination-btn:hover {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
+  transform: translateY(-1px);
+}
+
+.pagination-btn.active {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
+}
+
+/* Action button styles */
+.action-btn {
+  transition: all 0.2s ease;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+}
+
+.action-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.action-btn.approve:hover {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #059669;
+}
+
+.action-btn.view:hover {
+  background-color: rgba(99, 102, 241, 0.1);
+  color: #4f46e5;
+}
+
+.action-btn.reject:hover {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+}
+
+/* Filter section styles */
+.filter-section {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Header gradient */
+.header-gradient {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.9) 100%);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Empty state styles */
+.empty-state {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 2px dashed #cbd5e1;
+  border-radius: 1rem;
+  padding: 3rem;
+  text-align: center;
+}
+
+/* Today indicator */
+.today-indicator {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+  from {
+    box-shadow: 0 0 5px rgba(59, 130, 246, 0.5);
+  }
+  to {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.8);
+  }
+}
+
+/* Past appointment indicator */
+.past-indicator {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* Visit type badges */
+.visit-type-badge {
+  transition: all 0.2s ease;
+}
+
+.visit-type-badge:hover {
+  transform: scale(1.05);
+}
+
+/* Appointment details modal styling */
+.appointment-details {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+/* Status banner styling */
+.status-banner {
+  border-radius: 1rem;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.status-banner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .modal-content {
+    margin: 1rem;
+    max-height: calc(100vh - 2rem);
+  }
+  
+  .table-container {
+    overflow-x: auto;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .appointment-row {
+    transform: none;
+  }
+  
+  .appointment-row:hover {
+    transform: none;
+  }
+}
+
+/* Dark mode support (if needed) */
+@media (prefers-color-scheme: dark) {
+  .card {
+    background: rgba(30, 41, 59, 0.8);
+    border-color: rgba(71, 85, 105, 0.3);
+  }
+  
+  .form-input {
+    background: rgba(30, 41, 59, 0.5);
+    border-color: rgba(71, 85, 105, 0.3);
+    color: #f1f5f9;
+  }
+}
+
+/* Success and error message styles */
+.message {
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Appointment ID styling */
+.appointment-id {
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+  background: #f3f4f6;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+}
+
+/* Doctor selection highlight */
+.doctor-option {
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.doctor-option:hover {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  transform: translateX(4px);
+}
+
+/* Time selection grid */
+.time-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}

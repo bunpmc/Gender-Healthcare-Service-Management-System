@@ -1,0 +1,927 @@
+<!-- Patient Management Component -->
+<div
+  class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-6"
+>
+  <div class="max-w-7xl mx-auto">
+    <!-- Header Section -->
+    <div class="mb-8">
+      <div
+        class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-8"
+      >
+        <div
+          class="flex flex-col lg:flex-row lg:items-center lg:justify-between"
+        >
+          <div>
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">
+              Patient Management
+            </h1>
+            <p class="text-gray-600">
+              Create, read, and update patient records (CRU operations)
+            </p>
+          </div>
+          <div class="mt-4 lg:mt-0">
+            <button
+              (click)="openCreateModal()"
+              class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-6 py-3 rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+            >
+              <svg
+                class="w-5 h-5 inline-block mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                ></path>
+              </svg>
+              Add New Patient
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div
+        class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6"
+      >
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <div
+              class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center"
+            >
+              <svg
+                class="w-6 h-6 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                ></path>
+              </svg>
+            </div>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-500">Total Patients</p>
+            <p class="text-2xl font-bold text-gray-900">
+              {{ stats.totalPatients }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6"
+      >
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <div
+              class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center"
+            >
+              <svg
+                class="w-6 h-6 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                ></path>
+              </svg>
+            </div>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-500">Active Patients</p>
+            <p class="text-2xl font-bold text-gray-900">
+              {{ stats.activePatients }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6"
+      >
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <div
+              class="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-xl flex items-center justify-center"
+            >
+              <svg
+                class="w-6 h-6 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                ></path>
+              </svg>
+            </div>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-500">New This Month</p>
+            <p class="text-2xl font-bold text-gray-900">
+              {{ stats.newThisMonth }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6"
+      >
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <div
+              class="w-12 h-12 bg-gradient-to-br from-pink-500 to-rose-600 rounded-xl flex items-center justify-center"
+            >
+              <svg
+                class="w-6 h-6 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                ></path>
+              </svg>
+            </div>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-500">Female Patients</p>
+            <p class="text-2xl font-bold text-gray-900">
+              {{ stats.femalePatients }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="mb-6">
+      <div
+        class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6"
+      >
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <!-- Search -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Search</label
+            >
+            <input
+              type="text"
+              [(ngModel)]="searchQuery"
+              (input)="onSearchChange()"
+              placeholder="Search by name, email, or phone..."
+              class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            />
+          </div>
+
+          <!-- Gender Filter -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Gender</label
+            >
+            <select
+              [(ngModel)]="selectedGender"
+              (change)="onGenderFilterChange()"
+              class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            >
+              <option value="">All Genders</option>
+              <option
+                *ngFor="let gender of genderOptions"
+                [value]="gender.value"
+              >
+                {{ gender.label }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Status Filter -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Status</label
+            >
+            <select
+              [(ngModel)]="selectedStatus"
+              (change)="onStatusFilterChange()"
+              class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            >
+              <option value="">All Status</option>
+              <option
+                *ngFor="let status of statusOptions"
+                [value]="status.value"
+              >
+                {{ status.label }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Results Count -->
+          <div class="flex items-end">
+            <div class="text-sm text-gray-600">
+              Showing {{ filteredPatients.length }} of
+              {{ patients.length }} patients
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    <div
+      *ngIf="errorMessage"
+      class="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl"
+    >
+      {{ errorMessage }}
+    </div>
+    <div
+      *ngIf="successMessage"
+      class="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl"
+    >
+      {{ successMessage }}
+    </div>
+
+    <!-- Patients Table -->
+    <div
+      class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 overflow-hidden"
+    >
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="flex items-center justify-center py-12">
+        <div
+          class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"
+        ></div>
+      </div>
+
+      <!-- Table Content -->
+      <div *ngIf="!isLoading" class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gradient-to-r from-indigo-50 to-purple-50">
+            <tr>
+              <th
+                class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Patient
+              </th>
+              <th
+                class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Contact
+              </th>
+              <th
+                class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Age & Gender
+              </th>
+              <th
+                class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Status
+              </th>
+              <th
+                class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Emergency Contact
+              </th>
+              <th
+                class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr
+              *ngFor="let patient of paginatedPatients"
+              class="hover:bg-gray-50 transition-colors duration-200"
+            >
+              <!-- Patient Info -->
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div>
+                  <div class="text-sm font-medium text-gray-900">
+                    {{ patient.full_name }}
+                  </div>
+                  <div class="text-sm text-gray-500">ID: {{ patient.id }}</div>
+                  <div class="text-xs text-gray-400">
+                    {{ formatDate(patient.created_at || "") }}
+                  </div>
+                </div>
+              </td>
+
+              <!-- Contact Info -->
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div>
+                  <div class="text-sm text-gray-900">
+                    {{ patient.phone_number }}
+                  </div>
+                  <div *ngIf="patient.email" class="text-sm text-gray-500">
+                    {{ patient.email }}
+                  </div>
+                </div>
+              </td>
+
+              <!-- Age & Gender -->
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div>
+                  <div class="text-sm font-medium text-gray-900">
+                    {{
+                      patient.date_of_birth
+                        ? calculateAge(patient.date_of_birth)
+                        : "N/A"
+                    }}
+                    years old
+                  </div>
+                  <span
+                    [class]="getGenderBadgeClass(patient.gender)"
+                    class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
+                  >
+                    {{ patient.gender | titlecase }}
+                  </span>
+                </div>
+              </td>
+
+              <!-- Status -->
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span
+                  [class]="getStatusBadgeClass(patient.patient_status)"
+                  class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
+                >
+                  {{ patient.patient_status | titlecase }}
+                </span>
+              </td>
+
+              <!-- Emergency Contact -->
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div *ngIf="patient.emergency_contact_name">
+                  <div class="text-sm text-gray-900">
+                    {{ patient.emergency_contact_name }}
+                  </div>
+                  <div class="text-sm text-gray-500">
+                    {{ patient.emergency_contact_phone }}
+                  </div>
+                </div>
+                <div
+                  *ngIf="!patient.emergency_contact_name"
+                  class="text-sm text-gray-400"
+                >
+                  Not provided
+                </div>
+              </td>
+
+              <!-- Actions (CRU only, no Delete) -->
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <div class="flex space-x-2">
+                  <button
+                    (click)="openViewModal(patient)"
+                    class="text-indigo-600 hover:text-indigo-900 p-2 rounded-lg hover:bg-indigo-50 transition-colors duration-200"
+                    title="View Details"
+                  >
+                    <svg
+                      class="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                      ></path>
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                      ></path>
+                    </svg>
+                  </button>
+                  <button
+                    (click)="openEditModal(patient)"
+                    class="text-green-600 hover:text-green-900 p-2 rounded-lg hover:bg-green-50 transition-colors duration-200"
+                    title="Edit Patient"
+                  >
+                    <svg
+                      class="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                      ></path>
+                    </svg>
+                  </button>
+                  <!-- Note: No Delete button as per CRU requirement -->
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Empty State -->
+        <div *ngIf="filteredPatients.length === 0" class="text-center py-12">
+          <svg
+            class="mx-auto h-12 w-12 text-gray-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+            ></path>
+          </svg>
+          <h3 class="mt-2 text-sm font-medium text-gray-900">
+            No patients found
+          </h3>
+          <p class="mt-1 text-sm text-gray-500">
+            Get started by adding a new patient.
+          </p>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div
+        *ngIf="totalPages > 1"
+        class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6"
+      >
+        <div class="flex items-center justify-between">
+          <div class="flex-1 flex justify-between sm:hidden">
+            <button
+              (click)="goToPage(currentPage - 1)"
+              [disabled]="currentPage === 1"
+              class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Previous
+            </button>
+            <button
+              (click)="goToPage(currentPage + 1)"
+              [disabled]="currentPage === totalPages"
+              class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next
+            </button>
+          </div>
+          <div
+            class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between"
+          >
+            <div>
+              <p class="text-sm text-gray-700">
+                Showing page
+                <span class="font-medium">{{ currentPage }}</span> of
+                <span class="font-medium">{{ totalPages }}</span>
+              </p>
+            </div>
+            <div>
+              <nav
+                class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+              >
+                <button
+                  (click)="goToPage(currentPage - 1)"
+                  [disabled]="currentPage === 1"
+                  class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                      fill-rule="evenodd"
+                      d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                      clip-rule="evenodd"
+                    ></path>
+                  </svg>
+                </button>
+
+                <button
+                  *ngFor="let page of [].constructor(totalPages); let i = index"
+                  (click)="goToPage(i + 1)"
+                  [class]="
+                    i + 1 === currentPage
+                      ? 'z-10 bg-indigo-50 border-indigo-500 text-indigo-600 relative inline-flex items-center px-4 py-2 border text-sm font-medium'
+                      : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium'
+                  "
+                >
+                  {{ i + 1 }}
+                </button>
+
+                <button
+                  (click)="goToPage(currentPage + 1)"
+                  [disabled]="currentPage === totalPages"
+                  class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                      fill-rule="evenodd"
+                      d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                      clip-rule="evenodd"
+                    ></path>
+                  </svg>
+                </button>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Create Patient Modal -->
+<div
+  *ngIf="showCreateModal"
+  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+>
+  <div
+    class="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+  >
+    <div class="p-8">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold text-gray-900">Add New Patient</h2>
+        <button
+          (click)="closeCreateModal()"
+          class="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
+        >
+          <svg
+            class="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            ></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Form -->
+      <form (ngSubmit)="createPatient()" #patientForm="ngForm">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Full Name -->
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Full Name *</label
+            >
+            <input
+              type="text"
+              [(ngModel)]="newPatient.full_name"
+              name="fullName"
+              required
+              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              placeholder="Enter patient's full name"
+            />
+          </div>
+
+          <!-- Email -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Email</label
+            >
+            <input
+              type="email"
+              [(ngModel)]="newPatient.email"
+              name="email"
+              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              placeholder="Enter email address"
+            />
+          </div>
+
+          <!-- Phone Number -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Phone Number *</label
+            >
+            <input
+              type="tel"
+              [(ngModel)]="newPatient.phone_number"
+              name="phoneNumber"
+              required
+              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              placeholder="Enter phone number"
+            />
+          </div>
+
+          <!-- Date of Birth -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Date of Birth *</label
+            >
+            <input
+              type="date"
+              [(ngModel)]="newPatient.date_of_birth"
+              name="dateOfBirth"
+              required
+              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            />
+          </div>
+
+          <!-- Gender -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Gender *</label
+            >
+            <select
+              [(ngModel)]="newPatient.gender"
+              name="gender"
+              required
+              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            >
+              <option value="">Select Gender</option>
+              <option
+                *ngFor="let gender of genderOptions"
+                [value]="gender.value"
+              >
+                {{ gender.label }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Address -->
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Address</label
+            >
+            <textarea
+              [(ngModel)]="newPatient.address"
+              name="address"
+              rows="3"
+              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
+              placeholder="Enter patient's address"
+            ></textarea>
+          </div>
+
+          <!-- Emergency Contact Name -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Emergency Contact Name</label
+            >
+            <input
+              type="text"
+              [(ngModel)]="newPatient.emergency_contact_name"
+              name="emergencyContactName"
+              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              placeholder="Enter emergency contact name"
+            />
+          </div>
+
+          <!-- Emergency Contact Phone -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Emergency Contact Phone</label
+            >
+            <input
+              type="tel"
+              [(ngModel)]="newPatient.emergency_contact_phone"
+              name="emergencyContactPhone"
+              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              placeholder="Enter emergency contact phone"
+            />
+          </div>
+
+          <!-- Allergies -->
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Allergies</label
+            >
+            <div class="flex flex-wrap gap-2 mb-3">
+              <span
+                *ngFor="let allergy of newPatient.allergies; let i = index"
+                class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-red-100 text-red-800"
+              >
+                {{ allergy }}
+                <button
+                  type="button"
+                  (click)="removeAllergy(i)"
+                  class="ml-2 text-red-600 hover:text-red-800"
+                >
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M6 18L18 6M6 6l12 12"
+                    ></path>
+                  </svg>
+                </button>
+              </span>
+            </div>
+            <div class="flex space-x-2">
+              <input
+                type="text"
+                [(ngModel)]="newAllergy"
+                name="newAllergy"
+                (keyup.enter)="addAllergy()"
+                class="flex-1 px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="Add allergy"
+              />
+              <button
+                type="button"
+                (click)="addAllergy()"
+                class="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors duration-200"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+
+          <!-- Chronic Conditions -->
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Chronic Conditions</label
+            >
+            <div class="flex flex-wrap gap-2 mb-3">
+              <span
+                *ngFor="
+                  let condition of newPatient.chronic_conditions;
+                  let i = index
+                "
+                class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-yellow-100 text-yellow-800"
+              >
+                {{ condition }}
+                <button
+                  type="button"
+                  (click)="removeCondition(i)"
+                  class="ml-2 text-yellow-600 hover:text-yellow-800"
+                >
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M6 18L18 6M6 6l12 12"
+                    ></path>
+                  </svg>
+                </button>
+              </span>
+            </div>
+            <div class="flex space-x-2">
+              <input
+                type="text"
+                [(ngModel)]="newCondition"
+                name="newCondition"
+                (keyup.enter)="addCondition()"
+                class="flex-1 px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="Add chronic condition"
+              />
+              <button
+                type="button"
+                (click)="addCondition()"
+                class="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors duration-200"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+
+          <!-- Past Surgeries -->
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Past Surgeries</label
+            >
+            <div class="flex flex-wrap gap-2 mb-3">
+              <span
+                *ngFor="let surgery of newPatient.past_surgeries; let i = index"
+                class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800"
+              >
+                {{ surgery }}
+                <button
+                  type="button"
+                  (click)="removeSurgery(i)"
+                  class="ml-2 text-blue-600 hover:text-blue-800"
+                >
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M6 18L18 6M6 6l12 12"
+                    ></path>
+                  </svg>
+                </button>
+              </span>
+            </div>
+            <div class="flex space-x-2">
+              <input
+                type="text"
+                [(ngModel)]="newSurgery"
+                name="newSurgery"
+                (keyup.enter)="addSurgery()"
+                class="flex-1 px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="Add past surgery"
+              />
+              <button
+                type="button"
+                (click)="addSurgery()"
+                class="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors duration-200"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+
+          <!-- Patient Status -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Patient Status</label
+            >
+            <select
+              [(ngModel)]="newPatient.patient_status"
+              name="patientStatus"
+              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            >
+              <option
+                *ngFor="let status of statusOptions"
+                [value]="status.value"
+              >
+                {{ status.label }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div
+          class="flex justify-end space-x-4 mt-8 pt-6 border-t border-gray-200"
+        >
+          <button
+            type="button"
+            (click)="closeCreateModal()"
+            class="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors duration-200"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            [disabled]="isLoading || !patientForm.form.valid"
+            class="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+          >
+            <span *ngIf="!isLoading">Create Patient</span>
+            <span *ngIf="isLoading" class="flex items-center">
+              <svg
+                class="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                ></circle>
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              Creating...
+            </span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

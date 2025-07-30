@@ -1,0 +1,194 @@
+<!-- ================== OUTER WRAPPER (BG + CENTER) ================== -->
+<div
+  class="min-h-screen flex items-center justify-center bg-cover bg-center"
+  style="background-image: url('./loginBg.png')"
+>
+  <!-- ================== CARD (WHITE CONTAINER) ================== -->
+  <div
+    class="relative w-full max-w-md mx-auto px-7 py-8 bg-white border border-gray-200 rounded-xl shadow-2xl backdrop-blur-lg"
+  >
+    <!-- ============= LOGO ============= -->
+    <div class="flex flex-col items-center mb-5">
+      <img src="./logoNgang.png" alt="GenderCare Logo" class="h-20 mb-2" />
+    </div>
+
+    <!-- ============= LOGIN FORM ============= -->
+    <form
+      #form="ngForm"
+      (ngSubmit)="onSubmit(form)"
+      autocomplete="off"
+      class="text-black"
+    >
+      <!-- ========== PHONE FIELD ========== -->
+      <div
+        class="control relative mb-6"
+        [class.show-error]="(formSubmitted && phoneModel.invalid) || isWrong"
+      >
+        <input
+          type="text"
+          class="peer w-full h-12 px-4 border border-gray-300 rounded-md outline-none text-base bg-transparent focus:border-[#4E6688]"
+          id="phone"
+          name="phone"
+          ngModel
+          (ngModelChange)="onInput()"
+          required
+          pattern="^0\d{9}$"
+          autocomplete="off"
+          #phoneModel="ngModel"
+          placeholder=""
+        />
+        <label
+          for="phone"
+          class="absolute left-3 top-2 text-gray-500 pointer-events-none transition-all duration-200 peer-focus:-top-2 peer-focus:text-xs peer-focus:text-[#4E6688] peer-placeholder-shown:top-2 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-500 peer-not-placeholder-shown:-top-2 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:text-[#4E6688] bg-white px-1"
+          >Phone</label
+        >
+        <!-- ========== PHONE VALIDATE ERROR ========== -->
+        @if ((phoneModel.touched && phoneModel.invalid) || (formSubmitted &&
+        phoneModel.invalid)) { @if (phoneModel.errors?.['required']) {
+        <span
+          class="absolute right-0 top-[-1.5rem] font-medium tracking-wide text-red-500 text-xs mt-1 ml-1 shake"
+        >
+          Phone Number is required!
+        </span>
+        } @else if (phoneModel.errors?.['pattern']) {
+        <span
+          class="absolute right-0 top-[-1.5rem] font-medium tracking-wide text-red-500 text-xs mt-1 ml-1 shake"
+        >
+          Phone Number invalid
+        </span>
+        } } @else if (isWrong) {
+        <span
+          class="absolute right-0 top-[-1.5rem] font-medium tracking-wide text-red-500 text-xs mt-1 ml-1 shake"
+        >
+          Missing phone or wrong phone/password
+        </span>
+        }
+      </div>
+      <!-- ========== END PHONE FIELD ========== -->
+
+      <!-- ========== PASSWORD FIELD ========== -->
+      <div
+        class="control relative mb-3"
+        [class.show-error]="(formSubmitted && passwordModel.invalid) || isWrong"
+      >
+        <!-- Input password -->
+        <input
+          [type]="ShowPass ? 'text' : 'password'"
+          class="peer w-full h-12 px-4 pr-12 border border-gray-300 rounded-md outline-none text-base bg-transparent focus:border-[#4E6688]"
+          id="password"
+          name="password"
+          ngModel
+          (ngModelChange)="onInput()"
+          required
+          minlength="6"
+          autocomplete="off"
+          #passwordModel="ngModel"
+          placeholder=" "
+        />
+        <!-- Label password -->
+        <label
+          for="password"
+          class="absolute left-3 top-2 text-gray-500 pointer-events-none transition-all duration-200 peer-focus:-top-2 peer-focus:text-xs peer-focus:text-[#4E6688] peer-placeholder-shown:top-2 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-500 peer-not-placeholder-shown:-top-2 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:text-[#4E6688] bg-white px-1"
+          >Password</label
+        >
+        <!-- ========== PASSWORD VALIDATE ERROR ========== -->
+        @if ((passwordModel.touched && passwordModel.dirty &&
+        passwordModel.invalid) && formSubmitted ) {
+        <span
+          class="absolute right-0 top-[-1.5rem] font-medium tracking-wide text-red-500 text-xs mt-1 ml-1 shake"
+        >
+          Password must be at least 6 characters long
+        </span>
+        }
+        <!-- Toggle show/hide password -->
+        <button
+          type="button"
+          (click)="ShowPass = !ShowPass"
+          class="absolute top-1/2 right-4 -translate-y-1/2 p-0 m-0 bg-transparent border-none cursor-pointer flex items-center justify-center focus:outline-none"
+          tabindex="-1"
+          aria-label="Toggle password visibility"
+        >
+          @if (!ShowPass) {
+          <img src="./visibility_off.png" alt="Show password" class="w-5 h-5" />
+          } @if (ShowPass) {
+          <img src="./visibility.png" alt="Hide password" class="w-5 h-5" />
+          }
+        </button>
+      </div>
+      <!-- ========== END PASSWORD FIELD ========== -->
+
+      <!-- ========== REMEMBER ME + FORGOT PASSWORD ========== -->
+      <div class="flex justify-between items-center mb-6">
+        <label
+          class="flex items-center text-sm text-gray-600 select-none cursor-pointer"
+        >
+          <input
+            type="checkbox"
+            class="mr-2 accent-[#4E6688] cursor-pointer"
+            [(ngModel)]="RememberMe"
+            name="rememberMe"
+          />
+          Remember me
+        </label>
+        <button
+          type="button"
+          class="text-sm text-[#4E6688] hover:underline bg-transparent border-0 p-0"
+          (click)="router.navigate(['forgot-password-email'])"
+        >
+          Forgot password?
+        </button>
+      </div>
+      <!-- ========== END REMEMBER ME + FORGOT PASSWORD ========== -->
+
+      <!-- ========== SUBMIT BUTTON ========== -->
+      <button
+        type="submit"
+        [disabled]="isSubmitting"
+        class="relative cursor-pointer w-full py-3 bg-[#4E6688] rounded-lg transition-all duration-100 active:scale-95 group overflow-hidden"
+      >
+        @if(isSubmitting){
+        <div class="flex-col gap-4 w-full flex items-center justify-center">
+          <div
+            class="w-6 h-6 border-4 border-transparent text-blue-400 text-4xl animate-spin flex items-center justify-center border-t-blue-400 rounded-full"
+          >
+            <div
+              class="w-5 h-5 border-4 border-transparent text-red-400 text-2xl animate-spin flex items-center justify-center border-t-red-400 rounded-full"
+            ></div>
+          </div>
+        </div>
+        }@else {
+        <span class="text-white text-base font-semibold relative z-10">
+          Login
+        </span>
+        }
+        <div
+          class="pointer-events-none absolute left-1/2 top-1/2 w-full h-full -translate-x-1/2 -translate-y-1/2 border-2 border-white rounded-lg transition-all duration-300 group-hover:scale-110 group-hover:border-[#FFD700] z-0"
+        ></div>
+      </button>
+      <!-- ========== END SUBMIT BUTTON ========== -->
+
+      <!-- ========== END LINK TO REGISTER ========== -->
+    </form>
+    <!-- ============= END LOGIN FORM ============= -->
+    <!-- ========== LOGIN WITH GOOGLE ========== -->
+    <div class="w-full mt-3 items-center">
+      <div class="flex items-center w-full">
+        <hr class="flex-grow border-t border-gray-300" />
+        <span class="mx-6 text-sm text-gray-500">Or sign in with</span>
+        <hr class="flex-grow border-t border-gray-300" />
+      </div>
+      <div class="mt-2"><app-google /></div>
+    </div>
+    <!-- ========== END LOGIN WITH GOOGLE ========== -->
+
+    <!-- ========== LINK TO REGISTER ========== -->
+    <div class="mt-2 flex justify-end -bottom-7 right-0 text-sm text-gray-700">
+      <div class="mx-3">Don't have account</div>
+      <a href="/register" class="text-[#4E6688] font-semibold hover:underline">
+        Sign up
+      </a>
+    </div>
+  </div>
+  <!-- ================== END CARD ================== -->
+</div>
+<!-- ================== END OUTER WRAPPER ================== -->

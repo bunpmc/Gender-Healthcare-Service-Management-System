@@ -1,0 +1,177 @@
+<app-header />
+<body class="bg-white">
+  <!-- ======= BREADCRUMBS ======= -->
+  <div class="max-w-7xl mx-auto px-6 pt-7 text-[#4E6688]">
+    <app-breadcrumbs />
+  </div>
+  <div
+    class="max-w-7xl mx-auto py-10 px-6 text-black bg-[#f8f8f8] min-h-screen"
+  >
+    <h2 class="text-2xl font-bold text-center mb-6 text-[#222e5c]">
+      {{ "SERVICES.TITLE" | translate }}
+    </h2>
+
+    <!-- Search -->
+    <div class="flex justify-center mb-6">
+      <input
+        type="text"
+        [placeholder]="'SERVICES.SEARCH_PLACEHOLDER' | translate"
+        class="w-2/3 px-4 py-2 rounded-full border border-gray-300 shadow"
+        (input)="onSearch($event)"
+        [value]="searchValue()"
+      />
+    </div>
+
+    <!-- Categories -->
+    <div class="flex flex-wrap gap-3 justify-center mb-8">
+      @for (cat of categories(); track cat) {
+      <button
+        (click)="selectCategory(cat)"
+        class="px-4 py-2 rounded-full border transition-all"
+        [ngClass]="
+          selectedCategory() === cat
+            ? 'bg-blue-100 border-blue-400 text-blue-700 font-bold'
+            : 'bg-white border-gray-300 text-gray-600 hover:bg-blue-50'
+        "
+      >
+        {{ cat === "All" ? ("SERVICES.ALL_CATEGORIES" | translate) : cat }}
+      </button>
+      }
+    </div>
+
+    <!-- Skeleton loading -->
+    @if (loading()) {
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-8">
+      @for (i of skeletons; track i) {
+      <div class="bg-white rounded-xl shadow p-4 flex flex-col animate-pulse">
+        <div class="w-full h-36 bg-gray-200 rounded-lg mb-4"></div>
+        <div class="h-5 bg-gray-200 rounded mb-2 w-2/3"></div>
+        <div class="h-4 bg-gray-200 rounded mb-2 w-3/4"></div>
+        <div class="flex items-center justify-between mt-3">
+          <div class="h-4 bg-gray-200 rounded w-16"></div>
+          <div class="h-7 w-20 bg-gray-200 rounded-full"></div>
+        </div>
+      </div>
+      }
+    </div>
+    } @else {
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-8">
+      @for (sv of paginatedServices; track sv.id) {
+      <div
+        class="bg-white rounded-xl shadow hover:shadow-lg transition-all p-4 flex flex-col cursor-pointer hover:-translate-y-1 duration-200"
+      >
+        <a
+          [routerLink]="['/service', sv.id]"
+          class="block"
+          style="text-decoration: none"
+        >
+          <img
+            [src]="
+              sv.image_link || 'https://placehold.co/400x200?text=No+Image'
+            "
+            class="w-full h-36 object-cover rounded-lg mb-4"
+            alt="{{ sv.name }}"
+          />
+          <div class="flex-1">
+            <div class="flex items-center gap-2 mb-2">
+              @if (sv.service_categories.category_name) {
+              <span
+                class="px-2 py-1 bg-blue-50 border border-blue-200 rounded text-xs font-bold text-blue-700"
+              >
+                {{ sv.service_categories.category_name }}
+              </span>
+              }
+            </div>
+            <p
+              class="text-base text-[#245a8d] font-semibold mb-2 truncate-text"
+            >
+              {{ sv.name }}
+            </p>
+            <p class="text-gray-500 text-sm mb-2 truncate-text">
+              {{ limitText(sv.excerpt, 32) }}
+            </p>
+          </div>
+        </a>
+        <div class="flex items-center justify-between mt-4">
+          <span class="text-[#47B1E2] font-bold text-lg">{{
+            formatPrice(sv.price)
+          }}</span>
+          <div class="flex gap-2 items-center">
+            <!-- Add to Cart Button -->
+            <button
+              class="px-4 py-2 bg-[#e91e63] text-white rounded-full text-sm font-medium hover:bg-[#c2185b] transition-all duration-200 cursor-pointer flex items-center gap-2 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+              (click)="addToCart(sv, $event)"
+              [class.opacity-75]="isInCart(sv.id)"
+              [title]="
+                isInCart(sv.id) ? 'Đã có trong giỏ hàng' : 'Thêm vào giỏ hàng'
+              "
+            >
+              <i class="pi pi-shopping-cart text-sm"></i>
+              @if (!isInCart(sv.id)) {
+              <span class="hidden sm:inline text-white"> Thêm vào giỏ </span>
+              } @else {
+              <span
+                class="bg-white text-[#e91e63] px-2 py-0.5 rounded-full text-xs font-bold"
+              >
+                {{ getCartQuantity(sv.id) }}
+              </span>
+              }
+            </button>
+            <!-- Book Now Button -->
+            <button
+              class="px-4 py-2 bg-[#222e5c] text-white rounded-full text-sm font-medium hover:bg-[#47B1E2] transition-all duration-200 cursor-pointer shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+              routerLink="/appointment"
+              (click)="bookService(sv, $event)"
+            >
+              {{ "SERVICES.BOOK_NOW" | translate }}
+            </button>
+          </div>
+        </div>
+      </div>
+      } @if (paginatedServices.length === 0) {
+      <div class="col-span-full text-center text-gray-400 text-xl py-12">
+        {{ "SERVICES.NO_SERVICES" | translate }}
+      </div>
+      }
+    </div>
+    }
+
+    <!-- Pagination -->
+    <div class="flex justify-center items-center gap-2 mt-6">
+      @if (page() !== 1) {
+      <button
+        (click)="goToPage(page() - 1)"
+        class="px-3 py-1 rounded border bg-white hover:bg-blue-50 transition"
+      >
+        {{ "SERVICES.PAGINATION.PREV" | translate }}
+      </button>
+      } @else {
+      <button class="px-3 py-1 rounded border bg-white invisible">
+        {{ "SERVICES.PAGINATION.PREV" | translate }}
+      </button>
+      } @for (p of pageArray; track p) {
+      <button
+        (click)="goToPage(p)"
+        [ngClass]="
+          page() === p ? 'bg-[#47B1E2] text-white font-bold' : 'bg-white'
+        "
+        class="px-3 py-1 rounded border border-blue-200 hover:bg-blue-100 transition w-12"
+      >
+        {{ p }}
+      </button>
+      } @if (page() !== maxPage) {
+      <button
+        (click)="goToPage(page() + 1)"
+        class="px-3 py-1 rounded border bg-white hover:bg-blue-50 transition"
+      >
+        {{ "SERVICES.PAGINATION.NEXT" | translate }}
+      </button>
+      } @else {
+      <button class="px-3 py-1 rounded border bg-white invisible">
+        {{ "SERVICES.PAGINATION.NEXT" | translate }}
+      </button>
+      }
+    </div>
+  </div>
+</body>
+<app-footer />

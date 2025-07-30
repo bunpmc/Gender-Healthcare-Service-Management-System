@@ -1,0 +1,100 @@
+/* Back to Top Button */
+.back-to-top-btn {
+  position: fixed;
+  bottom: 20px; /* Below AI chat */
+  right: 1.2rem; /* Same alignment as other buttons */
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  box-shadow: 0 8px 25px -5px rgba(99, 102, 241, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  z-index: 35;
+  animation: slideUp 0.3s ease-out;
+}
+
+.back-to-top-btn:hover {
+  transform: scale(1.1) translateY(-2px);
+  box-shadow: 0 12px 35px -5px rgba(99, 102, 241, 0.4), 0 8px 15px -2px rgba(0, 0, 0, 0.15);
+}
+
+.back-to-top-btn:active {
+  transform: scale(1.05) translateY(0);
+}
+
+/* Icon */
+.back-to-top-icon {
+  width: 24px;
+  height: 24px;
+  color: white;
+  transition: transform 0.2s ease;
+}
+
+.back-to-top-btn:hover .back-to-top-icon {
+  transform: scale(1.1) translateY(-1px);
+}
+
+/* Ripple Effect */
+.ripple {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  opacity: 0.3;
+  animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes ping {
+  75%, 100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+/* Slide up animation when button appears */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 640px) {
+  .back-to-top-btn {
+    bottom: 15px;
+    right: 20px;
+    width: 45px;
+    height: 45px;
+  }
+  
+  .back-to-top-icon {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+@media (max-width: 768px) and (min-width: 641px) {
+  .back-to-top-btn {
+    bottom: 15px;
+    right: 1rem;
+  }
+}
+
+@media (min-width: 1200px) {
+  .back-to-top-btn {
+    bottom: 25px;
+    right: 1.5rem;
+  }
+}

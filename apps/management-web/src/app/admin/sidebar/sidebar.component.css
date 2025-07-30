@@ -1,0 +1,247 @@
+/* Modern Admin Portal Sidebar Styles */
+
+/* Navigation Item Base Styles */
+.nav-item {
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transition: left 0.5s;
+}
+
+.nav-item:hover::before {
+  left: 100%;
+}
+
+/* Active Navigation Item */
+.nav-active {
+  @apply bg-gradient-to-r from-indigo-600 to-purple-700 text-white shadow-xl;
+  transform: scale(1.02);
+}
+
+.nav-active .w-10 {
+  @apply bg-white/20 backdrop-blur-sm;
+}
+
+.nav-active svg {
+  @apply text-white;
+}
+
+.nav-active span {
+  @apply text-white;
+}
+
+.nav-active p {
+  @apply text-indigo-100;
+}
+
+/* Hover Effects */
+.nav-item a:hover {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* Icon Container Animations */
+.nav-item a:hover .w-10 {
+  transform: rotate(5deg) scale(1.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Section Headers */
+h3 {
+  position: relative;
+}
+
+h3::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 20px;
+  height: 2px;
+  background: linear-gradient(to right, #6366f1, #8b5cf6);
+  border-radius: 1px;
+}
+
+/* Sidebar Animation */
+nav {
+  animation: slideInFromLeft 0.6s ease-out;
+}
+
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Logo Animation */
+.w-12.h-12 {
+  animation: logoFloat 3s ease-in-out infinite;
+}
+
+@keyframes logoFloat {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+/* Interactive Elements */
+.nav-item a:active {
+  transform: scale(0.98);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  nav {
+    width: 16rem;
+  }
+}
+
+@media (max-width: 768px) {
+  nav {
+    width: 14rem;
+  }
+
+  .nav-item a {
+    @apply px-2 py-2;
+  }
+
+  .w-10.h-10 {
+    @apply w-8 h-8;
+  }
+}
+
+/* Accessibility */
+.nav-item a:focus {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
+}
+
+/* Navigation Items Staggered Animation */
+.nav-item:nth-child(1) {
+  animation: slideInFromLeft 0.6s ease-out 0.1s both;
+}
+
+.nav-item:nth-child(2) {
+  animation: slideInFromLeft 0.6s ease-out 0.2s both;
+}
+
+.nav-item:nth-child(3) {
+  animation: slideInFromLeft 0.6s ease-out 0.3s both;
+}
+
+.nav-item:nth-child(4) {
+  animation: slideInFromLeft 0.6s ease-out 0.4s both;
+}
+
+.nav-item:nth-child(5) {
+  animation: slideInFromLeft 0.6s ease-out 0.5s both;
+}
+
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Glass Morphism Effect */
+nav {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* Sidebar Header Animation */
+.p-6 {
+  animation: slideInFromTop 0.6s ease-out;
+}
+
+@keyframes slideInFromTop {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Footer Animation */
+.border-t {
+  animation: slideInFromBottom 0.6s ease-out 0.6s both;
+}
+
+@keyframes slideInFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Pulse Effect for Active Items */
+.nav-active {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+
+/* Loading Spinner Animation */
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  nav {
+    @apply from-gray-900 via-gray-800 to-gray-900;
+  }
+
+  .nav-item a {
+    @apply text-gray-300 hover:text-white;
+  }
+
+  .nav-active {
+    @apply from-indigo-700 to-purple-800;
+  }
+}

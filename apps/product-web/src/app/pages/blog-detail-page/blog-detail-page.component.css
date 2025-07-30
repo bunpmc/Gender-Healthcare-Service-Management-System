@@ -1,0 +1,16 @@
+.prose img {
+  border-radius: 1.5rem;
+  margin: 1rem 0;
+  box-shadow: 0 4px 24px 0 #b8b8b826;
+}
+.prose h1,
+.prose h2,
+.prose h3 {
+  margin-top: 1.5em;
+  margin-bottom: 0.8em;
+  font-weight: 700;
+}
+.prose p {
+  margin: 1em 0;
+  line-height: 1.8;
+}

@@ -1,0 +1,445 @@
+<!-- header -->
+<header class="bg-[#f4f4f4] border-b border-gray-200">
+  <div
+    class="max-w-7xl w-full mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-6 px-6 py-2 text-gray-600 text-sm"
+  >
+    <!-- 📧 Email + ☎️ Phone -->
+    <div class="flex flex-col sm:flex-row items-center gap-4">
+      <!-- Email -->
+      <div class="flex items-center gap-2">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="w-5 h-5 text-blue-600"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          stroke-width="1.6"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"
+          />
+        </svg>
+        <span class="font-medium select-all">{{
+          "CONTACT.EMAIL" | translate
+        }}</span>
+      </div>
+
+      <!-- Phone -->
+      <div class="flex items-center gap-1">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="w-5 h-5 text-blue-600"
+          fill="none"
+          viewBox="0 0 27 24"
+          stroke="currentColor"
+          stroke-width="1.5"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z"
+          />
+        </svg>
+        <span class="font-medium select-all">{{
+          "CONTACT.PHONE" | translate
+        }}</span>
+      </div>
+    </div>
+
+    <!-- 🌐 Languages -->
+    <div class="flex items-center gap-3">
+      <img
+        class="h-5 w-7 rounded object-right-top shadow cursor-pointer"
+        src="./America.webp"
+        alt="English"
+        (click)="changeLang('en')"
+        [class.ring-2]="currentLang === 'en'"
+        [class.ring-blue-500]="currentLang === 'en'"
+      />
+      <img
+        class="h-5 w-7 rounded object-cover shadow cursor-pointer"
+        src="./VietNam.jpg"
+        alt="Tiếng Việt"
+        (click)="changeLang('vi')"
+        [class.ring-2]="currentLang === 'vi'"
+        [class.ring-red-500]="currentLang === 'vi'"
+      />
+    </div>
+  </div>
+</header>
+
+<!-- navbar -->
+<nav class="w-full sticky top-0 z-30 bg-white">
+  <div
+    class="max-w-7xl mx-auto h-26 justify-between flex items-center sm:justify-between sm:gap-8 pr-6 pl-16 sm:pl-6 sm:pr-6 text-lg text-[#4E6688]"
+  >
+    <div
+      class="sm:hidden w-[85%] absolute left-6 top-8 z-[60] translate-x-0 transform transition-transform duration-300 ease-in-out"
+      [ngClass]="{ 'translate-x-[80%]': isMenuOpen }"
+    >
+      <button
+        class="hamburger hamburger--squeeze"
+        [class.is-active]="isActive"
+        type="button"
+        (click)="toggleHamburger()"
+        (click)="toggleMenu()"
+      >
+        <span class="hamburger-box">
+          <span class="hamburger-inner"></span>
+        </span>
+      </button>
+    </div>
+
+    <a
+      href="/"
+      class="sm:h-8/9 h-3/4 w-16 sm:w-52 flex items-center justify-center overflow-hidden"
+    >
+      <img
+        class="hidden sm:block h-full w-full object-cover"
+        src="./GenderHealthcareLogo.svg"
+        alt="logo"
+      />
+      <img
+        class="block sm:hidden h-full w-full object-cover"
+        src="./GenderHealthcareLogoPhone.svg"
+        alt="logo"
+      />
+    </a>
+    <div
+      class="fixed top-0 left-0 h-screen w-3/4 bg-white -translate-x-full z-50 shadow-lg transform transition-transform duration-300 ease-in-out sm:static sm:transform-none sm:h-full sm:w-xl sm:shadow-none sm:translate-none sm:justify-end"
+      [ngClass]="{ 'translate-x-0': isMenuOpen }"
+    >
+      <ul
+        class="h-full w-[100%] flex flex-col sm:flex-row lg:gap-14 sm:gap-8 sm:justify-center sm:p-0 items-center text-xl"
+      >
+        <li
+          class="sm:hidden h-20 group order-4 sm:order-none flex pl-6 items-center w-full sm:w-auto sm:py-0 sm:even:bg-transparent"
+        >
+          <div class="h-3/4 w-50">
+            <img
+              class="blog sm:hidden w-full h-full object-cover"
+              src="./GenderHealthcareLogo.svg"
+              alt="logo"
+            />
+          </div>
+        </li>
+        <li
+          class="group order-4 sm:order-none flex pl-12 sm:pl-0 w-full py-3 sm:mt-0 mt-5 sm:w-auto sm:py-0"
+        >
+          <a
+            class="flex relative after:content-[''] after:absolute after:left-0 after:-bottom-1 after:w-0 after:h-[2px] after:bg-[#4E6688] after:transition-all after:duration-300 group-hover:after:w-full"
+            href=""
+          >
+            <span class="flex mr-3 sm:hidden">
+              <!-- svg giữ nguyên -->
+            </span>
+            {{ "NAV.HOME" | translate }}
+          </a>
+        </li>
+        <li
+          class="sm:hidden group order-4 sm:order-none flex pl-12 sm:pl-0 w-full py-3 sm:mt-0 sm:w-auto sm:py-0"
+        >
+          <a
+            class="flex relative after:content-[''] after:absolute after:left-0 after:-bottom-1 after:w-0 after:h-[2px] after:bg-[#4E6688] after:transition-all after:duration-300 group-hover:after:w-full"
+            href=""
+          >
+            <span class="flex mr-3 sm:hidden">
+              <!-- svg giữ nguyên -->
+            </span>
+            {{ "NAV.FORM" | translate }}
+          </a>
+        </li>
+        <li
+          class="group order-5 sm:order-none flex w-full pl-12 sm:pl-0 py-3 sm:w-auto sm:py-0"
+        >
+          <a
+            class="relative flex after:content-[''] after:absolute after:left-0 after:-bottom-1 after:w-0 after:h-[2px] after:bg-[#4E6688] after:transition-all after:duration-300 group-hover:after:w-full"
+            routerLink="/period-tracking"
+          >
+            <span class="flex mr-3 sm:hidden">
+              <!-- Period tracking icon -->
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="w-6 h-6"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5a2.25 2.25 0 0 0 2.25-2.25m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5a2.25 2.25 0 0 1 2.25-2.25M12 12.75h.007v.008H12v-.008Z"
+                />
+              </svg>
+            </span>
+            {{ "NAV.TRACKER" | translate }}
+          </a>
+        </li>
+        <li
+          class="group order-6 sm:order-none flex w-full pl-12 sm:pl-0 py-3 sm:w-auto sm:py-0"
+        >
+          <a
+            class="relative flex after:content-[''] after:absolute after:left-0 after:-bottom-1 after:w-0 after:h-[2px] after:bg-[#4E6688] after:transition-all after:duration-300 group-hover:after:w-full"
+            routerLink="/service"
+          >
+            <span class="flex mr-3 sm:hidden">
+              <!-- svg giữ nguyên -->
+            </span>
+            {{ "NAV.SERVICES" | translate }}
+          </a>
+        </li>
+        <li
+          class="group order-7 sm:order-none flex w-full py-3 pl-12 sm:pl-0 sm:w-auto sm:py-0"
+        >
+          <a
+            class="relative flex after:content-[''] after:absolute after:left-0 after:-bottom-1 after:w-0 after:h-[2px] after:bg-[#4E6688] after:transition-all after:duration-300 group-hover:after:w-full"
+            routerLink="/doctor"
+          >
+            <span class="flex mr-3 sm:hidden">
+              <!-- svg giữ nguyên -->
+            </span>
+            {{ "NAV.DOCTORS" | translate }}
+          </a>
+        </li>
+        <li
+          class="group order-7 sm:order-none flex w-full py-3 pl-12 sm:pl-0 sm:w-auto sm:py-0"
+        >
+          <a
+            class="relative flex after:content-[''] after:absolute after:left-0 after:-bottom-1 after:w-0 after:h-[2px] after:bg-[#4E6688] after:transition-all after:duration-300 group-hover:after:w-full"
+            routerLink="/blog"
+          >
+            <span class="flex mr-3 sm:hidden">
+              <!-- svg giữ nguyên -->
+            </span>
+            {{ "NAV.BLOGS" | translate }}
+          </a>
+        </li>
+      </ul>
+    </div>
+    <ul class="h-full gap-2 lg:gap-6 flex items-center justify-end">
+
+
+      <!-- Cart Icon -->
+      <li class="flex py-5 sm:w-auto sm:py-0 relative">
+        <a routerLink="/cart" class="flex items-center cursor-pointer relative">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            class="size-8 text-gray-700 hover:text-[#4E6688] transition-colors"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"
+            />
+          </svg>
+          <!-- Cart Count Badge - Force Update from Service -->
+          <span
+            class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full min-w-[20px] h-[20px] flex items-center justify-center z-30 border-2 border-white shadow-lg"
+            style="font-size: 12px; line-height: 1; color: white !important; position: absolute !important;"
+          >
+            {{ getCartCount() }}
+          </span>
+        </a>
+      </li>
+
+      <li class="flex py-5 sm:w-auto sm:py-0 relative group">
+        <a class="flex items-center cursor-pointer">
+          <div class="flex items-center">
+            <!-- User Avatar/Icon -->
+            @if (getUserImage()) {
+            <img
+              [src]="getUserImage()"
+              [alt]="getUserDisplayName()"
+              class="w-8 h-8 rounded-full object-cover border-2 border-gray-300"
+              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+            />
+            <div
+              class="w-8 h-8 rounded-full bg-gray-300 items-center justify-center text-gray-600 hidden"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="w-5 h-5"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                />
+              </svg>
+            </div>
+            } @else {
+            <div
+              class="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-600"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="w-5 h-5"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                />
+              </svg>
+            </div>
+            }
+
+            <!-- User Info -->
+            @if (user) {
+            <div
+              class="hidden sm:flex flex-col justify-center items-start ml-3 max-w-[150px]"
+            >
+              @if (getUserDisplayName()) {
+              <span class="text-sm font-medium text-gray-800 truncate w-full">
+                {{ getUserDisplayName() }}
+              </span>
+              } @if (user.phone) {
+              <span class="text-xs text-gray-600 truncate w-full">
+                {{ user.phone }}
+              </span>
+              } @else if (getUserEmail()) {
+              <span class="text-xs text-gray-600 truncate w-full">
+                {{ getUserEmail() }}
+              </span>
+              }
+            </div>
+            }
+          </div>
+        </a>
+        <!-- hover fetch data -->
+        <div
+          class="absolute top-[120%] right-0 mt-2 min-w-[200px] bg-[#2a2f3b] rounded shadow-lg z-50 cards invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-200"
+        >
+          @if (user) {
+          <!-- User Info Header in Dropdown -->
+          <div class="px-4 py-3 border-b border-gray-600">
+            <div class="flex items-center space-x-3">
+              @if (getUserImage()) {
+              <img
+                [src]="getUserImage()"
+                [alt]="getUserDisplayName()"
+                class="w-10 h-10 rounded-full object-cover"
+              />
+              } @else {
+              <div
+                class="w-10 h-10 rounded-full bg-gray-500 flex items-center justify-center"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.5"
+                  stroke="currentColor"
+                  class="w-6 h-6 text-white"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                  />
+                </svg>
+              </div>
+              }
+              <div class="flex-1 min-w-0">
+                @if (getUserDisplayName()) {
+                <p class="text-sm font-medium text-white truncate">
+                  {{ getUserDisplayName() }}
+                </p>
+                } @if (getUserEmail()) {
+                <p class="text-xs text-gray-300 truncate">
+                  {{ getUserEmail() }}
+                </p>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- Menu Items -->
+          <a
+            routerLink="/dashboard"
+            class="block px-4 py-2 text-white cursor-pointer card transition-all duration-300 hover:bg-gray-700"
+          >
+            {{ "USER.DASHBOARD" | translate }}
+          </a>
+          <a
+            (click)="logout()"
+            class="block px-4 py-2 text-white cursor-pointer card transition-all duration-300 hover:bg-gray-700"
+          >
+            {{ "USER.LOGOUT" | translate }}
+          </a>
+          } @else {
+          <a
+            routerLink="/login"
+            class="block px-4 py-2 text-white cursor-pointer card transition-all duration-300 hover:bg-gray-700"
+          >
+            {{ "USER.LOGIN" | translate }}
+          </a>
+          <a
+            routerLink="/register"
+            class="block px-4 py-2 text-white cursor-pointer card transition-all duration-300 hover:bg-gray-700"
+          >
+            {{ "USER.REGISTER" | translate }}
+          </a>
+          }
+        </div>
+      </li>
+      <li>
+        <div class="btn-conteiner">
+          <a class="btn-content" routerLink="/appointment">
+            <span class="btn-title text-white">{{ "USER.BOOK_NOW" | translate }}</span>
+            <span class="icon-arrow">
+              <!-- svg giữ nguyên -->
+              <svg
+                width="44px"
+                height="40px"
+                viewBox="0 0 66 43"
+                version="1.1"
+                xmlns="http://www.w3.org/2000/svg"
+                xmlns:xlink="http://www.w3.org/1999/xlink"
+              >
+                <g
+                  id="arrow"
+                  stroke="none"
+                  stroke-width="1"
+                  fill="none"
+                  fill-rule="evenodd"
+                >
+                  <path
+                    id="arrow-icon-one"
+                    d="M40.1543933,3.89485454 L43.9763149,0.139296592 C44.1708311,-0.0518420739 44.4826329,-0.0518571125 44.6771675,0.139262789 L65.6916134,20.7848311 C66.0855801,21.1718824 66.0911863,21.8050225 65.704135,22.1989893 C65.7000188,22.2031791 65.6958657,22.2073326 65.6916762,22.2114492 L44.677098,42.8607841 C44.4825957,43.0519059 44.1708242,43.0519358 43.9762853,42.8608513 L40.1545186,39.1069479 C39.9575152,38.9134427 39.9546793,38.5968729 40.1481845,38.3998695 C40.1502893,38.3977268 40.1524132,38.395603 40.1545562,38.3934985 L56.9937789,21.8567812 C57.1908028,21.6632968 57.193672,21.3467273 57.0001876,21.1497035 C56.9980647,21.1475418 56.9959223,21.1453995 56.9937605,21.1432767 L40.1545208,4.60825197 C39.9574869,4.41477773 39.9546013,4.09820839 40.1480756,3.90117456 C40.1501626,3.89904911 40.1522686,3.89694235 40.1543933,3.89485454 Z"
+                    fill="#FFFFFF"
+                  ></path>
+                  <path
+                    id="arrow-icon-two"
+                    d="M20.1543933,3.89485454 L23.9763149,0.139296592 C24.1708311,-0.0518420739 24.4826329,-0.0518571125 24.6771675,0.139262789 L45.6916134,20.7848311 C46.0855801,21.1718824 46.0911863,21.8050225 45.704135,22.1989893 C45.7000188,22.2031791 45.6958657,22.2073326 45.6916762,22.2114492 L24.677098,42.8607841 C24.4825957,43.0519059 24.1708242,43.0519358 23.9762853,42.8608513 L20.1545186,39.1069479 C19.9575152,38.9134427 19.9546793,38.5968729 20.1481845,38.3998695 C20.1502893,38.3977268 20.1524132,38.395603 20.1545562,38.3934985 L36.9937789,21.8567812 C37.1908028,21.6632968 37.193672,21.3467273 37.0001876,21.1497035 C36.9980647,21.1475418 36.9959223,21.1453995 36.9937605,21.1432767 L20.1545208,4.60825197 C19.9574869,4.41477773 19.9546013,4.09820839 20.1480756,3.90117456 C20.1501626,3.89904911 20.1522686,3.89694235 20.1543933,3.89485454 Z"
+                    fill="#FFFFFF"
+                  ></path>
+                  <path
+                    id="arrow-icon-three"
+                    d="M0.154393339,3.89485454 L3.97631488,0.139296592 C4.17083111,-0.0518420739 4.48263286,-0.0518571125 4.67716753,0.139262789 L25.6916134,20.7848311 C26.0855801,21.1718824 26.0911863,21.8050225 25.704135,22.1989893 C25.7000188,22.2031791 25.6958657,22.2073326 25.6916762,22.2114492 L4.67709797,42.8607841 C4.48259567,43.0519059 4.17082418,43.0519358 3.97628526,42.8608513 L0.154518591,39.1069479 C-0.0424848215,38.9134427 -0.0453206733,38.5968729 0.148184538,38.3998695 C0.150289256,38.3977268 0.152413239,38.395603 0.154556228,38.3934985 L16.9937789,21.8567812 C17.1908028,21.6632968 17.193672,21.3467273 17.0001876,21.1497035 C16.9980647,21.1475418 16.9959223,21.1453995 16.9937605,21.1432767 L0.15452076,4.60825197 C-0.0425130651,4.41477773 -0.0453986756,4.09820839 0.148075568,3.90117456 C0.150162624,3.89904911 0.152268631,3.89694235 0.154393339,3.89485454 Z"
+                    fill="#FFFFFF"
+                  ></path>
+                </g>
+              </svg>
+            </span>
+          </a>
+        </div>
+      </li>
+    </ul>
+  </div>
+</nav>

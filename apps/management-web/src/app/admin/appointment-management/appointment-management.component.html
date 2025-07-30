@@ -1,0 +1,447 @@
+<!-- Enhanced Appointment Management Content -->
+<div class="space-y-6 animate-fadeIn">
+  <div class="container mx-auto max-w-full">
+    <!-- Enhanced Search Bar -->
+    <app-appointment-search-bar
+      [totalResults]="filteredAppointments.length"
+      [doctors]="doctors"
+      (filterChange)="applyFilters($event)"
+      (exportData)="exportAppointments()"
+      class="mb-6"
+    ></app-appointment-search-bar>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="flex items-center justify-center py-12">
+      <div class="flex items-center space-x-3">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+        <span class="text-gray-600 font-medium">Loading appointments...</span>
+      </div>
+    </div>
+
+    <!-- Enhanced Appointment Table -->
+    <app-appointment-table
+      *ngIf="!isLoading"
+      [paginatedAppointments]="paginatedAppointments"
+      [totalAppointments]="filteredAppointments.length"
+      [currentPage]="currentPage"
+      (viewAppointmentEvent)="openViewAppointmentModal($event)"
+      (editAppointmentEvent)="openEditAppointmentModal($event)"
+      (deleteAppointmentEvent)="onDeleteAppointment($event)"
+      (sortChange)="onSortChange($event)"
+      (bulkAction)="onBulkAction($event)"
+      (clearFiltersEvent)="clearAllFilters()"
+    ></app-appointment-table>
+
+    <!-- Enhanced Pagination -->
+    <div
+      *ngIf="!isLoading && filteredAppointments.length > 0"
+      class="bg-white rounded-2xl shadow-xl border border-white/20 px-6 py-4 mt-6"
+    >
+      <div class="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
+        <!-- Results Info -->
+        <div class="text-sm text-gray-700">
+          Showing {{ (currentPage - 1) * pageSize + 1 }} to
+          {{ Math.min(currentPage * pageSize, filteredAppointments.length) }} of
+          {{ filteredAppointments.length }} appointments
+        </div>
+
+        <!-- Pagination Controls -->
+        <div class="flex items-center space-x-2">
+          <button
+            (click)="goToFirstPage()"
+            [disabled]="currentPage === 1"
+            class="pagination-button"
+            [class.disabled]="currentPage === 1"
+            title="First page"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path>
+            </svg>
+          </button>
+
+          <button
+            (click)="goToPreviousPage()"
+            [disabled]="currentPage === 1"
+            class="pagination-button"
+            [class.disabled]="currentPage === 1"
+            title="Previous page"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+          </button>
+
+          <!-- Page Numbers -->
+          <div class="flex items-center space-x-1">
+            <button
+              *ngFor="let page of getVisiblePages()"
+              (click)="goToPage(page)"
+              class="pagination-number"
+              [class.active]="page === currentPage"
+            >
+              {{ page }}
+            </button>
+          </div>
+
+          <button
+            (click)="goToNextPage()"
+            [disabled]="currentPage === totalPages"
+            class="pagination-button"
+            [class.disabled]="currentPage === totalPages"
+            title="Next page"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </button>
+
+          <button
+            (click)="goToLastPage()"
+            [disabled]="currentPage === totalPages"
+            class="pagination-button"
+            [class.disabled]="currentPage === totalPages"
+            title="Last page"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- View Appointment Modal -->
+  <div
+    *ngIf="showViewModal && selectedAppointment"
+    class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50"
+  >
+    <div
+      class="bg-white rounded-lg p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto"
+    >
+      <h2 class="text-2xl font-semibold mb-4">Appointment Details</h2>
+      <table class="min-w-full bg-white">
+        <tbody>
+          <tr class="border-b">
+            <td class="py-2 px-4 font-medium text-gray-700">ID</td>
+            <td
+              class="py-2 px-4 truncate max-w-xs"
+              title="{{ selectedAppointment.appointment_id }}"
+            >
+              {{ selectedAppointment.appointment_id }}
+            </td>
+          </tr>
+          <tr class="border-b">
+            <td class="py-2 px-4 font-medium text-gray-700">Type</td>
+            <td class="py-2 px-4">
+              <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
+                    [ngClass]="selectedAppointment.appointment_type === 'guest' ? 'bg-green-100 text-green-800' : 'bg-purple-100 text-purple-800'">
+                {{ selectedAppointment.appointment_type === 'guest' ? 'Guest' : 'Patient' }}
+              </span>
+            </td>
+          </tr>
+          <tr class="border-b">
+            <td class="py-2 px-4 font-medium text-gray-700">Name</td>
+            <td class="py-2 px-4">{{ selectedAppointment.display_name || selectedAppointment.patient_name || selectedAppointment.guest_name || 'N/A' }}</td>
+          </tr>
+          <tr class="border-b">
+            <td class="py-2 px-4 font-medium text-gray-700">Doctor</td>
+            <td class="py-2 px-4">{{ selectedAppointment.doctor_name || 'Unassigned' }}</td>
+          </tr>
+          <tr class="border-b">
+            <td class="py-2 px-4 font-medium text-gray-700">Date</td>
+            <td class="py-2 px-4">{{ selectedAppointment.appointment_date || selectedAppointment.slot_date || 'N/A' }}</td>
+          </tr>
+          <tr class="border-b">
+            <td class="py-2 px-4 font-medium text-gray-700">Time</td>
+            <td class="py-2 px-4">{{ selectedAppointment.appointment_time || selectedAppointment.slot_time || 'N/A' }}</td>
+          </tr>
+          <tr class="border-b">
+            <td class="py-2 px-4 font-medium text-gray-700">Visit Type</td>
+            <td class="py-2 px-4">{{ selectedAppointment.visit_type }}</td>
+          </tr>
+          <tr class="border-b">
+            <td class="py-2 px-4 font-medium text-gray-700">Status</td>
+            <td class="py-2 px-4">{{ selectedAppointment.appointment_status }}</td>
+          </tr>
+          <tr class="border-b">
+            <td class="py-2 px-4 font-medium text-gray-700">Phone</td>
+            <td class="py-2 px-4">{{ selectedAppointment.patient_phone || selectedAppointment.phone }}</td>
+          </tr>
+          <tr class="border-b">
+            <td class="py-2 px-4 font-medium text-gray-700">Email</td>
+            <td class="py-2 px-4">{{ selectedAppointment.patient_email || selectedAppointment.email }}</td>
+          </tr>
+          <tr *ngIf="selectedAppointment.message" class="border-b">
+            <td class="py-2 px-4 font-medium text-gray-700">Message</td>
+            <td class="py-2 px-4">{{ selectedAppointment.message }}</td>
+          </tr>
+          <tr class="border-b">
+            <td class="py-2 px-4 font-medium text-gray-700">Created At</td>
+            <td class="py-2 px-4">{{ selectedAppointment.created_at | date:'medium' }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="mt-6 flex justify-end">
+        <button
+          (click)="closeViewModal()"
+          class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Appointment Modal -->
+  <div
+    *ngIf="showEditModal && selectedAppointment"
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 edit-modal"
+  >
+    <div
+      class="bg-white rounded-2xl p-6 w-full max-w-2xl max-h-[85vh] overflow-y-auto edit-modal-content"
+    >
+      <!-- Modal Header -->
+      <div class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-6 rounded-t-2xl -m-6 mb-6">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <div class="bg-white bg-opacity-20 rounded-lg p-2">
+              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+              </svg>
+            </div>
+            <div>
+              <h2 class="text-xl font-bold text-white">Edit Appointment</h2>
+              <p class="text-purple-100 text-sm">Update appointment details and status</p>
+            </div>
+          </div>
+          <button
+            (click)="closeEditModal()"
+            [disabled]="isUpdating"
+            class="text-white hover:text-purple-200 transition-colors duration-200 disabled:opacity-50"
+            title="Close modal"
+          >
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Error Message -->
+      <div *ngIf="updateError" class="error-message">
+        <div class="flex items-center">
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          {{ updateError }}
+        </div>
+      </div>
+
+      <!-- Success Message -->
+      <div *ngIf="updateSuccess" class="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded-md">
+        <div class="flex items-center">
+          <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+          </svg>
+          {{ updateSuccess }}
+        </div>
+      </div>
+
+      <!-- Appointment Form -->
+      <div class="space-y-4">
+        <!-- Appointment ID (Read-only) -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Appointment ID</label>
+          <input
+            type="text"
+            [value]="selectedAppointment.appointment_id"
+            readonly
+            class="w-full p-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600"
+          />
+        </div>
+
+        <!-- Appointment Type (Read-only) -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
+          <div class="flex items-center">
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
+                  [ngClass]="selectedAppointment.appointment_type === 'guest' ? 'bg-green-100 text-green-800' : 'bg-purple-100 text-purple-800'">
+              {{ selectedAppointment.appointment_type === 'guest' ? 'Guest' : 'Patient' }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Patient/Guest Name (Read-only) -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            {{ selectedAppointment.appointment_type === 'guest' ? 'Guest' : 'Patient' }} Name
+          </label>
+          <input
+            type="text"
+            [value]="selectedAppointment.display_name || selectedAppointment.patient_name || selectedAppointment.guest_name || 'N/A'"
+            readonly
+            class="w-full p-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600"
+          />
+        </div>
+
+        <!-- Contact Information (Read-only) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+            <input
+              type="text"
+              [value]="selectedAppointment.patient_phone || selectedAppointment.phone"
+              readonly
+              class="w-full p-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <input
+              type="email"
+              [value]="selectedAppointment.patient_email || selectedAppointment.email"
+              readonly
+              class="w-full p-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600"
+            />
+          </div>
+        </div>
+
+        <!-- Doctor (Read-only) -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Doctor</label>
+          <input
+            type="text"
+            [value]="selectedAppointment.doctor_name || 'Unassigned'"
+            readonly
+            class="w-full p-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600"
+          />
+        </div>
+
+        <!-- Date and Time (Editable) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Appointment Date *</label>
+            <input
+              type="date"
+              [(ngModel)]="selectedAppointment.appointment_date"
+              [disabled]="isUpdating"
+              [class]="'w-full p-2 border rounded-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:bg-gray-100 disabled:cursor-not-allowed transition-colors ' + (hasValidationError('appointment_date') ? 'border-red-500' : 'border-gray-300')"
+              required
+            />
+            <div *ngIf="hasValidationError('appointment_date')" class="mt-1 text-sm text-red-600">
+              {{ getValidationError('appointment_date') }}
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Appointment Time *</label>
+            <input
+              type="time"
+              [(ngModel)]="selectedAppointment.appointment_time"
+              [disabled]="isUpdating"
+              [class]="'w-full p-2 border rounded-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:bg-gray-100 disabled:cursor-not-allowed transition-colors ' + (hasValidationError('appointment_time') ? 'border-red-500' : 'border-gray-300')"
+              required
+            />
+            <div *ngIf="hasValidationError('appointment_time')" class="mt-1 text-sm text-red-600">
+              {{ getValidationError('appointment_time') }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Visit Type (Editable) -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Visit Type *</label>
+          <select
+            [(ngModel)]="selectedAppointment.visit_type"
+            [disabled]="isUpdating"
+            [class]="'w-full p-2 border rounded-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:bg-gray-100 disabled:cursor-not-allowed ' + (hasValidationError('visit_type') ? 'border-red-500' : 'border-gray-300')"
+            required
+          >
+            <option value="consultation">Consultation</option>
+            <option value="follow-up">Follow Up</option>
+            <option value="emergency">Emergency</option>
+            <option value="routine">Routine</option>
+          </select>
+          <div *ngIf="hasValidationError('visit_type')" class="mt-1 text-sm text-red-600">
+            {{ getValidationError('visit_type') }}
+          </div>
+        </div>
+
+        <!-- Appointment Status (Editable) -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Status *</label>
+          <select
+            [(ngModel)]="selectedAppointment.appointment_status"
+            [disabled]="isUpdating"
+            [class]="'w-full p-2 border rounded-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:bg-gray-100 disabled:cursor-not-allowed ' + (hasValidationError('appointment_status') ? 'border-red-500' : 'border-gray-300')"
+            required
+          >
+            <option value="pending">Pending</option>
+            <option value="in_progress">In Progress</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+          <div *ngIf="hasValidationError('appointment_status')" class="mt-1 text-sm text-red-600">
+            {{ getValidationError('appointment_status') }}
+          </div>
+        </div>
+
+        <!-- Schedule (Editable) -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Schedule</label>
+          <select
+            [(ngModel)]="selectedAppointment.schedule"
+            [disabled]="isUpdating"
+            class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+          >
+            <option value="morning">Morning</option>
+            <option value="afternoon">Afternoon</option>
+            <option value="evening">Evening</option>
+          </select>
+        </div>
+
+        <!-- Message (Editable) -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Message</label>
+          <textarea
+            [(ngModel)]="selectedAppointment.message"
+            [disabled]="isUpdating"
+            rows="3"
+            class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+            placeholder="Additional notes or message..."
+          ></textarea>
+        </div>
+
+        <!-- Created At (Read-only) -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Created At</label>
+          <input
+            type="text"
+            [value]="selectedAppointment.created_at | date:'medium'"
+            readonly
+            class="w-full p-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600"
+          />
+        </div>
+      </div>
+
+      <!-- Modal Actions -->
+      <div class="mt-8 flex justify-end space-x-3 pt-6 border-t border-gray-200">
+        <button
+          (click)="closeEditModal()"
+          [disabled]="isUpdating"
+          class="btn-cancel"
+        >
+          Cancel
+        </button>
+        <button
+          (click)="onUpdateAppointment(selectedAppointment)"
+          [disabled]="isUpdating"
+          class="btn-update flex items-center"
+        >
+          <div *ngIf="isUpdating" class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+          {{ isUpdating ? 'Updating...' : 'Update Appointment' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

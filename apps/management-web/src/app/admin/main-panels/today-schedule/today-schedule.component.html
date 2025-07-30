@@ -1,0 +1,40 @@
+<div class="bg-white p-6 rounded-lg shadow-md">
+  <div class="flex justify-between items-center mb-4">
+    <h2 class="text-lg font-semibold">Today's Schedule</h2>
+    <a href="#" class="text-blue-600 hover:underline">View All</a>
+  </div>
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm text-left text-gray-500">
+      <tbody>
+        @if (isLoading) {
+          <tr class="border-b">
+            <td colspan="3" class="py-4 text-center">Loading...</td>
+          </tr>
+        } @else {
+          @for (schedule of schedules; track schedule.time) {
+            <tr class="border-b">
+              <td class="py-4 px-6 font-medium text-gray-900">{{ schedule.time | date:'shortTime' }}</td>
+              <td class="py-4 px-6">{{ schedule.description }}</td>
+              <td class="py-4 px-6">
+                <span
+                  [ngClass]="{
+                    'text-yellow-500': schedule.status === 'pending',
+                    'text-green-500': schedule.status === 'done',
+                    'text-red-500': schedule.status === 'late'
+                  }"
+                >
+                  {{ schedule.status | titlecase }}
+                </span>
+              </td>
+            </tr>
+          }
+          @empty {
+            <tr class="border-b">
+              <td colspan="3" class="py-4 text-center">No Appointments Planned Today</td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

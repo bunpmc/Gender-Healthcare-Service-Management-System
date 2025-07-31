@@ -1,30 +1,23 @@
 export const environment = {
   production: false,
-  apiEndpoint: 'https://xzxxodxplyetecrsbxmc.supabase.co/functions/v1',
-  authorization:
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndxbnlzZm9qcHZhenprZ3NwYXZ4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0ODc0NTAzNywiZXhwIjoyMDY0MzIxMDM3fQ.TDXlW3dIvvmYv5QKUsAy_vpU3U_x7BMQ1IdfEWmWtJQ',
-  authorizationv2:
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdocHZ5dGptbWhsd2hyYXh6ZGhqIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0ODk0ODg0OSwiZXhwIjoyMDY0NTI0ODQ5fQ.IcoAuCxorMLUkwP3qZpF1JT17Q-ZxYgBP21oFPkK1W8',
-  // Supabase Configuration
+
+  // ========== SUPABASE CONFIGURATION ==========
+  // 1. Supabase URL with functions endpoint
   supabaseUrl: 'https://xzxxodxplyetecrsbxmc.supabase.co',
-  supabaseStorageUrl:
-    'https://xzxxodxplyetecrsbxmc.supabase.co/storage/v1/object/public/patient-uploads',
-  // Service role key (for server-side operations)
-  supabaseServiceKey:
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh6eHhvZHhwbHlldGVjcnNieG1jIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczNjM5NzE5NCwiZXhwIjoyMDUxOTczMTk0fQ.TDXlW3dIvvmYv5QKUsAy_vpU3U_x7BMQ1IdfEWmWtJQ',
-  // Anon key (for client-side operations) - Get this from your Supabase dashboard
-  supabaseAnonKey:
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh6eHhvZHhwbHlldGVjcnNieG1jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzYzOTcxOTQsImV4cCI6MjA1MTk3MzE5NH0.dAiDNh0YAUB_A2lm9F5GQw6uFJjlXUKK5rGZzBpCxQs',
-  // Keep the old key name for backward compatibility
-  supabaseKey:
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh6eHhvZHhwbHlldGVjcnNieG1jIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczNjM5NzE5NCwiZXhwIjoyMDUxOTczMTk0fQ.TDXlW3dIvvmYv5QKUsAy_vpU3U_x7BMQ1IdfEWmWtJQ',
 
-  // Auth redirect URLs
+  // 2. Storage bucket URL
+  supabaseStorageUrl: 'https://xzxxodxplyetecrsbxmc.supabase.co/storage/v1/object/public/patient-uploads',
+
+  // 3. Service role key (for server-side RPC operations) - UPDATED
+  supabaseServiceKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh6eHhvZHhwbHlldGVjcnNieG1jIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0OTYxMTYyMCwiZXhwIjoyMDY1MTg3NjIwfQ.ZJZbbAmyma-ZFr4vDZiupkvNWMCzupOKsM_j3cakyII',
+
+  // 4. Anon key (for client-side operations) - UPDATED
+  supabaseAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh6eHhvZHhwbHlldGVjcnNieG1jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk2MTE2MjAsImV4cCI6MjA2NTE4NzYyMH0.O60A63ihSaQ_2qbLozpU04yy7ZB5h8BUZqEvWWCLnf0',
+
+  // ========== BACKWARD COMPATIBILITY ==========
+  // Legacy properties for other services
+  apiEndpoint: 'https://xzxxodxplyetecrsbxmc.supabase.co/functions/v1',
+  supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh6eHhvZHhwbHlldGVjcnNieG1jIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0OTYxMTYyMCwiZXhwIjoyMDY1MTg3NjIwfQ.ZJZbbAmyma-ZFr4vDZiupkvNWMCzupOKsM_j3cakyII',
   authCallbackUrl: '/auth/callback',
-
-  // Helper function to get current origin
-  getCurrentOrigin: () =>
-    typeof window !== 'undefined'
-      ? window.location.origin
-      : 'http://localhost:4200',
+  getCurrentOrigin: () => typeof window !== 'undefined' ? window.location.origin : 'http://localhost:4200',
 };

@@ -291,8 +291,7 @@
           <div class="text-xs font-medium text-gray-700 mb-2">
             Password Requirements:
           </div>
-          @for (rule of passwordValidation?.password?.rules || []; track
-          rule.name) {
+          @for (rule of passwordValidation?.password?.rules || []; track $index) {
           <div class="flex items-center text-xs mb-1">
             @if (rule.isValid) {
             <svg

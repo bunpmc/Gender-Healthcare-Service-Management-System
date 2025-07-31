@@ -5,7 +5,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS'
 };
-
 const supabase = createClient(Deno.env.get('SUPABASE_URL') ?? '', Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '');
 serve(async (req)=>{
   if (req.method === 'OPTIONS') {
@@ -26,7 +25,7 @@ serve(async (req)=>{
         status: 400
       });
     }
-    const { data: otp, error: otpError } = await supabase.from('otps').select('*').eq('phone', email).eq('otp_code', otp_code).eq('is_used', false).gte('expires_at', new Date().toISOString()).maybeSingle();
+    const { data: otp, error: otpError } = await supabase.from('otps').select('*').eq('email', email).eq('otp_code', otp_code).eq('is_used', false).gte('expires_at', new Date().toISOString()).maybeSingle();
     if (otpError || !otp) {
       return new Response(JSON.stringify({
         error: 'Invalid or expired OTP'

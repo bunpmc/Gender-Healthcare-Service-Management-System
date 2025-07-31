@@ -38,6 +38,257 @@ export class AppointmentService {
   }
 
   /**
+   * Get appointment history for authenticated user
+   */
+  getUserAppointmentHistory(): Observable<any[]> {
+    console.log('📋 Getting user appointment history...');
+
+    const currentUser = this.authService.getCurrentUser();
+    const isAuthenticated = this.authService.isAuthenticated();
+
+    if (!isAuthenticated || !currentUser?.patientId) {
+      console.log('❌ User not authenticated or no patient ID');
+      return of([]);
+    }
+
+    console.log('👤 Getting appointments for patient:', currentUser.patientId);
+
+    return from(
+      this.supabase
+        .from('appointments')
+        .select(`
+          *,
+          doctors:doctor_id (
+            doctor_id,
+            full_name,
+            specialization,
+            image_link
+          )
+        `)
+        .eq('patient_id', currentUser.patientId)
+        .order('created_at', { ascending: false })
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) {
+          console.error('❌ Error fetching appointment history:', error);
+          throw error;
+        }
+
+        console.log('✅ Appointment history fetched:', data?.length || 0, 'appointments');
+        return data || [];
+      }),
+      catchError((error) => {
+        console.error('❌ Failed to fetch appointment history:', error);
+        return of([]);
+      })
+    );
+  }
+
+  /**
+   * Get appointment details by ID
+   */
+  getAppointmentById(appointmentId: string): Observable<any> {
+    console.log('🔍 Getting appointment details for ID:', appointmentId);
+
+    return from(
+      this.supabase
+        .from('appointments')
+        .select(`
+          *,
+          doctors:doctor_id (
+            doctor_id,
+            full_name,
+            specialization,
+            image_link,
+            phone,
+            email
+          ),
+          patients:patient_id (
+            id,
+            full_name,
+            phone,
+            email
+          )
+        `)
+        .eq('appointment_id', appointmentId)
+        .single()
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) {
+          console.error('❌ Error fetching appointment details:', error);
+          throw error;
+        }
+
+        console.log('✅ Appointment details fetched:', data);
+        return data;
+      }),
+      catchError((error) => {
+        console.error('❌ Failed to fetch appointment details:', error);
+        throw error;
+      })
+    );
+  }
+
+  /**
+   * Update appointment status
+   */
+  updateAppointmentStatus(appointmentId: string, status: string): Observable<any> {
+    console.log('🔄 Updating appointment status:', { appointmentId, status });
+
+    return from(
+      this.supabase
+        .from('appointments')
+        .update({
+          status: status,
+          updated_at: new Date().toISOString()
+        })
+        .eq('appointment_id', appointmentId)
+        .select()
+        .single()
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) {
+          console.error('❌ Error updating appointment status:', error);
+          throw error;
+        }
+
+        console.log('✅ Appointment status updated:', data);
+        return data;
+      }),
+      catchError((error) => {
+        console.error('❌ Failed to update appointment status:', error);
+        throw error;
+      })
+    );
+  }
+
+  /**
+   * Create appointment directly in database
+   */
+  private async createAppointmentInDatabase(appointmentData: any): Promise<any> {
+    try {
+      console.log('💾 Inserting appointment into database...');
+
+      // Check if user is authenticated to determine table
+      const currentUser = this.authService.getCurrentUser();
+      const isAuthenticated = this.authService.isAuthenticated();
+
+      let result;
+
+      if (isAuthenticated && currentUser?.patientId) {
+        // Insert into appointments table for authenticated users
+        console.log('👤 Creating appointment for authenticated user:', currentUser.patientId);
+
+        const { data, error } = await this.supabase
+          .from('appointments')
+          .insert({
+            patient_id: currentUser.patientId,
+            phone: appointmentData.phone,
+            email: appointmentData.email,
+            visit_type: appointmentData.visit_type,
+            doctor_id: appointmentData.doctor_id,
+            preferred_date: appointmentData.preferred_date,
+            preferred_time: appointmentData.preferred_time,
+            preferred_slot_id: appointmentData.preferred_slot_id,
+            message: appointmentData.message,
+            status: 'pending',
+            created_at: new Date().toISOString()
+          })
+          .select()
+          .single();
+
+        if (error) {
+          console.error('❌ Database error creating appointment:', error);
+          throw error;
+        }
+
+        result = {
+          success: true,
+          message: 'Appointment created successfully',
+          data: {
+            appointment: data,
+            appointment_id: data.appointment_id
+          }
+        };
+
+      } else {
+        // Insert into guest_appointments table for guests
+        console.log('👥 Creating guest appointment');
+
+        // First create or get guest record
+        const guestData = {
+          full_name: appointmentData.full_name,
+          phone: appointmentData.phone,
+          email: appointmentData.email,
+          gender: appointmentData.gender,
+          date_of_birth: appointmentData.date_of_birth
+        };
+
+        const { data: guest, error: guestError } = await this.supabase
+          .from('guests')
+          .upsert(guestData, {
+            onConflict: 'phone',
+            ignoreDuplicates: false
+          })
+          .select()
+          .single();
+
+        if (guestError) {
+          console.error('❌ Database error creating guest:', guestError);
+          throw guestError;
+        }
+
+        console.log('✅ Guest created/found:', guest.guest_id);
+
+        // Create guest appointment
+        const { data, error } = await this.supabase
+          .from('guest_appointments')
+          .insert({
+            guest_id: guest.guest_id,
+            phone: appointmentData.phone,
+            email: appointmentData.email,
+            visit_type: appointmentData.visit_type,
+            doctor_id: appointmentData.doctor_id,
+            preferred_date: appointmentData.preferred_date,
+            preferred_time: appointmentData.preferred_time,
+            preferred_slot_id: appointmentData.preferred_slot_id,
+            message: appointmentData.message,
+            status: 'pending',
+            created_at: new Date().toISOString()
+          })
+          .select()
+          .single();
+
+        if (error) {
+          console.error('❌ Database error creating guest appointment:', error);
+          throw error;
+        }
+
+        result = {
+          success: true,
+          message: 'Guest appointment created successfully',
+          data: {
+            appointment: data,
+            guest_appointment_id: data.guest_appointment_id,
+            guest: guest
+          }
+        };
+      }
+
+      console.log('✅ Appointment created successfully:', result);
+      return result;
+
+    } catch (error) {
+      console.error('❌ Error creating appointment in database:', error);
+      throw {
+        success: false,
+        message: 'Failed to create appointment',
+        error: error
+      };
+    }
+  }
+
+  /**
    * Create appointment for logged-in user or guest
    */
   createAppointment(
@@ -56,70 +307,30 @@ export class AppointmentService {
     const schedule = this.mapScheduleToEdgeFunction(request.schedule);
     console.log('📅 Mapped schedule:', schedule);
 
-    // Get profile choice from localStorage
-    const profileChoice = localStorage.getItem('appointmentProfileChoice');
-    console.log('👤 Profile choice from localStorage:', profileChoice);
+    // Use direct database insertion instead of edge functions
+    console.log('💾 Creating appointment directly in database...');
 
-    // Determine which edge function to use based on profile choice
-    let edgeFunction: string;
-    let payload: any;
+    // Prepare appointment data
+    const appointmentData = {
+      email: request.email || null,
+      full_name: request.full_name,
+      message: request.message,
+      phone: e164Phone,
+      schedule: schedule,
+      gender: request.gender || 'other',
+      date_of_birth: request.date_of_birth || '1990-01-01',
+      doctor_id: request.doctor_id,
+      preferred_date: request.preferred_date || null,
+      preferred_time: request.preferred_time || null,
+      preferred_slot_id: request.slot_id || null,
+      visit_type: request.visit_type || 'consultation',
+    };
 
-    if (profileChoice === 'me') {
-      // Use patient-id endpoint for "book for me"
-      const currentUser = this.authService.getCurrentUser();
-      const patient_id = currentUser?.patientId;
+    console.log('📦 Appointment data:', JSON.stringify(appointmentData, null, 2));
+    console.log('🚀 STARTING DIRECT DATABASE APPOINTMENT CREATION...');
 
-      if (!patient_id) {
-        console.error('❌ No patient_id found for current user');
-        throw new Error('User must be logged in to create appointment');
-      }
-
-      edgeFunction =
-        'https://xzxxodxplyetecrsbxmc.supabase.co/functions/v1/create-appointment-via-patient-id';
-      payload = {
-        patient_id: patient_id,
-        email: request.email || null,
-        fullName: request.full_name,
-        message: request.message,
-        phone: e164Phone,
-        schedule: schedule,
-        gender: request.gender || 'other',
-        date_of_birth: request.date_of_birth || '1990-01-01',
-        doctor_id: request.doctor_id,
-        preferred_date: request.preferred_date || null,
-        preferred_time: request.preferred_time || null,
-        preferred_slot_id: request.slot_id || null,
-        visit_type: request.visit_type || 'consultation',
-      };
-    } else {
-      // Use general create-appointment endpoint for "another profile"
-      edgeFunction =
-        'https://xzxxodxplyetecrsbxmc.supabase.co/functions/v1/create-appointment';
-      payload = {
-        email: request.email || null,
-        fullName: request.full_name,
-        message: request.message,
-        phone: e164Phone,
-        schedule: schedule,
-        gender: request.gender || 'other',
-        date_of_birth: request.date_of_birth || '1990-01-01',
-        doctor_id: request.doctor_id,
-        preferred_date: request.preferred_date || null,
-        preferred_time: request.preferred_time || null,
-        preferred_slot_id: request.slot_id || null,
-        visit_type: request.visit_type || 'consultation',
-      };
-    }
-
-    console.log('🌐 APPOINTMENT SERVICE - Using edge function:', edgeFunction);
-    console.log('📦 Payload:', JSON.stringify(payload, null, 2));
-    console.log('🚀 STARTING APPOINTMENT CREATION REQUEST...');
-
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/json',
-    });
-
-    return this.http.post<any>(edgeFunction, payload, { headers }).pipe(
+    // Create appointment directly in database
+    return from(this.createAppointmentInDatabase(appointmentData)).pipe(
       tap({
         next: (response) => {
           console.log(
@@ -532,29 +743,7 @@ export class AppointmentService {
     return scheduleMap[schedule] || ScheduleEnum.SPECIFIC_TIME;
   }
 
-  /**
-   * Get appointment by ID (for logged-in users)
-   */
-  getAppointmentById(appointmentId: string): Observable<Appointment | null> {
-    return from(
-      this.supabase
-        .from('appointments')
-        .select('*')
-        .eq('appointment_id', appointmentId)
-        .single()
-    ).pipe(
-      map((response) => {
-        if (response.error) {
-          throw new Error(response.error.message);
-        }
-        return response.data;
-      }),
-      catchError((error) => {
-        console.error('Error fetching appointment:', error);
-        return of(null);
-      })
-    );
-  }
+  // Duplicate method removed - using the enhanced version above
 
   /**
    * Get guest appointment by ID

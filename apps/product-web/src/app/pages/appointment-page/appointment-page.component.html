@@ -21,7 +21,7 @@
       Step: {{ currentStep }} | Auth: {{ isUserLoggedIn() ? "Yes" : "No" }} |
       Type: {{ bookingType || "None" }} | Profile Step:
       {{ shouldShowProfileStep() ? "Show" : "Hide" }} | UseProfile:
-      {{ booking.useProfile || "None" }}
+      Direct booking (no profile selection)
     </div>
 
     <!-- Error/Success -->
@@ -167,177 +167,10 @@
     </div>
     }
 
-    <!-- STEP 1: Profile Selection (Logged-in users only) -->
-    @if (shouldShowProfileStep()) {
-    <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl p-8 md:p-10">
-      <!-- Step Header -->
-      <div class="text-center mb-8">
-        <div
-          class="inline-flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full mb-4"
-        >
-          <svg
-            class="w-6 h-6 text-blue-600"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-            ></path>
-          </svg>
-        </div>
-        <h2 class="text-2xl font-bold text-gray-800 mb-2">
-          {{ "APPOINTMENT.PROFILE_SELECTION.TITLE" | translate }}
-        </h2>
-        <p class="text-gray-600">
-          {{ "APPOINTMENT.PROFILE_SELECTION.SUBTITLE" | translate }}
-        </p>
-      </div>
+    <!-- Profile Selection Step Removed - Direct to Patient Info -->
 
-      <!-- Profile Options -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
-        <!-- Book for Myself -->
-        <div
-          (click)="selectProfileType('me')"
-          class="group relative bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-6 cursor-pointer transition-all duration-300 hover:border-blue-400 hover:shadow-lg hover:scale-105"
-        >
-          <div class="text-center">
-            <div
-              class="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4 group-hover:bg-blue-200 transition-colors"
-            >
-              <svg
-                class="w-8 h-8 text-blue-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                ></path>
-              </svg>
-            </div>
-            <h3 class="text-lg font-semibold text-gray-800 mb-2">
-              {{ "APPOINTMENT.PROFILE_SELECTION.USE_MY_PROFILE" | translate }}
-            </h3>
-            <p class="text-sm text-gray-600 mb-4">
-              {{
-                "APPOINTMENT.PROFILE_SELECTION.USE_MY_PROFILE_DESC" | translate
-              }}
-            </p>
-            <div
-              class="inline-flex items-center text-blue-600 text-sm font-medium"
-            >
-              <span>{{
-                "APPOINTMENT.PROFILE_SELECTION.USE_MY_PROFILE" | translate
-              }}</span>
-              <svg
-                class="w-4 h-4 ml-1"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M9 5l7 7-7 7"
-                ></path>
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        <!-- Book for Someone Else -->
-        <div
-          (click)="selectProfileType('another')"
-          class="group relative bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-6 cursor-pointer transition-all duration-300 hover:border-green-400 hover:shadow-lg hover:scale-105"
-        >
-          <div class="text-center">
-            <div
-              class="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4 group-hover:bg-green-200 transition-colors"
-            >
-              <svg
-                class="w-8 h-8 text-green-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                ></path>
-              </svg>
-            </div>
-            <h3 class="text-lg font-semibold text-gray-800 mb-2">
-              {{ "APPOINTMENT.PROFILE_SELECTION.BOOK_FOR_ANOTHER" | translate }}
-            </h3>
-            <p class="text-sm text-gray-600 mb-4">
-              {{
-                "APPOINTMENT.PROFILE_SELECTION.BOOK_FOR_ANOTHER_DESC"
-                  | translate
-              }}
-            </p>
-            <div
-              class="inline-flex items-center text-green-600 text-sm font-medium"
-            >
-              <span>{{
-                "APPOINTMENT.PROFILE_SELECTION.BOOK_FOR_ANOTHER" | translate
-              }}</span>
-              <svg
-                class="w-4 h-4 ml-1"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M9 5l7 7-7 7"
-                ></path>
-              </svg>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Back Button -->
-      <div class="flex justify-center mt-8">
-        <button
-          type="button"
-          (click)="goToPrevStep()"
-          class="inline-flex items-center px-6 py-3 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200"
-        >
-          <svg
-            class="w-4 h-4 mr-2"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M15 19l-7-7 7-7"
-            ></path>
-          </svg>
-          {{ "APPOINTMENT.BUTTONS.BACK" | translate }}
-        </button>
-      </div>
-    </div>
-    }
-
-    <!-- STEP 1/2: Patient Information -->
-    @if ((currentStep === 1 && !isUserLoggedIn()) || (currentStep === 2 &&
-    isUserLoggedIn())) {
+    <!-- STEP 1: Patient Information (Profile selection removed) -->
+    @if (shouldShowPatientInfoStep()) {
     <form
       #patientForm="ngForm"
       (ngSubmit)="submitPatientForm(patientForm)"

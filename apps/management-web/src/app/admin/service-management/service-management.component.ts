@@ -133,6 +133,30 @@ export class ServiceManagementComponent implements OnInit {
     }
   }
 
+  getVisiblePages(): number[] {
+    const pages: number[] = [];
+    const maxPagesToShow = 5;
+    let startPage = Math.max(1, this.currentPage - Math.floor(maxPagesToShow / 2));
+    let endPage = startPage + maxPagesToShow - 1;
+
+    if (endPage > this.totalPages) {
+      endPage = this.totalPages;
+      startPage = Math.max(1, endPage - maxPagesToShow + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+    return pages;
+  }
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      // No need to call updatePaginatedServices; paginatedServices getter handles pagination.
+    }
+  }
+
   get paginatedServices(): Service[] {
     const startIndex = (this.currentPage - 1) * this.pageSize;
     return this.filteredServices.slice(startIndex, startIndex + this.pageSize);
@@ -528,5 +552,6 @@ export class ServiceManagementComponent implements OnInit {
     this.showNotification = false;
   }
 }
+
 
 type DescriptionKey = 'what' | 'why' | 'who' | 'how';

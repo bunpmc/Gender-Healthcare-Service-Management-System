@@ -3,7 +3,7 @@ import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { connect } from "https://deno.land/x/redis@v0.29.4/mod.ts";
 import nodemailer from "npm:nodemailer";
-// Error and Success Response Functions
+
 function createErrorResponse(error, status = 400, details = null) {
   const response = {
     error,
@@ -144,7 +144,7 @@ serve(async (req)=>{
     }
     let selectedSlot = null;
     let bookedSlotInfo = null;
-    // Validate doctor
+
     const { data: doctor, error: doctorError } = await supabase.from("doctor_details").select("doctor_id").eq("doctor_id", doctor_id).single();
     if (doctorError || !doctor) {
       console.log(JSON.stringify({
@@ -157,6 +157,7 @@ serve(async (req)=>{
         suggestion: "Please select a doctor from the available doctors list"
       });
     }
+ 
     // Fetch available slots
     console.log(JSON.stringify({
       level: "info",

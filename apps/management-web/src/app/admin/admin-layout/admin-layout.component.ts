@@ -9,7 +9,7 @@ import { SidebarComponent } from '../sidebar/sidebar.component';
   standalone: true,
   imports: [CommonModule, RouterOutlet, HeaderComponent, SidebarComponent],
   template: `
-    <div class="flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div class="flex flex-col min-h-screen bg-gray-50">
       <app-header></app-header>
       <div class="flex flex-row mx-6 gap-6 mb-4">
         <app-sidebar class="w-64"></app-sidebar>

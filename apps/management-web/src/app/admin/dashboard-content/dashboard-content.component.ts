@@ -75,8 +75,8 @@ interface RecentActivity {
     <div *ngIf="!isLoading && !hasError" class="space-y-8 animate-fadeIn">
       <!-- Header Section -->
       <div class="bg-gradient-to-r from-white via-indigo-50 to-purple-50 rounded-3xl p-8 shadow-2xl border border-white/30 backdrop-blur-sm">
-        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between">
-          <div class="mb-4 lg:mb-0">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+          <div>
             <h1 class="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-3">
               Healthcare Admin Dashboard
             </h1>

@@ -61,8 +61,8 @@ Inside `apps/product-web/` and `apps/management-web/`, create `.env` files:
 
 ```env
 # Common example
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-anon-key
 ```
 
 ---

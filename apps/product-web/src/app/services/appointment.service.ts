@@ -169,114 +169,14 @@ export class AppointmentService {
     try {
       console.log('💾 Inserting appointment into database...');
 
-      // Check if user is authenticated to determine table
       const currentUser = this.authService.getCurrentUser();
       const isAuthenticated = this.authService.isAuthenticated();
 
-      let result;
-
       if (isAuthenticated && currentUser?.patientId) {
-        // Insert into appointments table for authenticated users
-        console.log('👤 Creating appointment for authenticated user:', currentUser.patientId);
-
-        const { data, error } = await this.supabase
-          .from('appointments')
-          .insert({
-            patient_id: currentUser.patientId,
-            phone: appointmentData.phone,
-            email: appointmentData.email,
-            visit_type: appointmentData.visit_type,
-            doctor_id: appointmentData.doctor_id,
-            preferred_date: appointmentData.preferred_date,
-            preferred_time: appointmentData.preferred_time,
-            preferred_slot_id: appointmentData.preferred_slot_id,
-            message: appointmentData.message,
-            status: 'pending',
-            created_at: new Date().toISOString()
-          })
-          .select()
-          .single();
-
-        if (error) {
-          console.error('❌ Database error creating appointment:', error);
-          throw error;
-        }
-
-        result = {
-          success: true,
-          message: 'Appointment created successfully',
-          data: {
-            appointment: data,
-            appointment_id: data.appointment_id
-          }
-        };
-
+        return await this.createAuthenticatedUserAppointment(appointmentData, currentUser.patientId);
       } else {
-        // Insert into guest_appointments table for guests
-        console.log('👥 Creating guest appointment');
-
-        // First create or get guest record
-        const guestData = {
-          full_name: appointmentData.full_name,
-          phone: appointmentData.phone,
-          email: appointmentData.email,
-          gender: appointmentData.gender,
-          date_of_birth: appointmentData.date_of_birth
-        };
-
-        const { data: guest, error: guestError } = await this.supabase
-          .from('guests')
-          .upsert(guestData, {
-            onConflict: 'phone',
-            ignoreDuplicates: false
-          })
-          .select()
-          .single();
-
-        if (guestError) {
-          console.error('❌ Database error creating guest:', guestError);
-          throw guestError;
-        }
-
-        console.log('✅ Guest created/found:', guest.guest_id);
-
-        // Create guest appointment
-        const { data, error } = await this.supabase
-          .from('guest_appointments')
-          .insert({
-            guest_id: guest.guest_id,
-            phone: appointmentData.phone,
-            email: appointmentData.email,
-            visit_type: appointmentData.visit_type,
-            doctor_id: appointmentData.doctor_id,
-            preferred_date: appointmentData.preferred_date,
-            preferred_time: appointmentData.preferred_time,
-            preferred_slot_id: appointmentData.preferred_slot_id,
-            message: appointmentData.message,
-            status: 'pending',
-            created_at: new Date().toISOString()
-          })
-          .select()
-          .single();
-
-        if (error) {
-          console.error('❌ Database error creating guest appointment:', error);
-          throw error;
-        }
-
-        result = {
-          success: true,
-          message: 'Guest appointment created successfully',
-          data: {
-            appointment: data,
-            guest_appointment_id: data.guest_appointment_id,
-            guest: guest
-          }
-        };
+        return await this.createGuestAppointmentSimple(appointmentData);
       }
-
-      console.log('✅ Appointment created successfully:', result);
-      return result;
 
     } catch (error) {
       console.error('❌ Error creating appointment in database:', error);
@@ -286,6 +186,100 @@ export class AppointmentService {
         error: error
       };
     }
+  }
+
+  /**
+   * Create appointment for authenticated user
+   */
+  private async createAuthenticatedUserAppointment(appointmentData: any, patientId: string): Promise<any> {
+    console.log('👤 Creating appointment for authenticated user:', patientId);
+
+    const { data, error } = await this.supabase
+      .from('appointments')
+      .insert({
+        patient_id: patientId,
+        phone: appointmentData.phone,
+        email: appointmentData.email,
+        visit_type: appointmentData.visit_type,
+        doctor_id: appointmentData.doctor_id,
+        preferred_date: appointmentData.preferred_date,
+        preferred_time: appointmentData.preferred_time,
+        preferred_slot_id: appointmentData.preferred_slot_id,
+        message: appointmentData.message,
+        status: 'pending',
+        created_at: new Date().toISOString()
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('❌ Database error creating appointment:', error);
+      throw error;
+    }
+
+    const result = {
+      success: true,
+      message: 'Appointment created successfully',
+      data: {
+        appointment: data,
+        appointment_id: data.appointment_id
+      }
+    };
+
+    console.log('✅ Appointment created successfully:', result);
+    return result;
+  }
+
+  /**
+   * Create appointment for guest user (simplified version)
+   */
+  private async createGuestAppointmentSimple(appointmentData: any): Promise<any> {
+    console.log('👥 Creating guest appointment');
+
+    // First create or get guest record using existing method
+    const guestId = await this.createOrGetGuest({
+      full_name: appointmentData.full_name,
+      phone: appointmentData.phone,
+      email: appointmentData.email,
+      gender: appointmentData.gender
+    });
+
+    // Create guest appointment
+    const { data, error } = await this.supabase
+      .from('guest_appointments')
+      .insert({
+        guest_id: guestId,
+        phone: appointmentData.phone,
+        email: appointmentData.email,
+        visit_type: appointmentData.visit_type,
+        doctor_id: appointmentData.doctor_id,
+        preferred_date: appointmentData.preferred_date,
+        preferred_time: appointmentData.preferred_time,
+        preferred_slot_id: appointmentData.preferred_slot_id,
+        message: appointmentData.message,
+        status: 'pending',
+        created_at: new Date().toISOString()
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('❌ Database error creating guest appointment:', error);
+      throw error;
+    }
+
+    const result = {
+      success: true,
+      message: 'Guest appointment created successfully',
+      data: {
+        appointment: data,
+        guest_appointment_id: data.guest_appointment_id,
+        guest_id: guestId
+      }
+    };
+
+    console.log('✅ Guest appointment created successfully:', result);
+    return result;
   }
 
   /**

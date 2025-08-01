@@ -7,47 +7,19 @@ import { SupabaseService } from '../../supabase.service';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="space-y-8">
-      <!-- Loading State -->
-      <div *ngIf="isLoading" class="flex flex-col items-center justify-center py-12 space-y-4">
-        <div class="relative">
-          <div class="animate-spin rounded-full h-16 w-16 border-4 border-indigo-200"></div>
-          <div class="animate-spin rounded-full h-16 w-16 border-4 border-indigo-600 border-t-transparent absolute top-0 left-0"></div>
-        </div>
-        <div class="text-center">
-          <h3 class="text-lg font-semibold text-gray-900">Loading Analytics Data</h3>
-          <p class="text-gray-600">Fetching real-time data from database...</p>
-        </div>
-      </div>
-
-      <!-- Error State -->
-      <div *ngIf="hasError && !isLoading" class="bg-red-50 border border-red-200 rounded-xl p-6">
-        <div class="flex items-center space-x-3">
-          <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-          </svg>
-          <div>
-            <h3 class="text-lg font-semibold text-red-800">Error Loading Analytics</h3>
-            <p class="text-red-600">{{ errorMessage }}</p>
-          </div>
-        </div>
-        <button
-          (click)="retryLoadData()"
-          class="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
-          Retry
-        </button>
-      </div>
-
-      <!-- Charts Grid -->
-      <div *ngIf="!isLoading && !hasError" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-
-        <!-- Patient Growth Chart -->
-        <div class="bg-white rounded-2xl p-6 shadow-xl border border-white/20">
-          <div class="flex items-center justify-between mb-6">
-            <h2 class="text-xl font-bold text-gray-900">Patient Growth Trends</h2>
-            <div class="flex items-center space-x-2">
-              <div class="w-3 h-3 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full"></div>
-              <span class="text-sm text-gray-600">Monthly Growth</span>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 w-full">
+      <div *ngIf="!isLoading && !hasError" class="grid grid-cols-1 lg:grid-cols-3 gap-8 w-full">
+        <!-- Top row: 3 chart -->
+        <section class="bg-white rounded-2xl shadow-lg border border-gray-100 flex flex-col">
+          <header class="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-5 flex items-center space-x-4">
+            <div class="bg-blue-100 rounded-xl flex items-center justify-center w-12 h-12">
+              <svg class="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 17v-6a4 4 0 014-4h10a4 4 0 014 4v6"></path>
+              </svg>
+            </div>
+            <div>
+              <h2 class="text-xl font-bold text-white">Patient Growth Trends</h2>
+              <p class="text-sm text-blue-100">Monthly Growth</p>
             </div>
           </div>
           <div class="space-y-4">

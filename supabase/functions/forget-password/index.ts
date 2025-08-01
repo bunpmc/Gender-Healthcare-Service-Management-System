@@ -4,9 +4,10 @@
 // Setup type definitions for built-in Supabase Runtime APIs
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-function createErrorResponse(status, message, details = null) {
+function createErrorResponse(status, error, details = null) {
   const response = {
-    error: message
+    error,
+    details
   };
   if (details) response.details = details;
   return new Response(JSON.stringify(response), {

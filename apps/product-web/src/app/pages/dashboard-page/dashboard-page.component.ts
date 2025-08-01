@@ -8,6 +8,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 import { HeaderComponent } from '../../components/header/header.component';
 import { FooterComponent } from '../../components/footer/footer.component';
+import { AppointmentHistoryComponent } from '../../components/appointment-history/appointment-history.component';
 import {
   AuthService,
   EdgeFunctionUserProfile,
@@ -28,6 +29,7 @@ import { environment } from '../../environments/environment';
     HeaderComponent,
     FooterComponent,
     TranslateModule,
+    AppointmentHistoryComponent,
   ],
   templateUrl: './dashboard-page.component.html',
   styleUrl: './dashboard-page.component.css',
@@ -41,6 +43,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   isUploadingAvatar = false;
   selectedAvatarFile: File | null = null;
   avatarPreviewUrl: string | null = null;
+  showAppointmentHistory = false;
 
   // Calendar properties
   currentDate = new Date();

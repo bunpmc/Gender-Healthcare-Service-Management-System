@@ -1,33 +1,32 @@
 <!-- Enhanced Patient Table -->
-<div class="patient-table-container">
+<div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
   <!-- Table Header with Bulk Actions -->
-  <div class="bulk-actions-bar" *ngIf="selectedPatients.size > 0">
-    <div class="bulk-actions-content flex items-center justify-between">
+  <div *ngIf="selectedPatients.size > 0" class="bg-gradient-to-r from-purple-50 to-indigo-50 border-b border-purple-100 px-6 py-4">
+    <div class="flex items-center justify-between">
       <div class="flex items-center space-x-4">
-        <span class="text-sm font-medium text-gray-700">
+        <span class="text-sm font-medium text-purple-700">
           {{ selectedPatients.size }} patient{{ selectedPatients.size !== 1 ? 's' : '' }} selected
         </span>
         <button
           (click)="clearSelection()"
-          class="text-sm text-gray-500 hover:text-gray-700 underline"
+          class="text-sm text-purple-600 hover:text-purple-800 underline"
         >
           Clear selection
         </button>
       </div>
-      <div class="bulk-actions-buttons flex items-center space-x-2">
+      <div class="flex items-center space-x-2">
         <button
           (click)="bulkExport()"
-          class="inline-flex items-center px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg text-sm transition-colors duration-200"
+          class="inline-flex items-center px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-xl text-sm transition-colors duration-200"
         >
           <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
           </svg>
           Export
         </button>
-
         <button
           (click)="bulkDeactivate()"
-          class="inline-flex items-center px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-sm transition-colors duration-200"
+          class="inline-flex items-center px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-xl text-sm transition-colors duration-200"
         >
           <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364l12.728-12.728"></path>
@@ -39,135 +38,93 @@
   </div>
 
   <!-- Desktop/Tablet Table View -->
-  <div class="table-wrapper">
-    <table class="patient-table">
+  <div class="overflow-x-auto">
+    <table class="min-w-full">
       <!-- Table Header -->
-      <thead class="table-header">
+      <thead class="bg-gray-50">
         <tr>
-          <!-- Select All Checkbox -->
-          <th class="col-checkbox header-cell">
+          <th class="px-4 py-3">
             <input
               type="checkbox"
               [checked]="isAllSelected()"
               [indeterminate]="isPartiallySelected()"
               (change)="toggleSelectAll()"
               class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
-              [attr.aria-label]="'Select all patients'"
+              aria-label="Select all patients"
             />
           </th>
-
-          <!-- Sortable Column Headers -->
-          <th class="col-id header-cell">
-            <button
-              (click)="sort('id')"
-              class="sort-button"
-            >
-              <span>Patient ID</span>
-              <svg class="w-4 h-4" [class]="getSortIcon('id')" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <th class="px-4 py-3 font-semibold text-gray-700">
+            <button (click)="sort('id')" class="flex items-center gap-1">
+              Patient ID
+              <svg class="w-4 h-4" [class.text-indigo-600]="sortField === 'id'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
               </svg>
             </button>
           </th>
-
-          <th class="col-name header-cell">
-            <button
-              (click)="sort('full_name')"
-              class="sort-button"
-            >
-              <span>Full Name</span>
-              <svg class="w-4 h-4" [class]="getSortIcon('full_name')" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <th class="px-4 py-3 font-semibold text-gray-700">
+            <button (click)="sort('full_name')" class="flex items-center gap-1">
+              Full Name
+              <svg class="w-4 h-4" [class.text-indigo-600]="sortField === 'full_name'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
               </svg>
             </button>
           </th>
-
-          <th class="col-email header-cell">
-            <button
-              (click)="sort('email')"
-              class="sort-button"
-            >
-              <span>Email</span>
-              <svg class="w-4 h-4" [class]="getSortIcon('email')" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <th class="px-4 py-3 font-semibold text-gray-700">
+            <button (click)="sort('email')" class="flex items-center gap-1">
+              Email
+              <svg class="w-4 h-4" [class.text-indigo-600]="sortField === 'email'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
               </svg>
             </button>
           </th>
-
-          <th class="col-phone header-cell">
-            <span class="text-sm font-semibold text-gray-700">Phone</span>
-          </th>
-
-          <th class="col-gender header-cell">
-            <button
-              (click)="sort('gender')"
-              class="sort-button"
-            >
-              <span>Gender</span>
-              <svg class="w-4 h-4" [class]="getSortIcon('gender')" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <th class="px-4 py-3 font-semibold text-gray-700">Phone</th>
+          <th class="px-4 py-3 font-semibold text-gray-700">
+            <button (click)="sort('gender')" class="flex items-center gap-1">
+              Gender
+              <svg class="w-4 h-4" [class.text-indigo-600]="sortField === 'gender'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
               </svg>
             </button>
           </th>
-
-          <th class="col-status header-cell">
-            <button
-              (click)="sort('patient_status')"
-              class="sort-button"
-            >
-              <span>Status</span>
-              <svg class="w-4 h-4" [class]="getSortIcon('patient_status')" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <th class="px-4 py-3 font-semibold text-gray-700">
+            <button (click)="sort('patient_status')" class="flex items-center gap-1">
+              Status
+              <svg class="w-4 h-4" [class.text-indigo-600]="sortField === 'patient_status'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
               </svg>
             </button>
           </th>
-
-          <th class="col-date header-cell">
-            <button
-              (click)="sort('created_at')"
-              class="sort-button"
-            >
-              <span>Registered</span>
-              <svg class="w-4 h-4" [class]="getSortIcon('created_at')" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <th class="px-4 py-3 font-semibold text-gray-700">
+            <button (click)="sort('created_at')" class="flex items-center gap-1">
+              Registered
+              <svg class="w-4 h-4" [class.text-indigo-600]="sortField === 'created_at'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
               </svg>
             </button>
           </th>
-
-          <th class="col-actions header-cell">
-            <span class="text-sm font-semibold text-gray-700">Actions</span>
-          </th>
+          <th class="px-4 py-3 font-semibold text-gray-700">Actions</th>
         </tr>
       </thead>
-
-      <!-- Table Body -->
-      <tbody class="divide-y divide-gray-200">
+      <tbody class="divide-y divide-gray-100">
         <tr
-          *ngFor="let patient of paginatedPatients; trackBy: trackByPatientId; let i = index"
-          class="table-row"
-          [class.selected]="selectedPatients.has(patient.id)"
+          *ngFor="let patient of paginatedPatients; trackBy: trackByPatientId"
+          [class.bg-indigo-50]="selectedPatients.has(patient.id)"
         >
-          <!-- Selection Checkbox -->
-          <td class="col-checkbox table-cell">
+          <td class="px-4 py-3">
             <input
               type="checkbox"
               [checked]="selectedPatients.has(patient.id)"
               (change)="togglePatientSelection(patient.id)"
               class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
-              [attr.aria-label]="'Select patient ' + patient.full_name"
+              aria-label="Select patient"
             />
           </td>
-
-          <!-- Patient ID -->
-          <td class="col-id table-cell">
-            <div class="table-cell-content">
-              <span class="text-sm font-mono text-gray-600 bg-gray-100 px-2 py-1 rounded truncate-text" [title]="patient.id">
-                {{ patient.id | slice:0:8 }}...
-              </span>
-            </div>
+          <td class="px-4 py-3">
+            <span class="text-sm font-mono text-gray-600 bg-gray-100 px-2 py-1 rounded truncate" [title]="patient.id">
+              {{ patient.id | slice:0:8 }}...
+            </span>
           </td>
-
-          <!-- Full Name with Avatar -->
-          <td class="col-name table-cell">
+          <td class="px-4 py-3">
             <div class="flex items-center space-x-3">
               <div class="flex-shrink-0 h-8 w-8">
                 <div class="h-8 w-8 rounded-full bg-gradient-to-r from-purple-400 to-indigo-400 flex items-center justify-center">
@@ -177,53 +134,39 @@
                 </div>
               </div>
               <div class="min-w-0 flex-1">
-                <div class="table-cell-content font-semibold text-gray-900 truncate-text" [title]="patient.full_name">{{ patient.full_name }}</div>
-                <div class="text-xs text-gray-500 truncate-text" *ngIf="patient.date_of_birth">
+                <div class="font-semibold text-gray-900 truncate" [title]="patient.full_name">{{ patient.full_name }}</div>
+                <div class="text-xs text-gray-500 truncate" *ngIf="patient.date_of_birth">
                   {{ calculateAge(patient.date_of_birth) }} years old
                 </div>
               </div>
             </div>
           </td>
-
-          <!-- Email -->
-          <td class="col-email table-cell">
-            <div class="table-cell-content text-gray-900 truncate-text" [title]="patient.email">{{ patient.email || '—' }}</div>
+          <td class="px-4 py-3">
+            <span class="text-gray-900 truncate" [title]="patient.email">{{ patient.email || '—' }}</span>
           </td>
-
-          <!-- Phone -->
-          <td class="col-phone table-cell">
-            <div class="table-cell-content text-gray-900 truncate-text">{{ patient.phone || '—' }}</div>
+          <td class="px-4 py-3">
+            <span class="text-gray-900 truncate">{{ patient.phone || '—' }}</span>
           </td>
-
-          <!-- Gender -->
-          <td class="col-gender table-cell">
-            <span class="gender-badge"
-                  [class]="getGenderBadgeClass(patient.gender)">
+          <td class="px-4 py-3">
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                  [ngClass]="getGenderBadgeClass(patient.gender)">
               {{ formatGender(patient.gender) }}
             </span>
           </td>
-
-          <!-- Status -->
-          <td class="col-status table-cell">
-            <span class="status-badge"
-                  [class]="getStatusBadgeClass(patient.patient_status)">
+          <td class="px-4 py-3">
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                  [ngClass]="getStatusBadgeClass(patient.patient_status)">
               {{ formatStatus(patient.patient_status) }}
             </span>
           </td>
-
-          <!-- Registration Date -->
-          <td class="col-date table-cell">
-            <div class="table-cell-content text-gray-900">
-              {{ formatDate(patient.created_at) }}
-            </div>
+          <td class="px-4 py-3">
+            <span class="text-gray-900">{{ formatDate(patient.created_at) }}</span>
           </td>
-
-          <!-- Actions -->
-          <td class="col-actions table-cell">
-            <div class="flex items-center space-x-1">
+          <td class="px-4 py-3">
+            <div class="flex items-center space-x-2">
               <button
                 (click)="viewPatient.emit(patient)"
-                class="action-button view"
+                class="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-600 transition-colors duration-200"
                 title="View patient details"
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -231,20 +174,18 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                 </svg>
               </button>
-
               <button
                 (click)="editPatient.emit(patient)"
-                class="action-button edit"
+                class="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-600 transition-colors duration-200"
                 title="Edit patient"
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                 </svg>
               </button>
-
               <button
                 (click)="deactivatePatient.emit(patient)"
-                class="action-button delete"
+                class="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 transition-colors duration-200"
                 title="Deactivate patient"
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -259,87 +200,68 @@
   </div>
 
   <!-- Mobile Card View -->
-  <div class="mobile-card-view">
-    <div *ngFor="let patient of paginatedPatients; trackBy: trackByPatientId" class="patient-card">
-      <div class="card-header">
-        <h3 class="card-title">{{ patient.full_name }}</h3>
+  <div class="block lg:hidden">
+    <div *ngFor="let patient of paginatedPatients; trackBy: trackByPatientId" class="bg-white rounded-2xl shadow-md border border-gray-100 p-6 mb-4">
+      <div class="flex items-center justify-between mb-2">
+        <h3 class="text-base font-semibold text-gray-900 truncate">{{ patient.full_name }}</h3>
         <input
           type="checkbox"
           [checked]="selectedPatients.has(patient.id)"
           (change)="togglePatientSelection(patient.id)"
-          class="card-checkbox"
-          [attr.aria-label]="'Select patient ' + patient.full_name"
+          class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+          aria-label="Select patient"
         />
       </div>
-
-      <div class="card-content">
-        <div class="card-field">
-          <span class="card-label">Email:</span>
-          <span class="card-value">{{ patient.email || '—' }}</span>
-        </div>
-
-        <div class="card-field">
-          <span class="card-label">Gender:</span>
-          <span class="gender-badge" [class]="getGenderBadgeClass(patient.gender)">
+      <div class="space-y-1 text-sm">
+        <div><span class="font-medium text-gray-500">Email:</span> {{ patient.email || '—' }}</div>
+        <div><span class="font-medium text-gray-500">Gender:</span>
+          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium" [ngClass]="getGenderBadgeClass(patient.gender)">
             {{ formatGender(patient.gender) }}
           </span>
         </div>
-
-        <div class="card-field">
-          <span class="card-label">Status:</span>
-          <span class="status-badge" [class]="getStatusBadgeClass(patient.patient_status)">
+        <div><span class="font-medium text-gray-500">Status:</span>
+          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium" [ngClass]="getStatusBadgeClass(patient.patient_status)">
             {{ formatStatus(patient.patient_status) }}
           </span>
         </div>
-
-        <div class="card-field">
-          <span class="card-label">Registered:</span>
-          <span class="card-value">{{ formatDate(patient.created_at) }}</span>
-        </div>
-
-        <div class="card-field" *ngIf="patient.date_of_birth">
-          <span class="card-label">Age:</span>
-          <span class="card-value">{{ calculateAge(patient.date_of_birth) }} years old</span>
-        </div>
+        <div><span class="font-medium text-gray-500">Registered:</span> {{ formatDate(patient.created_at) }}</div>
+        <div *ngIf="patient.date_of_birth"><span class="font-medium text-gray-500">Age:</span> {{ calculateAge(patient.date_of_birth) }} years old</div>
       </div>
-
-      <div class="card-actions">
+      <div class="flex items-center space-x-2 mt-4">
         <button
           (click)="viewPatient.emit(patient)"
-          class="action-button view"
-          title="View patient details"
+          class="inline-flex items-center justify-center px-3 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-xl text-sm transition-colors duration-200"
         >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
           </svg>
+          View
         </button>
-
         <button
           (click)="editPatient.emit(patient)"
-          class="action-button edit"
-          title="Edit patient"
+          class="inline-flex items-center justify-center px-3 py-1 bg-purple-50 hover:bg-purple-100 text-purple-600 rounded-xl text-sm transition-colors duration-200"
         >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
           </svg>
+          Edit
         </button>
-
         <button
           (click)="deactivatePatient.emit(patient)"
-          class="action-button delete"
-          title="Deactivate patient"
+          class="inline-flex items-center justify-center px-3 py-1 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl text-sm transition-colors duration-200"
         >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364l12.728-12.728"></path>
           </svg>
+          Deactivate
         </button>
       </div>
     </div>
   </div>
 
   <!-- Empty State -->
-  <div *ngIf="paginatedPatients.length === 0" class="empty-state">
+  <div *ngIf="paginatedPatients.length === 0" class="py-12 text-center">
     <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
     </svg>

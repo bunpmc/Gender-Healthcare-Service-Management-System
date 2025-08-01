@@ -21,17 +21,9 @@ import {
 } from '../../models/booking.model';
 import { AppointmentPaymentData } from '../../models/payment.model';
 
-// Extend BookingState to include profile selection
+// Simplified BookingState without profile selection
 interface ExtendedBookingState extends BookingState {
-  useProfile?: 'me' | 'another';
   authState?: boolean;
-  savedProfiles?: {
-    fullName: string;
-    phone: string;
-    email?: string;
-    gender?: string;
-    dateOfBirth?: string;
-  }[];
 }
 
 @Component({
@@ -128,6 +120,9 @@ export class AppointmentPageComponent implements OnInit {
     });
 
     console.log('✅ AppointmentPage: Initialization complete');
+
+    // Auto-fill profile if user is logged in
+    this.handleProfileAutoFill();
   }
 
   // ========== ENHANCED AUTHENTICATION HANDLING ==========
@@ -141,7 +136,7 @@ export class AppointmentPageComponent implements OnInit {
       isAuthenticated,
       currentStep: this.currentStep,
       bookingType: this.booking.type,
-      useProfile: this.booking.useProfile,
+      // useProfile removed
     });
 
     if (isAuthenticated) {
@@ -150,7 +145,7 @@ export class AppointmentPageComponent implements OnInit {
         '👤 User is authenticated - resetting to step 0 for profile selection'
       );
       this.currentStep = 0; // Start at booking type selection
-      this.booking.useProfile = undefined;
+      // useProfile removed
     } else {
       // For guests, maintain current progress (step persistence)
       if (this.booking.type) {
@@ -174,7 +169,7 @@ export class AppointmentPageComponent implements OnInit {
     if (this.authService.isAuthenticated()) {
       // Reset booking flow to first step after successful login
       this.currentStep = 0;
-      this.booking.useProfile = undefined;
+      // useProfile removed
       this.saveBookingState();
     }
   }
@@ -255,17 +250,9 @@ export class AppointmentPageComponent implements OnInit {
         currentStep: this.currentStep,
       });
 
-      if (isAuthenticated) {
-        // Go to profile selection step (Step 1)
-        console.log(
-          '👤 Authenticated user - going to profile selection (Step 1)'
-        );
-        this.currentStep = 1;
-      } else {
-        // Skip profile selection, go directly to patient info (Step 1 for guests)
-        console.log('👥 Guest user - going to patient info (Step 1)');
-        this.currentStep = 1;
-      }
+      // Skip profile selection, go directly to patient info (Step 1)
+      console.log('📝 Going directly to patient info (Step 1)');
+      this.currentStep = 1;
 
       this.errorMessage = null;
       this.saveBookingState();
@@ -356,26 +343,15 @@ export class AppointmentPageComponent implements OnInit {
     return this.authService.isAuthenticated() ? 6 : 5;
   }
 
-  // ========== ENHANCED PROFILE HANDLING ==========
-  selectProfileType(useProfile: 'me' | 'another'): void {
-    console.log('👤 Selecting profile type:', useProfile);
-    this.booking.useProfile = useProfile;
-
-    // Store the profile choice in localStorage for appointment result page
-    localStorage.setItem('appointmentProfileChoice', useProfile);
-    console.log('💾 Stored profile choice in localStorage:', useProfile);
-
-    if (useProfile === 'me') {
+  // ========== PROFILE HANDLING (SIMPLIFIED) ==========
+  // Profile selection removed - auto-fill if user is logged in
+  private handleProfileAutoFill(): void {
+    if (this.authService.isAuthenticated()) {
       console.log('📝 Auto-filling profile with user data');
       this.autoFillProfile();
     } else {
-      console.log('🆕 Clearing profile fields for new profile');
-      this.clearProfileFields();
+      console.log('👥 Guest user - manual profile entry');
     }
-
-    this.saveBookingState();
-    console.log('✅ Profile type selected, going to next step');
-    this.goToNextStep();
   }
 
   private clearProfileFields(): void {
@@ -423,13 +399,7 @@ export class AppointmentPageComponent implements OnInit {
     this.errorMessage = null;
 
     if (this.isFormValidStep2(form)) {
-      // Save profile for future use if logged in and using "another" profile
-      if (
-        this.authService.isAuthenticated() &&
-        this.booking.useProfile === 'another'
-      ) {
-        this.saveProfileForFutureUse();
-      }
+      // Profile saving logic removed (no profile selection)
 
       // Prepare available doctors for doctor-first flow
       if (this.bookingType === 'docfirst') {
@@ -644,7 +614,6 @@ export class AppointmentPageComponent implements OnInit {
   resetForm(): void {
     this.booking = {
       type: undefined,
-      useProfile: undefined,
       fullName: '',
       phone: '',
       email: '',
@@ -667,7 +636,6 @@ export class AppointmentPageComponent implements OnInit {
     this.errorMessage = null;
     this.successMessage = null;
     localStorage.removeItem('bookingState');
-    localStorage.removeItem('appointmentProfileChoice');
   }
 
   hasBookingData(): boolean {
@@ -1121,24 +1089,18 @@ export class AppointmentPageComponent implements OnInit {
   }
   // ========== TEMPLATE HELPER METHODS ==========
   shouldShowProfileStep(): boolean {
-    const isAuthenticated = this.authService.isAuthenticated();
-    const shouldShow = isAuthenticated && this.currentStep === 1;
-    console.log('🔍 shouldShowProfileStep:', {
-      isAuthenticated,
-      currentStep: this.currentStep,
-      shouldShow,
-      bookingType: this.bookingType,
-    });
-    return shouldShow;
+    // Profile selection step removed
+    return false;
   }
 
   shouldShowPatientInfoStep(): boolean {
-    return this.currentStep === 2;
+    // Show patient info at step 1 (profile selection removed)
+    return this.currentStep === 1;
   }
 
   shouldShowServiceStep(): boolean {
-    const serviceStep = this.authService.isAuthenticated() ? 3 : 3;
-    return this.currentStep === serviceStep && this.bookingType === 'serfirst';
+    // Service step is now step 2 (profile selection removed)
+    return this.currentStep === 2 && this.bookingType === 'serfirst';
   }
 
   shouldShowDoctorStep(): boolean {

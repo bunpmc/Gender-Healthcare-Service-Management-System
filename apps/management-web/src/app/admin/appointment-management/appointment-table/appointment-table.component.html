@@ -1,5 +1,5 @@
 <!-- Enhanced Appointment Table with Responsive Design -->
-<div class="bg-white rounded-2xl shadow-xl border border-white/20 overflow-hidden">
+<div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
   <!-- Bulk Actions Bar -->
   <div *ngIf="selectedAppointments.size > 0" class="bg-gradient-to-r from-purple-50 to-indigo-50 border-b border-purple-100 px-6 py-4">
     <div class="flex items-center justify-between">
@@ -10,7 +10,7 @@
         <div class="flex items-center space-x-2">
           <button
             (click)="bulkUpdateStatus('confirmed')"
-            class="inline-flex items-center px-3 py-1 bg-green-100 hover:bg-green-200 text-green-700 rounded-lg text-sm transition-colors duration-200"
+            class="inline-flex items-center px-3 py-1 bg-green-100 hover:bg-green-200 text-green-700 rounded-xl text-sm transition-colors duration-200"
           >
             <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
@@ -19,7 +19,7 @@
           </button>
           <button
             (click)="bulkUpdateStatus('cancelled')"
-            class="inline-flex items-center px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-sm transition-colors duration-200"
+            class="inline-flex items-center px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded-xl text-sm transition-colors duration-200"
           >
             <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -28,7 +28,7 @@
           </button>
           <button
             (click)="bulkDelete()"
-            class="inline-flex items-center px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm transition-colors duration-200"
+            class="inline-flex items-center px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm transition-colors duration-200"
           >
             <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -48,12 +48,11 @@
 
   <!-- Desktop Table View -->
   <div class="desktop-table-view overflow-x-auto">
-    <table class="appointment-table">
+    <table class="w-full min-w-max">
       <!-- Table Header -->
-      <thead class="table-header">
-        <tr>
-          <!-- Selection Header -->
-          <th class="col-checkbox table-header-cell">
+      <thead>
+        <tr class="bg-gray-50">
+          <th class="px-4 py-3 text-left">
             <input
               type="checkbox"
               [checked]="isAllSelected()"
@@ -63,83 +62,49 @@
               aria-label="Select all appointments"
             />
           </th>
-
-          <!-- Sortable Headers -->
-          <th class="col-patient table-header-cell">
-            <button
-              (click)="sort('patient_name')"
-              class="sort-button"
-              [attr.aria-label]="'Sort by patient name'"
-            >
-              <span>Patient</span>
-              <svg class="sort-icon" [class.sort-active]="sortField === 'patient_name'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <th class="px-4 py-3 text-left font-semibold text-gray-700">
+            <button (click)="sort('patient_name')" class="flex items-center gap-1">
+              Patient
+              <svg class="w-4 h-4" [class.text-indigo-600]="sortField === 'patient_name'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
               </svg>
             </button>
           </th>
-
-          <th class="col-doctor table-header-cell">
-            <button
-              (click)="sort('doctor_name')"
-              class="sort-button"
-              [attr.aria-label]="'Sort by doctor name'"
-            >
-              <span>Doctor</span>
-              <svg class="sort-icon" [class.sort-active]="sortField === 'doctor_name'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <th class="px-4 py-3 text-left font-semibold text-gray-700">
+            <button (click)="sort('doctor_name')" class="flex items-center gap-1">
+              Doctor
+              <svg class="w-4 h-4" [class.text-indigo-600]="sortField === 'doctor_name'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
               </svg>
             </button>
           </th>
-
-          <th class="col-datetime table-header-cell">
-            <button
-              (click)="sort('appointment_date')"
-              class="sort-button"
-              [attr.aria-label]="'Sort by appointment date'"
-            >
-              <span>Date & Time</span>
-              <svg class="sort-icon" [class.sort-active]="sortField === 'appointment_date'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <th class="px-4 py-3 text-left font-semibold text-gray-700">
+            <button (click)="sort('appointment_date')" class="flex items-center gap-1">
+              Date & Time
+              <svg class="w-4 h-4" [class.text-indigo-600]="sortField === 'appointment_date'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
               </svg>
             </button>
           </th>
-
-          <th class="col-visit-type table-header-cell">
-            <span>Visit Type</span>
-          </th>
-
-          <th class="col-status table-header-cell">
-            <button
-              (click)="sort('appointment_status')"
-              class="sort-button"
-              [attr.aria-label]="'Sort by status'"
-            >
-              <span>Status</span>
-              <svg class="sort-icon" [class.sort-active]="sortField === 'appointment_status'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <th class="px-4 py-3 text-left font-semibold text-gray-700">Visit Type</th>
+          <th class="px-4 py-3 text-left font-semibold text-gray-700">
+            <button (click)="sort('appointment_status')" class="flex items-center gap-1">
+              Status
+              <svg class="w-4 h-4" [class.text-indigo-600]="sortField === 'appointment_status'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
               </svg>
             </button>
           </th>
-
-          <th class="col-contact table-header-cell">
-            <span>Contact</span>
-          </th>
-
-          <th class="col-actions table-header-cell">
-            <span>Actions</span>
-          </th>
+          <th class="px-4 py-3 text-left font-semibold text-gray-700">Contact</th>
+          <th class="px-4 py-3 text-left font-semibold text-gray-700">Actions</th>
         </tr>
       </thead>
-
-      <!-- Table Body -->
-      <tbody class="divide-y divide-gray-200">
+      <tbody class="divide-y divide-gray-100">
         <tr
-          *ngFor="let appointment of paginatedAppointments; trackBy: trackByAppointmentId; let i = index"
-          class="table-row"
-          [class.selected]="selectedAppointments.has(appointment.appointment_id)"
+          *ngFor="let appointment of paginatedAppointments; trackBy: trackByAppointmentId"
+          [class.bg-indigo-50]="selectedAppointments.has(appointment.appointment_id)"
         >
-          <!-- Selection Checkbox -->
-          <td class="col-checkbox table-cell">
+          <td class="px-4 py-3">
             <input
               type="checkbox"
               [checked]="selectedAppointments.has(appointment.appointment_id)"
@@ -148,9 +113,7 @@
               [attr.aria-label]="'Select appointment for ' + appointment.patient_name"
             />
           </td>
-
-          <!-- Patient/Guest Information -->
-          <td class="col-patient table-cell">
+          <td class="px-4 py-3">
             <div class="flex items-center space-x-3">
               <div class="flex-shrink-0">
                 <div class="w-10 h-10 bg-gradient-to-br rounded-full flex items-center justify-center"
@@ -173,15 +136,13 @@
                     {{ appointment.appointment_type === 'guest' ? 'Guest' : 'Patient' }}
                   </span>
                 </div>
-                <p class="text-sm text-gray-500 truncate">
+                <p class="text-xs text-gray-500 truncate">
                   ID: {{ appointment.appointment_id.substring(0, 8) }}...
                 </p>
               </div>
             </div>
           </td>
-
-          <!-- Doctor Information -->
-          <td class="col-doctor table-cell">
+          <td class="px-4 py-3">
             <div class="flex items-center space-x-2">
               <div class="w-8 h-8 bg-gradient-to-br from-green-100 to-emerald-100 rounded-full flex items-center justify-center">
                 <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -195,9 +156,7 @@
               </div>
             </div>
           </td>
-
-          <!-- Date & Time -->
-          <td class="col-datetime table-cell">
+          <td class="px-4 py-3">
             <div class="text-sm">
               <div class="font-medium text-gray-900">
                 {{ formatDate(appointment.appointment_date || appointment.slot_date) }}
@@ -210,37 +169,29 @@
               </div>
             </div>
           </td>
-
-          <!-- Visit Type -->
-          <td class="col-visit-type table-cell">
+          <td class="px-4 py-3">
             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
                   [ngClass]="getVisitTypeClass(appointment.visit_type)">
               {{ formatVisitType(appointment.visit_type) }}
             </span>
           </td>
-
-          <!-- Status -->
-          <td class="col-status table-cell">
+          <td class="px-4 py-3">
             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
                   [ngClass]="getStatusClass(appointment.appointment_status)">
               {{ formatStatus(appointment.appointment_status) }}
             </span>
           </td>
-
-          <!-- Contact Information -->
-          <td class="col-contact table-cell">
+          <td class="px-4 py-3">
             <div class="text-sm">
               <div class="text-gray-900">{{ appointment.patient_phone || appointment.phone }}</div>
               <div class="text-gray-500 truncate">{{ appointment.patient_email || appointment.email }}</div>
             </div>
           </td>
-
-          <!-- Actions -->
-          <td class="col-actions table-cell">
+          <td class="px-4 py-3">
             <div class="flex items-center space-x-2">
               <button
                 (click)="viewAppointment(appointment)"
-                class="action-button action-view"
+                class="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-600 transition-colors duration-200"
                 title="View appointment details"
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -250,7 +201,7 @@
               </button>
               <button
                 (click)="editAppointment(appointment)"
-                class="action-button action-edit"
+                class="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-600 transition-colors duration-200"
                 title="Edit appointment"
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -259,7 +210,7 @@
               </button>
               <button
                 (click)="deleteAppointment(appointment)"
-                class="action-button action-delete"
+                class="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 transition-colors duration-200"
                 title="Delete appointment"
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -269,9 +220,8 @@
             </div>
           </td>
         </tr>
-
         <!-- Empty State -->
-        <tr *ngIf="paginatedAppointments.length === 0" class="empty-state">
+        <tr *ngIf="paginatedAppointments.length === 0">
           <td colspan="8" class="px-6 py-12 text-center">
             <div class="flex flex-col items-center justify-center space-y-4">
               <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
@@ -284,7 +234,7 @@
                 <p class="text-gray-500 mb-4">There are no appointments matching your current filters.</p>
                 <button
                   (click)="clearFilters()"
-                  class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors duration-200"
+                  class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl transition-colors duration-200"
                 >
                   Clear Filters
                 </button>
@@ -298,70 +248,49 @@
 
   <!-- Mobile Card View -->
   <div class="mobile-card-view">
-    <div *ngFor="let appointment of paginatedAppointments; trackBy: trackByAppointmentId" class="appointment-card">
-      <div class="card-header">
-        <div class="flex items-center justify-between">
-          <h3 class="card-title">{{ appointment.display_name || appointment.patient_name || appointment.guest_name || 'N/A' }}</h3>
-          <input
-            type="checkbox"
-            [checked]="selectedAppointments.has(appointment.appointment_id)"
-            (change)="toggleAppointmentSelection(appointment.appointment_id)"
-            class="card-checkbox"
-            [attr.aria-label]="'Select appointment for ' + (appointment.display_name || appointment.patient_name || appointment.guest_name)"
-          />
-        </div>
-        <div class="flex items-center space-x-2 mt-2">
-          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
-                [ngClass]="appointment.appointment_type === 'guest' ? 'bg-green-100 text-green-800' : 'bg-purple-100 text-purple-800'">
-            {{ appointment.appointment_type === 'guest' ? 'Guest' : 'Patient' }}
-          </span>
-          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
-                [ngClass]="getStatusClass(appointment.appointment_status)">
-            {{ formatStatus(appointment.appointment_status) }}
-          </span>
-          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
-                [ngClass]="getVisitTypeClass(appointment.visit_type)">
-            {{ formatVisitType(appointment.visit_type) }}
-          </span>
-        </div>
+    <div *ngFor="let appointment of paginatedAppointments; trackBy: trackByAppointmentId" class="bg-white rounded-2xl shadow-md border border-gray-100 p-6 mb-4">
+      <div class="flex items-center justify-between mb-2">
+        <h3 class="text-base font-semibold text-gray-900 truncate">{{ appointment.display_name || appointment.patient_name || appointment.guest_name || 'N/A' }}</h3>
+        <input
+          type="checkbox"
+          [checked]="selectedAppointments.has(appointment.appointment_id)"
+          (change)="toggleAppointmentSelection(appointment.appointment_id)"
+          class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+          [attr.aria-label]="'Select appointment for ' + (appointment.display_name || appointment.patient_name || appointment.guest_name)"
+        />
       </div>
-
-      <div class="card-content">
-        <div class="card-row">
-          <span class="card-label">Doctor:</span>
-          <span class="card-value">{{ appointment.doctor_name || 'Unassigned' }}</span>
-        </div>
-        <div class="card-row">
-          <span class="card-label">Date & Time:</span>
-          <span class="card-value">
-            {{ formatDate(appointment.appointment_date || appointment.slot_date) }} at
-            {{ formatTime(appointment.appointment_time || appointment.slot_time) }}
-          </span>
-        </div>
-        <div class="card-row">
-          <span class="card-label">Phone:</span>
-          <span class="card-value">{{ appointment.patient_phone || appointment.phone }}</span>
-        </div>
-        <div class="card-row">
-          <span class="card-label">Email:</span>
-          <span class="card-value">{{ appointment.patient_email || appointment.email }}</span>
-        </div>
-        <div *ngIf="appointment.schedule" class="card-row">
-          <span class="card-label">Schedule:</span>
-          <span class="card-value capitalize">{{ appointment.schedule }}</span>
-        </div>
-        <div *ngIf="appointment.category_name" class="card-row">
-          <span class="card-label">Category:</span>
-          <span class="card-value">{{ appointment.category_name }}</span>
-        </div>
+      <div class="flex items-center space-x-2 mb-2">
+        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
+              [ngClass]="appointment.appointment_type === 'guest' ? 'bg-green-100 text-green-800' : 'bg-purple-100 text-purple-800'">
+          {{ appointment.appointment_type === 'guest' ? 'Guest' : 'Patient' }}
+        </span>
+        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
+              [ngClass]="getStatusClass(appointment.appointment_status)">
+          {{ formatStatus(appointment.appointment_status) }}
+        </span>
+        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
+              [ngClass]="getVisitTypeClass(appointment.visit_type)">
+          {{ formatVisitType(appointment.visit_type) }}
+        </span>
       </div>
-
-      <div class="card-actions">
+      <div class="space-y-1 text-sm">
+        <div><span class="font-medium text-gray-500">Doctor:</span> {{ appointment.doctor_name || 'Unassigned' }}</div>
+        <div>
+          <span class="font-medium text-gray-500">Date & Time:</span>
+          {{ formatDate(appointment.appointment_date || appointment.slot_date) }} at
+          {{ formatTime(appointment.appointment_time || appointment.slot_time) }}
+        </div>
+        <div><span class="font-medium text-gray-500">Phone:</span> {{ appointment.patient_phone || appointment.phone }}</div>
+        <div><span class="font-medium text-gray-500">Email:</span> {{ appointment.patient_email || appointment.email }}</div>
+        <div *ngIf="appointment.schedule"><span class="font-medium text-gray-500">Schedule:</span> <span class="capitalize">{{ appointment.schedule }}</span></div>
+        <div *ngIf="appointment.category_name"><span class="font-medium text-gray-500">Category:</span> {{ appointment.category_name }}</div>
+      </div>
+      <div class="flex items-center space-x-2 mt-4">
         <button
           (click)="viewAppointment(appointment)"
-          class="card-action-button card-action-view"
+          class="inline-flex items-center justify-center px-3 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-xl text-sm transition-colors duration-200"
         >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
           </svg>
@@ -369,25 +298,24 @@
         </button>
         <button
           (click)="editAppointment(appointment)"
-          class="card-action-button card-action-edit"
+          class="inline-flex items-center justify-center px-3 py-1 bg-purple-50 hover:bg-purple-100 text-purple-600 rounded-xl text-sm transition-colors duration-200"
         >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
           </svg>
           Edit
         </button>
         <button
           (click)="deleteAppointment(appointment)"
-          class="card-action-button card-action-delete"
+          class="inline-flex items-center justify-center px-3 py-1 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl text-sm transition-colors duration-200"
         >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
           </svg>
           Delete
         </button>
       </div>
     </div>
-
     <!-- Mobile Empty State -->
     <div *ngIf="paginatedAppointments.length === 0" class="mobile-empty-state">
       <div class="flex flex-col items-center justify-center space-y-4 py-12">
@@ -401,7 +329,7 @@
           <p class="text-gray-500 mb-4">There are no appointments matching your current filters.</p>
           <button
             (click)="clearFilters()"
-            class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors duration-200"
+            class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl transition-colors duration-200"
           >
             Clear Filters
           </button>

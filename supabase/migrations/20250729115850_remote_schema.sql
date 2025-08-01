@@ -2356,6 +2356,15 @@ CREATE TABLE IF NOT EXISTS "public"."transactions" (
 
 ALTER TABLE "public"."transactions" OWNER TO "postgres";
 
+ALTER TABLE transactions
+ADD COLUMN receipt_id uuid;
+
+ALTER TABLE transactions
+ADD CONSTRAINT fk_transactions_receipt
+FOREIGN KEY (receipt_id) REFERENCES receipts(receipt_id);
+
+ALTER TABLE transactions
+DROP COLUMN patient_id;
 
 ALTER TABLE ONLY "public"."otps" ALTER COLUMN "id" SET DEFAULT "nextval"('"public"."otps_id_seq"'::"regclass");
 

@@ -693,12 +693,35 @@ export class PeriodCalendarComponent implements OnInit {
       return '';
     }
 
+    const tooltips = this.collectDayTooltips(day);
+    return tooltips.join(' • ') || `Day ${day.dayNumber}`;
+  }
+
+  // Helper method to collect all tooltip texts for a day
+  private collectDayTooltips(day: CalendarDay): string[] {
     const tooltips: string[] = [];
 
+    // Add basic day status
+    this.addBasicDayTooltips(day, tooltips);
+
+    // Add cycle-related tooltips
+    this.addCycleTooltips(day, tooltips);
+
+    // Add prediction tooltips
+    this.addPredictionTooltips(day, tooltips);
+
+    return tooltips;
+  }
+
+  // Add basic day status tooltips
+  private addBasicDayTooltips(day: CalendarDay, tooltips: string[]): void {
     if (day.isToday) {
       tooltips.push('Today');
     }
+  }
 
+  // Add cycle-related tooltips
+  private addCycleTooltips(day: CalendarDay, tooltips: string[]): void {
     if (day.isPeriodDay) {
       tooltips.push('Period Day');
     }
@@ -710,7 +733,10 @@ export class PeriodCalendarComponent implements OnInit {
     if (day.isFertileDay && !day.isPeriodDay && !day.isOvulationDay) {
       tooltips.push('Fertile Window');
     }
+  }
 
+  // Add prediction and late period tooltips
+  private addPredictionTooltips(day: CalendarDay, tooltips: string[]): void {
     if (day.isPredictedPeriod) {
       tooltips.push('Predicted Period');
     }
@@ -722,8 +748,6 @@ export class PeriodCalendarComponent implements OnInit {
     if (day.conceptionChance && day.conceptionChance > 20) {
       tooltips.push(`${day.conceptionChance}% conception chance`);
     }
-
-    return tooltips.join(' • ') || `Day ${day.dayNumber}`;
   }
 
   // Accessibility method for screen readers
@@ -732,18 +756,35 @@ export class PeriodCalendarComponent implements OnInit {
       return `${day.dayNumber}, not in current month`;
     }
 
+    const labels = this.collectAriaLabels(day);
+    return labels.join(', ');
+  }
+
+  // Helper method to collect all aria labels for a day
+  private collectAriaLabels(day: CalendarDay): string[] {
     const labels: string[] = [];
 
-    // Add date information
-    const dateStr = day.date.toLocaleDateString('en-US', {
+    // Add formatted date
+    labels.push(this.formatDateForAria(day.date));
+
+    // Add status labels using existing helper methods
+    this.addAriaStatusLabels(day, labels);
+
+    return labels;
+  }
+
+  // Format date for aria label
+  private formatDateForAria(date: Date): string {
+    return date.toLocaleDateString('en-US', {
       weekday: 'long',
       month: 'long',
       day: 'numeric',
       year: 'numeric'
     });
-    labels.push(dateStr);
+  }
 
-    // Add status information
+  // Add status information for aria labels
+  private addAriaStatusLabels(day: CalendarDay, labels: string[]): void {
     if (day.isToday) {
       labels.push('Today');
     }
@@ -767,8 +808,6 @@ export class PeriodCalendarComponent implements OnInit {
     if (day.isLatePeriod) {
       labels.push(`Period is ${day.daysLate} days late`);
     }
-
-    return labels.join(', ');
   }
 
   previousMonth(): void {

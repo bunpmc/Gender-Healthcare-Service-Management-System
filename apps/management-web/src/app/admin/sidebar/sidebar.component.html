@@ -58,6 +58,7 @@
           <a
             [routerLink]="item.route"
             routerLinkActive="nav-active"
+            [routerLinkActiveOptions]="{exact: true}"
             (click)="setActiveMenu(item.id)"
             class="group flex items-center px-3 py-3 text-gray-700 rounded-2xl hover:bg-gradient-to-r hover:from-green-50 hover:to-emerald-50 hover:text-green-700 transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
           >

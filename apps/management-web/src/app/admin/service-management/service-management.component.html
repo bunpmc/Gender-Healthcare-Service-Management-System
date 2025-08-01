@@ -1,6 +1,6 @@
 <!-- Enhanced Service Management Content -->
 <div class="space-y-6 animate-fadeIn">
-  <div class="container mx-auto max-w-full">
+  <div class="container mx-auto max-w-7xl px-4">
     <!-- Enhanced Search Bar -->
     <app-service-search-bar
       [categories]="categories"
@@ -33,6 +33,7 @@
       (toggleStatus)="onToggleServiceStatus($event)"
       (sortChange)="onSortChange($event)"
     ></app-service-table>
+
     <!-- Enhanced Pagination -->
     <div
       *ngIf="!isLoading && filteredServices.length > 0"
@@ -41,7 +42,9 @@
       <div class="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
         <!-- Results Info -->
         <div class="text-sm text-gray-700">
-          Showing {{ (currentPage - 1) * pageSize + 1 }} to {{ Math.min(currentPage * pageSize, filteredServices.length) }} of {{ filteredServices.length }} services
+          Showing <span class="font-semibold text-purple-600">{{ (currentPage - 1) * pageSize + 1 }}</span> to
+          <span class="font-semibold text-purple-600">{{ Math.min(currentPage * pageSize, filteredServices.length) }}</span> of
+          <span class="font-semibold text-purple-600">{{ filteredServices.length }}</span> services
         </div>
 
         <!-- Pagination Controls -->
@@ -49,40 +52,57 @@
           <button
             (click)="goToFirstPage()"
             [disabled]="currentPage === 1"
-            class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+            class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+            title="First page"
           >
-            First
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path>
+            </svg>
           </button>
           <button
             (click)="goToPreviousPage()"
             [disabled]="currentPage === 1"
-            class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+            class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+            title="Previous page"
           >
-            Previous
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+            <span class="ml-1">Previous</span>
           </button>
-
           <!-- Page Numbers -->
           <div class="flex items-center space-x-1">
-            <span class="px-3 py-2 text-sm font-medium text-purple-600 bg-purple-50 border border-purple-200 rounded-lg">
-              {{ currentPage }}
+            <span
+              *ngFor="let page of getVisiblePages()"
+              class="inline-flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
+              [class]="page === currentPage
+                ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg'
+                : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 cursor-pointer'"
+              (click)="page !== currentPage && goToPage(page)"
+            >
+              {{ page }}
             </span>
-            <span class="text-gray-500">of</span>
-            <span class="px-3 py-2 text-sm font-medium text-gray-700">{{ totalPages }}</span>
           </div>
-
           <button
             (click)="goToNextPage()"
             [disabled]="currentPage === totalPages"
-            class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+            class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+            title="Next page"
           >
-            Next
+            <span class="mr-1">Next</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
           </button>
           <button
             (click)="goToLastPage()"
             [disabled]="currentPage === totalPages"
-            class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+            class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+            title="Last page"
           >
-            Last
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path>
+            </svg>
           </button>
         </div>
       </div>

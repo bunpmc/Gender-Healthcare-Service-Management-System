@@ -11,7 +11,7 @@ import { SupabaseService } from '../../supabase.service';
       <div *ngIf="!isLoading && !hasError" class="grid grid-cols-1 lg:grid-cols-3 gap-8 w-full">
         <!-- Top row: 3 chart -->
         <section class="bg-white rounded-2xl shadow-lg border border-gray-100 flex flex-col">
-          <header class="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-5 flex items-center space-x-4">
+          <header class="bg-gradient-to-r rounded-2xl from-blue-600 to-indigo-600 px-6 py-5 flex items-center space-x-4">
             <div class="bg-blue-100 rounded-xl flex items-center justify-center w-12 h-12">
               <svg class="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 17v-6a4 4 0 014-4h10a4 4 0 014 4v6"></path>
@@ -21,10 +21,10 @@ import { SupabaseService } from '../../supabase.service';
               <h2 class="text-xl font-bold text-white">Patient Growth Trends</h2>
               <p class="text-sm text-blue-100">Monthly Growth</p>
             </div>
-          </div>
-          <div class="space-y-4">
+          </header>
+          <div class="p-6 flex-1 space-y-5">
             <div *ngFor="let item of patientGrowthData; let i = index" class="flex items-center justify-between">
-              <span class="text-sm font-medium text-gray-700">{{ item.month }}</span>
+              <span class="text-sm font-medium text-gray-700 w-16">{{ item.month }}</span>
               <div class="flex items-center space-x-3 flex-1 ml-4">
                 <div class="flex-1 bg-gray-200 rounded-full h-3">
                   <div
@@ -33,24 +33,26 @@ import { SupabaseService } from '../../supabase.service';
                     [style.background]="'linear-gradient(90deg, ' + healthcareColors[i % healthcareColors.length] + ', ' + healthcareColors[(i + 1) % healthcareColors.length] + ')'">
                   </div>
                 </div>
-                <span class="text-sm font-bold text-gray-900 min-w-[3rem]">{{ item.value }}</span>
+                <span class="text-sm font-bold text-gray-900 min-w-[3rem] text-right">{{ item.value }}</span>
               </div>
             </div>
           </div>
-        </div>
-
-        <!-- Revenue Analytics Chart -->
-        <div class="bg-white rounded-2xl p-6 shadow-xl border border-white/20">
-          <div class="flex items-center justify-between mb-6">
-            <h2 class="text-xl font-bold text-gray-900">Revenue Analytics</h2>
-            <div class="flex items-center space-x-2">
-              <div class="w-3 h-3 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full"></div>
-              <span class="text-sm text-gray-600">Monthly Revenue</span>
+        </section>
+        <section class="bg-white rounded-2xl shadow-lg border border-gray-100 flex flex-col">
+          <header class="bg-gradient-to-r rounded-2xl from-green-500 to-emerald-600 px-6 py-5 flex items-center space-x-4">
+            <div class="bg-green-100 rounded-xl flex items-center justify-center w-12 h-12">
+              <svg class="w-7 h-7 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
             </div>
-          </div>
-          <div class="space-y-4">
+            <div>
+              <h2 class="text-xl font-bold text-white">Revenue Analytics</h2>
+              <p class="text-sm text-green-100">Monthly Revenue</p>
+            </div>
+          </header>
+          <div class="p-6 flex-1 space-y-5">
             <div *ngFor="let item of revenueData; let i = index" class="flex items-center justify-between">
-              <span class="text-sm font-medium text-gray-700">{{ item.month }}</span>
+              <span class="text-sm font-medium text-gray-700 w-16">{{ item.month }}</span>
               <div class="flex items-center space-x-3 flex-1 ml-4">
                 <div class="flex-1 bg-gray-200 rounded-full h-4">
                   <div
@@ -59,24 +61,27 @@ import { SupabaseService } from '../../supabase.service';
                     [style.background]="'linear-gradient(90deg, #10b981, #059669)'">
                   </div>
                 </div>
-                <span class="text-sm font-bold text-gray-900 min-w-[4rem]">{{ formatCurrency(item.value) }}</span>
+                <span class="text-sm font-bold text-gray-900 min-w-[4rem] text-right">{{ formatCurrency(item.value) }}</span>
               </div>
             </div>
           </div>
-        </div>
-
-        <!-- Age Distribution Chart -->
-        <div class="bg-white rounded-2xl p-6 shadow-xl border border-white/20">
-          <div class="flex items-center justify-between mb-6">
-            <h2 class="text-xl font-bold text-gray-900">Age Distribution</h2>
-            <div class="flex items-center space-x-2">
-              <div class="w-3 h-3 bg-gradient-to-r from-purple-500 to-pink-600 rounded-full"></div>
-              <span class="text-sm text-gray-600">Patient Demographics</span>
+        </section>
+        <section class="bg-white rounded-2xl shadow-lg border border-gray-100 flex flex-col">
+          <header class="bg-gradient-to-r rounded-2xl from-purple-500 to-pink-600 px-6 py-5 flex items-center space-x-4">
+            <div class="bg-purple-100 rounded-xl flex items-center justify-center w-12 h-12">
+              <svg class="w-7 h-7 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+              </svg>
             </div>
-          </div>
-          <div class="space-y-4">
+            <div>
+              <h2 class="text-xl font-bold text-white">Age Distribution</h2>
+              <p class="text-sm text-purple-100">Patient Demographics</p>
+            </div>
+          </header>
+          <div class="p-6 flex-1 space-y-5">
             <div *ngFor="let item of ageDistributionData; let i = index" class="flex items-center justify-between">
-              <span class="text-sm font-medium text-gray-700">{{ item.name }}</span>
+              <span class="text-sm font-medium text-gray-700 w-20">{{ item.name }}</span>
               <div class="flex items-center space-x-3 flex-1 ml-4">
                 <div class="flex-1 bg-gray-200 rounded-full h-3">
                   <div
@@ -85,66 +90,79 @@ import { SupabaseService } from '../../supabase.service';
                     [style.background]="healthcareColors[i % healthcareColors.length]">
                   </div>
                 </div>
-                <span class="text-sm font-bold text-gray-900 min-w-[3rem]">{{ item.value }}%</span>
+                <span class="text-sm font-bold text-gray-900 min-w-[3rem] text-right">{{ item.value }}%</span>
               </div>
             </div>
           </div>
-        </div>
+        </section>
 
-        <!-- Gender Distribution Chart -->
-        <div class="bg-white rounded-2xl p-6 shadow-xl border border-white/20">
-          <div class="flex items-center justify-between mb-6">
-            <h2 class="text-xl font-bold text-gray-900">Gender Distribution</h2>
-            <div class="flex items-center space-x-2">
-              <div class="w-3 h-3 bg-gradient-to-r from-blue-500 to-cyan-600 rounded-full"></div>
-              <span class="text-sm text-gray-600">Patient Demographics</span>
+        <!-- Bottom row: 2 chart, each col-span-3/2 -->
+        <div class="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-8 mt-2">
+          <!-- Gender Distribution -->
+          <section class="bg-white rounded-2xl shadow-lg border border-gray-100 flex flex-col">
+            <header class="bg-gradient-to-r rounded-2xl from-blue-500 to-cyan-600 px-6 py-5 flex items-center space-x-4">
+              <div class="bg-blue-100 rounded-xl flex items-center justify-center w-12 h-12">
+                <svg class="w-7 h-7 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4z"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6.343 17.657A8 8 0 0112 16a8 8 0 015.657 1.657"></path>
+                </svg>
+              </div>
+              <div>
+                <h2 class="text-xl font-bold text-white">Gender Distribution</h2>
+                <p class="text-sm text-blue-100">Patient Demographics</p>
+              </div>
+            </header>
+            <div class="p-6 flex-1 space-y-5">
+              <div *ngFor="let item of genderDistributionData; let i = index" class="flex items-center justify-between">
+                <span class="text-sm font-medium text-gray-700 w-20">{{ item.name }}</span>
+                <div class="flex items-center space-x-3 flex-1 ml-4">
+                  <div class="flex-1 bg-gray-200 rounded-full h-3">
+                    <div
+                      class="h-3 rounded-full transition-all duration-1000 ease-out"
+                      [style.width]="(item.value / maxGenderDistribution * 100) + '%'"
+                      [style.background]="healthcareColors[i % healthcareColors.length]">
+                    </div>
+                  </div>
+                  <span class="text-sm font-bold text-gray-900 min-w-[3rem] text-right">{{ item.value }}%</span>
+                </div>
+              </div>
             </div>
-          </div>
-          <div class="space-y-4">
-            <div *ngFor="let item of genderDistributionData; let i = index" class="flex items-center justify-between">
-              <span class="text-sm font-medium text-gray-700">{{ item.name }}</span>
-              <div class="flex items-center space-x-3 flex-1 ml-4">
-                <div class="flex-1 bg-gray-200 rounded-full h-3">
-                  <div
-                    class="h-3 rounded-full transition-all duration-1000 ease-out"
-                    [style.width]="(item.value / maxGenderDistribution * 100) + '%'"
-                    [style.background]="healthcareColors[i % healthcareColors.length]">
+          </section>
+          <!-- Appointment Status Overview -->
+          <section class="bg-white rounded-2xl shadow-lg border border-gray-100 flex flex-col">
+            <header class="bg-gradient-to-r rounded-2xl from-yellow-500 to-orange-600 px-6 py-5 flex items-center space-x-4">
+              <div class="bg-orange-100 rounded-xl flex items-center justify-center w-12 h-12">
+                <svg class="w-7 h-7 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" stroke-width="2" fill="none"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h8M8 14h6"></path>
+                </svg>
+              </div>
+              <div>
+                <h2 class="text-xl font-bold text-white">Appointment Status Overview</h2>
+                <p class="text-sm text-orange-100">Current Status</p>
+              </div>
+            </header>
+            <div class="p-6 flex-1">
+              <div class="grid grid-cols-2 gap-6">
+                <div *ngFor="let item of appointmentStatusData; let i = index"
+                     class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-5 border border-gray-200 flex flex-col justify-between">
+                  <div class="flex items-center justify-between mb-3">
+                    <span class="text-sm font-medium text-gray-700">{{ item.name }}</span>
+                    <div class="w-3 h-3 rounded-full" [style.background]="healthcareColors[i % healthcareColors.length]"></div>
+                  </div>
+                  <div class="text-2xl font-bold text-gray-900 mb-2 text-right">{{ item.value }}</div>
+                  <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div
+                      class="h-2 rounded-full transition-all duration-1000 ease-out"
+                      [style.width]="(item.value / maxAppointmentStatus * 100) + '%'"
+                      [style.background]="healthcareColors[i % healthcareColors.length]">
+                    </div>
                   </div>
                 </div>
-                <span class="text-sm font-bold text-gray-900 min-w-[3rem]">{{ item.value }}%</span>
               </div>
             </div>
-          </div>
+          </section>
         </div>
-
-        <!-- Appointment Status Chart -->
-        <div class="bg-white rounded-2xl p-6 shadow-xl border border-white/20 lg:col-span-2">
-          <div class="flex items-center justify-between mb-6">
-            <h2 class="text-xl font-bold text-gray-900">Appointment Status Overview</h2>
-            <div class="flex items-center space-x-2">
-              <div class="w-3 h-3 bg-gradient-to-r from-yellow-500 to-orange-600 rounded-full"></div>
-              <span class="text-sm text-gray-600">Current Status</span>
-            </div>
-          </div>
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div *ngFor="let item of appointmentStatusData; let i = index"
-                 class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-4 border border-gray-200">
-              <div class="flex items-center justify-between mb-3">
-                <span class="text-sm font-medium text-gray-700">{{ item.name }}</span>
-                <div class="w-3 h-3 rounded-full" [style.background]="healthcareColors[i % healthcareColors.length]"></div>
-              </div>
-              <div class="text-2xl font-bold text-gray-900 mb-2">{{ item.value }}</div>
-              <div class="w-full bg-gray-200 rounded-full h-2">
-                <div
-                  class="h-2 rounded-full transition-all duration-1000 ease-out"
-                  [style.width]="(item.value / maxAppointmentStatus * 100) + '%'"
-                  [style.background]="healthcareColors[i % healthcareColors.length]">
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
       </div>
     </div>
   `,

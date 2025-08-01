@@ -37,110 +37,131 @@ Chart.register(
   standalone: true,
   imports: [CommonModule, FormsModule, BaseChartDirective],
   template: `
-    <div class="space-y-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 w-full">
       <!-- Loading State -->
-      <div *ngIf="isLoading" class="flex items-center justify-center py-12">
+      <div *ngIf="isLoading" class="fixed inset-0 flex items-center justify-center bg-white bg-opacity-70 z-50">
         <div class="relative">
-          <div class="animate-spin rounded-full h-16 w-16 border-4 border-indigo-200"></div>
-          <div class="animate-spin rounded-full h-16 w-16 border-4 border-indigo-600 border-t-transparent absolute top-0 left-0"></div>
+          <div class="animate-spin rounded-full h-16 w-16 border-4 border-blue-200"></div>
+          <div class="animate-spin rounded-full h-16 w-16 border-4 border-blue-600 border-t-transparent absolute top-0 left-0"></div>
         </div>
       </div>
 
       <!-- Error State -->
-      <div *ngIf="hasError && !isLoading" class="bg-red-50 border border-red-200 rounded-xl p-6">
-        <div class="flex items-center space-x-3">
+      <div *ngIf="hasError && !isLoading" class="max-w-lg mx-auto bg-white border border-red-300 rounded-xl p-6 shadow-xl flex items-center space-x-4">
+        <div class="bg-red-100 rounded-xl flex items-center justify-center w-10 h-10">
           <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
           </svg>
-          <div>
-            <h3 class="text-lg font-semibold text-red-800">Error Loading Analytics</h3>
-            <p class="text-red-600">{{ errorMessage }}</p>
-          </div>
         </div>
-        <button
-          (click)="retryLoadData()"
-          class="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
-          Retry
-        </button>
+        <div>
+          <h3 class="text-xl font-bold text-red-800">Error Loading Analytics</h3>
+          <p class="text-red-600 text-sm">{{ errorMessage }}</p>
+          <button
+            (click)="retryLoadData()"
+            class="inline-flex items-center px-4 py-2 mt-4 bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold rounded-xl shadow hover:from-red-600 hover:to-red-700 transition-all duration-200">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-1.414 1.414M6.343 17.657l-1.414-1.414M5.636 5.636l1.414 1.414M17.657 17.657l1.414-1.414"></path>
+            </svg>
+            Retry
+          </button>
+        </div>
       </div>
 
       <!-- Charts Grid -->
-      <div *ngIf="!isLoading && !hasError" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div *ngIf="!isLoading && !hasError" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
         <!-- Patient Growth Chart -->
-        <div class="bg-white rounded-2xl p-6 shadow-xl border border-white/20">
-          <div class="flex items-center justify-between mb-6">
-            <h2 class="text-xl font-bold text-gray-900">Patient Growth Trends</h2>
-            <div class="flex items-center space-x-2">
-              <div class="w-3 h-3 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full"></div>
-              <span class="text-sm text-gray-600">Monthly Growth</span>
+        <section class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden flex flex-col">
+          <header class="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4 flex items-center space-x-4">
+            <div class="bg-blue-100 rounded-xl flex items-center justify-center w-10 h-10">
+              <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 17v-6a4 4 0 014-4h10a4 4 0 014 4v6"></path>
+              </svg>
             </div>
-          </div>
-          <div class="relative h-80">
+            <div>
+              <h2 class="text-xl font-bold text-white">Patient Growth Trends</h2>
+              <p class="text-sm text-blue-100">Monthly Growth</p>
+            </div>
+          </header>
+          <div class="p-6 flex-1">
             <canvas
               baseChart
               [data]="patientGrowthChartData"
               [options]="lineChartOptions"
-              type="line">
-            </canvas>
+              type="line"
+              class="w-full h-80"></canvas>
           </div>
-        </div>
+        </section>
 
         <!-- Revenue Analytics Chart -->
-        <div class="bg-white rounded-2xl p-6 shadow-xl border border-white/20">
-          <div class="flex items-center justify-between mb-6">
-            <h2 class="text-xl font-bold text-gray-900">Revenue Analytics</h2>
-            <div class="flex items-center space-x-2">
-              <div class="w-3 h-3 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full"></div>
-              <span class="text-sm text-gray-600">Monthly Revenue</span>
+        <section class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden flex flex-col">
+          <header class="bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-4 flex items-center space-x-4">
+            <div class="bg-green-100 rounded-xl flex items-center justify-center w-10 h-10">
+              <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
             </div>
-          </div>
-          <div class="relative h-80">
+            <div>
+              <h2 class="text-xl font-bold text-white">Revenue Analytics</h2>
+              <p class="text-sm text-green-100">Monthly Revenue</p>
+            </div>
+          </header>
+          <div class="p-6 flex-1">
             <canvas
               baseChart
               [data]="revenueChartData"
               [options]="barChartOptions"
-              type="bar">
-            </canvas>
+              type="bar"
+              class="w-full h-80"></canvas>
           </div>
-        </div>
+        </section>
 
         <!-- Age Distribution Chart -->
-        <div class="bg-white rounded-2xl p-6 shadow-xl border border-white/20">
-          <div class="flex items-center justify-between mb-6">
-            <h2 class="text-xl font-bold text-gray-900">Age Distribution</h2>
-            <div class="flex items-center space-x-2">
-              <div class="w-3 h-3 bg-gradient-to-r from-purple-500 to-pink-600 rounded-full"></div>
-              <span class="text-sm text-gray-600">Patient Demographics</span>
+        <section class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden flex flex-col">
+          <header class="bg-gradient-to-r from-purple-500 to-pink-600 px-6 py-4 flex items-center space-x-4">
+            <div class="bg-purple-100 rounded-xl flex items-center justify-center w-10 h-10">
+              <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+              </svg>
             </div>
-          </div>
-          <div class="relative h-80">
+            <div>
+              <h2 class="text-xl font-bold text-white">Age Distribution</h2>
+              <p class="text-sm text-purple-100">Patient Demographics</p>
+            </div>
+          </header>
+          <div class="p-6 flex-1">
             <canvas
               baseChart
               [data]="ageDistributionChartData"
               [options]="pieChartOptions"
-              type="pie">
-            </canvas>
+              type="pie"
+              class="w-full h-80"></canvas>
           </div>
-        </div>
+        </section>
 
         <!-- Gender Distribution Chart -->
-        <div class="bg-white rounded-2xl p-6 shadow-xl border border-white/20">
-          <div class="flex items-center justify-between mb-6">
-            <h2 class="text-xl font-bold text-gray-900">Gender Distribution</h2>
-            <div class="flex items-center space-x-2">
-              <div class="w-3 h-3 bg-gradient-to-r from-blue-500 to-cyan-600 rounded-full"></div>
-              <span class="text-sm text-gray-600">Patient Demographics</span>
+        <section class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden flex flex-col">
+          <header class="bg-gradient-to-r from-blue-500 to-cyan-600 px-6 py-4 flex items-center space-x-4">
+            <div class="bg-blue-100 rounded-xl flex items-center justify-center w-10 h-10">
+              <svg class="w-6 h-6 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6.343 17.657A8 8 0 0112 16a8 8 0 015.657 1.657"></path>
+              </svg>
             </div>
-          </div>
-          <div class="relative h-80">
+            <div>
+              <h2 class="text-xl font-bold text-white">Gender Distribution</h2>
+              <p class="text-sm text-blue-100">Patient Demographics</p>
+            </div>
+          </header>
+          <div class="p-6 flex-1">
             <canvas
               baseChart
               [data]="genderDistributionChartData"
               [options]="doughnutChartOptions"
-              type="doughnut">
-            </canvas>
+              type="doughnut"
+              class="w-full h-80"></canvas>
           </div>
-        </div>
+        </section>
       </div>
     </div>
   `,

@@ -9,17 +9,11 @@ import { SidebarComponent } from '../sidebar/sidebar.component';
   standalone: true,
   imports: [CommonModule, RouterOutlet, HeaderComponent, SidebarComponent],
   template: `
-    <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex flex-col">
-      <!-- Admin Header -->
+    <div class="flex flex-col min-h-screen bg-gray-50">
       <app-header></app-header>
-      
-      <!-- Main Content Area -->
-      <div class="flex flex-row w-full flex-1 px-4 sm:px-6 lg:px-8 pb-12 gap-8">
-        <!-- Sidebar Navigation -->
-        <app-sidebar class="w-72 flex-shrink-0"></app-sidebar>
-        
-        <!-- Dynamic Content Area -->
-        <div class="flex-1 flex flex-col gap-8">
+      <div class="flex flex-row mx-6 gap-6 mb-4">
+        <app-sidebar class="w-64"></app-sidebar>
+        <div class="flex-1 p-2">
           <router-outlet></router-outlet>
         </div>
       </div>

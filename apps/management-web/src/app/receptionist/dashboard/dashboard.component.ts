@@ -32,9 +32,9 @@ interface RecentAppointment {
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="p-6 bg-gray-50 min-h-screen">
+    <div class="space-y-6">
       <!-- Modern Header -->
-      <div class="mb-8">
+      <div class="bg-gradient-to-r from-white via-blue-50 to-indigo-50 rounded-2xl p-6 shadow-xl border border-white/20 backdrop-blur-sm">
         <div class="flex items-center justify-between">
           <div>
             <h1 class="text-3xl font-bold text-gray-900 mb-2">

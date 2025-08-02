@@ -6,7 +6,7 @@ import { SupabaseService } from '../../supabase.service';
 import { Staff, Role } from '../../models/staff.interface';
 
 @Component({
-  selector: 'app-doctor-staff-management',
+  selector: 'app-receptionist-staff-management',
   standalone: true,
   imports: [CommonModule, StaffManagementContainerComponent],
   template: `
@@ -22,21 +22,29 @@ export class StaffManagementComponent implements OnInit {
   staffMembers: Staff[] = [];
   isLoading = false;
 
-  // Configuration for doctor portal - more restricted than admin
+  // Configuration for receptionist portal - view-only mostly
   staffManagementConfig: StaffManagementConfig = {
-    portal: 'doctor',
-    canCreate: false, // Doctors typically can't create staff
-    canEdit: false,   // Doctors typically can't edit staff
-    canDelete: false, // Doctors typically can't delete staff
-    canExport: true,  // Doctors can export for reporting
+    portal: 'receptionist',
+    canCreate: false, // Receptionists typically can't create staff
+    canEdit: false,   // Receptionists typically can't edit staff
+    canDelete: false, // Receptionists typically can't delete staff
+    canExport: true,  // Receptionists can export for reference
     canTestEdgeFunction: false, // No edge function access
     allowedRoles: ['doctor', 'receptionist'], // Can view all roles
-    customActions: [] // No custom actions for doctor portal
+    customActions: [
+      {
+        id: 'contact',
+        label: 'Contact',
+        icon: 'phone',
+        color: 'bg-green-500'
+      }
+    ]
   };
 
-  // Events configuration - minimal for doctor portal
+  // Events configuration for receptionist portal
   staffEvents: StaffManagementEvents = {
-    onExport: this.handleExportData.bind(this)
+    onExport: this.handleExportData.bind(this),
+    onCustomAction: this.handleCustomAction.bind(this)
   };
 
   constructor(private supabaseService: SupabaseService) { }
@@ -62,13 +70,21 @@ export class StaffManagementComponent implements OnInit {
   }
 
   handleExportData(staffList: Staff[]) {
-    // Implement export functionality for doctor portal
+    // Implement export functionality for receptionist portal
     const dataStr = JSON.stringify(staffList, null, 2);
     const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    const exportFileDefaultName = `doctor_staff_view_${new Date().toISOString().split('T')[0]}.json`;
+    const exportFileDefaultName = `receptionist_staff_contacts_${new Date().toISOString().split('T')[0]}.json`;
     const linkElement = document.createElement('a');
     linkElement.setAttribute('href', dataUri);
     linkElement.setAttribute('download', exportFileDefaultName);
     linkElement.click();
+  }
+
+  handleCustomAction(actionId: string, staff: Staff) {
+    if (actionId === 'contact') {
+      // Show contact information or initiate contact
+      alert(`Contact ${staff.full_name} at ${staff.working_email}`);
+      // Could integrate with email client or phone system
+    }
   }
 }

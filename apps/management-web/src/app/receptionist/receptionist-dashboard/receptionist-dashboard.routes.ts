@@ -1,13 +1,30 @@
 import { Routes } from '@angular/router';
-import { DashboardComponent } from '../dashboard/dashboard.component';
-import { PaymentManagementComponent } from '../payment-management/payment-management.component';
-import { AppointmentManagementComponent } from '../appointment-management/appointment-management.component';
-import { PatientManagementComponent } from '../patient-management/patient-management.component';
 import { ReceptionistAuthGuard } from '../receptionist-auth.guard';
 
 export const receptionistDashboardRoutes: Routes = [
-  { path: '', component: DashboardComponent, canActivate: [ReceptionistAuthGuard] },
-  { path: 'payment-management', component: PaymentManagementComponent, canActivate: [ReceptionistAuthGuard] },
-  { path: 'appointment-management', component: AppointmentManagementComponent, canActivate: [ReceptionistAuthGuard] },
-  { path: 'patient-management', component: PatientManagementComponent, canActivate: [ReceptionistAuthGuard] }
+  { 
+    path: '', 
+    loadComponent: () => import('../dashboard/dashboard.component').then(m => m.DashboardComponent), 
+    canActivate: [ReceptionistAuthGuard] 
+  },
+  { 
+    path: 'payment-management', 
+    loadComponent: () => import('../payment-management/payment-management.component').then(m => m.PaymentManagementComponent), 
+    canActivate: [ReceptionistAuthGuard] 
+  },
+  { 
+    path: 'appointment-management', 
+    loadComponent: () => import('../appointment-management/appointment-management.component').then(m => m.AppointmentManagementComponent), 
+    canActivate: [ReceptionistAuthGuard] 
+  },
+  { 
+    path: 'patient-management', 
+    loadComponent: () => import('../patient-management/patient-management.component').then(m => m.PatientManagementComponent), 
+    canActivate: [ReceptionistAuthGuard] 
+  },
+  { 
+    path: 'staff-management', 
+    loadComponent: () => import('../staff-management/staff-management.component').then(m => m.StaffManagementComponent), 
+    canActivate: [ReceptionistAuthGuard] 
+  }
 ];

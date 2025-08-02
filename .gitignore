@@ -120,7 +120,7 @@ dist
 /apps/product-web/src/app/environments/environment.ts
 
 # Ignore Supabase .env
-/product-gdhc/supabase/.env
+/product-gdhc/supabase/functions/.env
 
 # Build outputs
 build/

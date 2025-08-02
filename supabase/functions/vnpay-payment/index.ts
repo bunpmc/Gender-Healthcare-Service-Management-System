@@ -1,5 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import "https://deno.land/x/dotenv/load.ts";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
@@ -20,7 +22,7 @@ const config = {
 };
 // Initialize Supabase client
 const supabase = createClient(config.supabaseUrl, config.supabaseKey);
-function formatDate(date: Date) {
+function formatDate(date: Date): string {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
@@ -29,17 +31,17 @@ function formatDate(date: Date) {
   const second = String(date.getSeconds()).padStart(2, "0");
   return `${year}${month}${day}${hour}${minute}${second}`;
 }
-function sortObjectByKey(obj: Record<string, string>) {
+function sortObjectByKey(obj: Record<string, string>): string {
   const sorted = Object.keys(obj).sort().reduce((result, key) => {
     result[key] = obj[key];
     return result;
-  }, {});
+  }, {} as Record<string, string>);
   return new URLSearchParams(sorted).toString();
 }
 async function generateVNPaySignature(
-  params: Record<string, string>,
+  params: string,
   secretKey: string,
-) {
+): Promise<string> {
   const encoder = new TextEncoder();
   const key = await crypto.subtle.importKey(
     "raw",
@@ -56,20 +58,20 @@ async function generateVNPaySignature(
   const signature = await crypto.subtle.sign(
     "HMAC",
     key,
-    encoder.encode(sortObjectByKey(params)),
+    encoder.encode(params),
   );
   return Array.from(new Uint8Array(signature)).map((b) =>
     b.toString(16).padStart(2, "0")
   ).join("");
 }
-function getClientIP(req: Request) {
+function getClientIP(req: Request): string {
   const xForwardedFor = req.headers.get("x-forwarded-for");
   const xRealIP = req.headers.get("x-real-ip");
   const cfConnectingIP = req.headers.get("cf-connecting-ip");
   return xForwardedFor && xForwardedFor.split(",")[0].trim() || xRealIP ||
     cfConnectingIP || "127.0.0.1";
 }
-async function logMessage(message: Record<string, any>) {
+async function logMessage(message: unknown): Promise<void> {
   try {
     const { error } = await supabase.from("logs").insert({
       message,
@@ -83,9 +85,9 @@ async function saveTransaction(
   orderId: string,
   amount: number,
   orderInfo: string,
-  patientId: string,
-  services: Record<string, any>,
-) {
+  patientId: string | undefined,
+  services: string[] | null,
+): Promise<void> {
   try {
     const { error } = await supabase.from("transactions").insert({
       order_id: orderId,
@@ -100,7 +102,7 @@ async function saveTransaction(
     console.error("Error saving transaction:", error);
   }
 }
-serve(async (req) => {
+serve(async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, {
       status: 204,
@@ -247,3 +249,7 @@ serve(async (req) => {
     );
   }
 });
+
+// curl -X POST "https://xzxxodxplyetecrsbxmc.supabase.co/functions/v1/vnpay-payment" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh6eHhvZHhwbHlldGVjcnNieG1jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk2MTE2MjAsImV4cCI6MjA2NTE4NzYyMH0.O60A63ihSaQ_2qbLozpU04yy7ZB5h8BUZqEvWWCLnf0"-H "Content-Type: application/json" -d '{"amount":"150000","orderInfo":"Payment for order #12345","patientId":"dfc1b883-47f7-40db-91ee-16424e212b37","services":["Consultation"]}'
+
+// supabase secrets set VNPAY_HASH_SECRET="AN0RNCIIMYZSJTHU47SJQJWL8IULFP80" VNPAY_URL="https://sandbox.vnpayment.vn/paymentv2/vpcpay.html" VNPAY_RETURN_URL="http://localhost:4200/payment-result"

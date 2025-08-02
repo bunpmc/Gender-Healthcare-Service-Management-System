@@ -6,11 +6,13 @@ module.exports = {
   content: [
     './src/**/*.html',
     './src/**/*.ts',
-    './src/**/*.js'
+    './src/**/*.js',
+    './dist/**/*.js'
   ],
   css: [
     './src/styles.css',
-    './src/styles/**/*.css'
+    './src/styles/**/*.css',
+    './dist/**/*.css'
   ],
   output: './src/styles/purged/',
   
@@ -22,7 +24,21 @@ module.exports = {
     
     // PrimeNG classes
     /^p-/,
+    /^pi-/,
     /^ui-/,
+    
+    // TailwindCSS utility classes commonly used
+    /^bg-/,
+    /^text-/,
+    /^flex/,
+    /^grid/,
+    /^w-/,
+    /^h-/,
+    /^m-/,
+    /^p-/,
+    /^border/,
+    /^rounded/,
+    /^shadow/,
     
     // Chart.js classes
     /^chart/,
@@ -58,12 +74,7 @@ module.exports = {
     /^animate-/,
     /^transition-/,
     
-    // Common utility patterns
-    /^bg-/,
-    /^text-/,
-    /^border-/,
-    /^rounded-/,
-    /^shadow-/,
+    // Hover and focus states
     /^hover:/,
     /^focus:/,
     /^group-hover:/,

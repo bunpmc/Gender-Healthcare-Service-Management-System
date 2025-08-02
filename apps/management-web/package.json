@@ -6,12 +6,14 @@
     "start": "ng serve",
     "build": "ng build",
     "build:prod": "ng build --configuration production",
+    "build:optimize": "ng build --configuration production --optimization=true --aot=true",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "analyze": "ng build --configuration analyze && npx webpack-bundle-analyzer dist/gender-healthcare-fe/stats.json",
     "css:analyze": "ng build --configuration production --extract-css && echo 'CSS bundle analysis complete'",
     "css:purge": "purgecss --config purgecss.config.js",
-    "bundle:size": "bundlesize"
+    "bundle:size": "bundlesize",
+    "bundle:optimize": "npm run build:optimize && npm run css:purge"
   },
   "private": true,
   "dependencies": {

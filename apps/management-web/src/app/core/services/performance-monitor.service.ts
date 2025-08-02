@@ -63,13 +63,13 @@ export class PerformanceMonitorService implements OnDestroy {
   trackPageLoad(): void {
     if (typeof window !== 'undefined' && 'performance' in window) {
       try {
-      const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
-      
-      if (navigation) {
+        const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+        
+        if (navigation) {
           // Use correct properties for PerformanceNavigationTiming
           this.trackMetric('page_load_time', navigation.loadEventEnd - navigation.fetchStart);
           this.trackMetric('dom_content_loaded', navigation.domContentLoadedEventEnd - navigation.fetchStart);
-        this.trackMetric('first_paint', this.getFirstPaint());
+          this.trackMetric('first_paint', this.getFirstPaint());
           this.trackMetric('dom_interactive', navigation.domInteractive - navigation.fetchStart);
           this.trackMetric('dom_complete', navigation.domComplete - navigation.fetchStart);
           
@@ -100,23 +100,23 @@ export class PerformanceMonitorService implements OnDestroy {
   private initializePerformanceObserver(): void {
     if ('PerformanceObserver' in window && !this.isInitialized) {
       try {
-      // Monitor Largest Contentful Paint
-      const lcpObserver = new PerformanceObserver((list) => {
-        const entries = list.getEntries();
-        const lastEntry = entries[entries.length - 1];
-        this.trackMetric('largest_contentful_paint', lastEntry.startTime);
-      });
-      lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
+        // Monitor Largest Contentful Paint
+        const lcpObserver = new PerformanceObserver((list) => {
+          const entries = list.getEntries();
+          const lastEntry = entries[entries.length - 1];
+          this.trackMetric('largest_contentful_paint', lastEntry.startTime);
+        });
+        lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
         this.observers.push(lcpObserver);
 
-      // Monitor First Input Delay
-      const fidObserver = new PerformanceObserver((list) => {
-        const entries = list.getEntries();
-        entries.forEach((entry: any) => {
-          this.trackMetric('first_input_delay', entry.processingStart - entry.startTime);
+        // Monitor First Input Delay
+        const fidObserver = new PerformanceObserver((list) => {
+          const entries = list.getEntries();
+          entries.forEach((entry: any) => {
+            this.trackMetric('first_input_delay', entry.processingStart - entry.startTime);
+          });
         });
-      });
-      fidObserver.observe({ entryTypes: ['first-input'] });
+        fidObserver.observe({ entryTypes: ['first-input'] });
         this.observers.push(fidObserver);
 
         // Monitor Cumulative Layout Shift
@@ -142,9 +142,9 @@ export class PerformanceMonitorService implements OnDestroy {
 
   private getFirstPaint(): number {
     try {
-    const paintEntries = performance.getEntriesByType('paint');
-    const firstPaint = paintEntries.find(entry => entry.name === 'first-paint');
-    return firstPaint ? firstPaint.startTime : 0;
+      const paintEntries = performance.getEntriesByType('paint');
+      const firstPaint = paintEntries.find(entry => entry.name === 'first-paint');
+      return firstPaint ? firstPaint.startTime : 0;
     } catch (error) {
       this.logger.error('Failed to get first paint metric', error);
       return 0;

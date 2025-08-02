@@ -19,10 +19,11 @@ export const routes: Routes = [
     loadComponent: () => import('./staff-portal-landing/staff-portal-landing.component').then(m => m.StaffPortalLandingComponent) 
   },
 
-  // Debug tools - lazy loaded
+  // Debug tools - lazy loaded (remove in production)
   { 
     path: 'debug', 
-    loadComponent: () => import('./debug-supabase.component').then(m => m.DebugSupabaseComponent) 
+    loadComponent: () => import('./debug-supabase.component').then(m => m.DebugSupabaseComponent),
+    data: { preload: false } // Don't preload debug tools
   },
 
   // Admin routes (management system) - lazy loaded with layout, preload for better UX

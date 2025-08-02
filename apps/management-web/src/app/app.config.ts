@@ -3,24 +3,26 @@ import { provideRouter, withPreloading } from '@angular/router';
 import { routes } from './app.routes';
 import { SelectivePreloadingStrategy } from './selective-preloading-strategy.service';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
-// Temporarily commented out until dependencies are properly installed
-// import { provideOAuthClient } from 'angular-oauth2-oidc';
-// import { providePrimeNG } from 'primeng/config';
-// import Aura from '@primeng/themes/aura';
+import { provideHttpClient, withInterceptorsFromDi, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { providePrimeNG } from 'primeng/config';
+import Aura from '@primeng/themes/aura';
+import { AppHttpInterceptor } from './core/interceptors/app-http.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideHttpClient(withInterceptorsFromDi()),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes, withPreloading(SelectivePreloadingStrategy)),
-    // Temporarily commented out until dependencies are properly installed
-    // provideOAuthClient(),
     provideAnimationsAsync(),
-    // providePrimeNG({
-    //   theme: {
-    //     preset: Aura,
-    //   },
-    // }),
+    providePrimeNG({
+      theme: {
+        preset: Aura,
+      },
+    }),
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: AppHttpInterceptor,
+      multi: true
+    }
   ],
 };

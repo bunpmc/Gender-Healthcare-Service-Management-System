@@ -30,7 +30,7 @@ export const adminRoutes: Routes = [
   },
   { 
     path: 'staff', 
-    loadComponent: () => import('./staff-management/staff-management.component').then(m => m.StaffManagementComponent),
+    loadComponent: () => import('./staff-management/staff-management.component').then(m => m.AdminStaffManagementComponent),
     canActivate: [ComponentCacheGuard],
     data: { title: 'Staff Management' }
   },

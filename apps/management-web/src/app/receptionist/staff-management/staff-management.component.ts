@@ -18,7 +18,7 @@ import { Staff, Role } from '../../models/staff.interface';
     </app-staff-management-container>
   `
 })
-export class StaffManagementComponent implements OnInit {
+export class ReceptionistStaffManagementComponent implements OnInit {
   staffMembers: Staff[] = [];
   isLoading = false;
 

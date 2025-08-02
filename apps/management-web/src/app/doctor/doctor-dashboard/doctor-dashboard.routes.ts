@@ -29,7 +29,7 @@ export const doctorDashboardRoutes: Routes = [
   },
   { 
     path: 'staff-management', 
-    loadComponent: () => import('../staff-management/staff-management.component').then(m => m.StaffManagementComponent), 
+    loadComponent: () => import('../staff-management/staff-management.component').then(m => m.DoctorStaffManagementComponent), 
     canActivate: [DoctorAuthGuard] 
   }
 ];

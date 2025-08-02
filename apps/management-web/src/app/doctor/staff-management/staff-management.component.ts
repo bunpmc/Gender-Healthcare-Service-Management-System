@@ -4,6 +4,7 @@ import { StaffManagementContainerComponent } from '../../shared/staff-management
 import { StaffManagementConfig, StaffManagementEvents } from '../../shared/staff-management/models/staff-management.interface';
 import { SupabaseService } from '../../supabase.service';
 import { Staff, Role } from '../../models/staff.interface';
+import { ErrorHandlerService } from '../../core/services/error-handler.service';
 
 @Component({
   selector: 'app-doctor-staff-management',
@@ -18,7 +19,7 @@ import { Staff, Role } from '../../models/staff.interface';
     </app-staff-management-container>
   `
 })
-export class StaffManagementComponent implements OnInit {
+export class DoctorStaffManagementComponent implements OnInit {
   staffMembers: Staff[] = [];
   isLoading = false;
 
@@ -39,36 +40,57 @@ export class StaffManagementComponent implements OnInit {
     onExport: this.handleExportData.bind(this)
   };
 
-  constructor(private supabaseService: SupabaseService) { }
+  constructor(
+    private supabaseService: SupabaseService,
+    private errorHandler: ErrorHandlerService
+  ) { }
 
   async ngOnInit() {
     await this.loadStaff();
   }
 
-  async loadStaff() {
+  async loadStaff(): Promise<void> {
     this.isLoading = true;
     try {
       const result = await this.supabaseService.getAllStaff();
       if (result.success && result.data) {
         this.staffMembers = result.data;
       } else {
-        console.error('Error fetching staff:', result.error);
+        this.errorHandler.handleApiError(
+          result.error, 
+          'loadStaff', 
+          'Failed to load staff directory'
+        );
       }
     } catch (error) {
-      console.error('Error fetching staff:', error);
+      this.errorHandler.handleApiError(
+        error, 
+        'loadStaff', 
+        'An unexpected error occurred while loading staff'
+      );
     } finally {
       this.isLoading = false;
     }
   }
 
-  handleExportData(staffList: Staff[]) {
-    // Implement export functionality for doctor portal
-    const dataStr = JSON.stringify(staffList, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    const exportFileDefaultName = `doctor_staff_view_${new Date().toISOString().split('T')[0]}.json`;
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
-    linkElement.click();
+  handleExportData(staffList: Staff[]): void {
+    try {
+      // Implement export functionality for doctor portal
+      const dataStr = JSON.stringify(staffList, null, 2);
+      const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+      const exportFileDefaultName = `doctor_staff_view_${new Date().toISOString().split('T')[0]}.json`;
+      const linkElement = document.createElement('a');
+      linkElement.setAttribute('href', dataUri);
+      linkElement.setAttribute('download', exportFileDefaultName);
+      linkElement.click();
+      
+      this.errorHandler.showSuccess('Staff directory exported successfully');
+    } catch (error) {
+      this.errorHandler.handleApiError(
+        error, 
+        'exportStaff', 
+        'Failed to export staff directory'
+      );
+    }
   }
 }

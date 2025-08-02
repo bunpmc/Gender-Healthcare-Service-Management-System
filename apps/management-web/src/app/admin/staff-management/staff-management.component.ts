@@ -5,9 +5,10 @@ import { StaffManagementContainerComponent } from '../../shared/staff-management
 import { StaffManagementConfig, StaffManagementEvents } from '../../shared/staff-management/models/staff-management.interface';
 import { SupabaseService } from '../../supabase.service';
 import { EdgeFunctionService } from '../../edge-function.service';
+import { ErrorHandlerService } from '../../core/services/error-handler.service';
 
 @Component({
-  selector: 'app-staff-management',
+  selector: 'app-admin-staff-management',
   imports: [CommonModule, StaffManagementContainerComponent],
   template: `
     <app-staff-management-container 
@@ -19,7 +20,7 @@ import { EdgeFunctionService } from '../../edge-function.service';
   `,
   standalone: true
 })
-export class StaffManagementComponent implements OnInit {
+export class AdminStaffManagementComponent implements OnInit {
   staffMembers: Staff[] = [];
   isLoading = false;
 
@@ -54,24 +55,33 @@ export class StaffManagementComponent implements OnInit {
 
   constructor(
     private supabaseService: SupabaseService,
-    private edgeFunctionService: EdgeFunctionService
+    private edgeFunctionService: EdgeFunctionService,
+    private errorHandler: ErrorHandlerService
   ) { }
 
   async ngOnInit() {
     await this.loadStaff();
   }
 
-  async loadStaff() {
+  async loadStaff(): Promise<void> {
     this.isLoading = true;
     try {
       const result = await this.supabaseService.getAllStaff();
       if (result.success && result.data) {
         this.staffMembers = result.data;
       } else {
-        console.error('Error fetching staff:', result.error);
+        this.errorHandler.handleApiError(
+          result.error, 
+          'loadStaff', 
+          'Failed to load staff directory'
+        );
       }
     } catch (error) {
-      console.error('Error fetching staff:', error);
+      this.errorHandler.handleApiError(
+        error, 
+        'loadStaff', 
+        'An unexpected error occurred while loading staff'
+      );
     } finally {
       this.isLoading = false;
     }

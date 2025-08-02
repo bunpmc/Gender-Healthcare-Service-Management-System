@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import "https://deno.land/x/dotenv/load.ts";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
@@ -21,7 +22,7 @@ const config = {
 };
 // Initialize Supabase client
 const supabase = createClient(config.supabaseUrl, config.supabaseKey);
-function formatDate(date) {
+function formatDate(date: Date): string {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
@@ -30,14 +31,17 @@ function formatDate(date) {
   const second = String(date.getSeconds()).padStart(2, "0");
   return `${year}${month}${day}${hour}${minute}${second}`;
 }
-function sortObjectByKey(obj) {
+function sortObjectByKey(obj: Record<string, string>): string {
   const sorted = Object.keys(obj).sort().reduce((result, key) => {
     result[key] = obj[key];
     return result;
-  }, {});
+  }, {} as Record<string, string>);
   return new URLSearchParams(sorted).toString();
 }
-async function generateVNPaySignature(params, secretKey) {
+async function generateVNPaySignature(
+  params: string,
+  secretKey: string,
+): Promise<string> {
   const encoder = new TextEncoder();
   const key = await crypto.subtle.importKey(
     "raw",
@@ -60,14 +64,14 @@ async function generateVNPaySignature(params, secretKey) {
     b.toString(16).padStart(2, "0")
   ).join("");
 }
-function getClientIP(req) {
+function getClientIP(req: Request): string {
   const xForwardedFor = req.headers.get("x-forwarded-for");
   const xRealIP = req.headers.get("x-real-ip");
   const cfConnectingIP = req.headers.get("cf-connecting-ip");
   return xForwardedFor && xForwardedFor.split(",")[0].trim() || xRealIP ||
     cfConnectingIP || "127.0.0.1";
 }
-async function logMessage(message) {
+async function logMessage(message: unknown): Promise<void> {
   try {
     const { error } = await supabase.from("logs").insert({
       message,
@@ -78,12 +82,12 @@ async function logMessage(message) {
   }
 }
 async function saveTransaction(
-  orderId,
-  amount,
-  orderInfo,
-  patientId,
-  services,
-) {
+  orderId: string,
+  amount: number,
+  orderInfo: string,
+  patientId: string | undefined,
+  services: string[] | null,
+): Promise<void> {
   try {
     const { error } = await supabase.from("transactions").insert({
       order_id: orderId,
@@ -98,7 +102,7 @@ async function saveTransaction(
     console.error("Error saving transaction:", error);
   }
 }
-serve(async (req) => {
+serve(async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, {
       status: 204,

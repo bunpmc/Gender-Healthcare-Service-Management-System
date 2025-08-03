@@ -62,6 +62,28 @@ serve(async (req)=>{
     let image_link = null;
     const imageFile = formData.get("image");
     console.log("ImageFile: ", imageFile);
+    // Insert blog post first to get blog_id
+    const { data: blogData, error: insertError } = await supabase.from("blog_posts").insert([
+      {
+        doctor_id,
+        blog_title,
+        blog_content,
+        excerpt,
+        blog_tags: tagsArray,
+        blog_status,
+        view_count: 0,
+        published_at
+      }
+    ]).select().single();
+    if (insertError || !blogData) {
+      return new Response(JSON.stringify({
+        error: "Failed to create blog post",
+        details: insertError?.message
+      }), {
+        status: 500
+      });
+    }
+    const blog_id = blogData.blog_id;
     if (imageFile && imageFile instanceof File && imageFile.size > 0) {
       const allowedTypes = [
         "image/jpeg",
@@ -76,7 +98,7 @@ serve(async (req)=>{
         });
       }
       const ext = imageFile.name.split(".").pop();
-      const filename = `blog_${Date.now()}.${ext}`;
+      const filename = `blog_${blog_id}.${ext}`;
       const { error: uploadError } = await supabase.storage.from("blog-uploads").upload(filename, imageFile, {
         contentType: imageFile.type,
         upsert: true
@@ -91,35 +113,38 @@ serve(async (req)=>{
       }
       const { data: publicData } = supabase.storage.from("blog-uploads").getPublicUrl(filename);
       image_link = publicData?.publicUrl ?? null;
+      // Update blog post with image_link using correct column name
+      const { error: updateError } = await supabase.from("blog_posts").update({
+        image_link
+      }).eq("blog_id", blog_id);
+      if (updateError) {
+        return new Response(JSON.stringify({
+          error: "Failed to update blog post with image link",
+          details: updateError.message
+        }), {
+          status: 500
+        });
+      }
     } else {
       // Use default fallback image
       const { data: defaultImage } = supabase.storage.from("blog-uploads").getPublicUrl("blog_bg.webp");
       image_link = defaultImage?.publicUrl ?? null;
-    }
-    // Insert blog post
-    const { error: insertError } = await supabase.from("blog_posts").insert([
-      {
-        doctor_id,
-        blog_title,
-        blog_content,
-        excerpt,
-        image_link,
-        blog_tags: tagsArray,
-        blog_status,
-        view_count: 0,
-        published_at
+      // Update blog post with default image_link using correct column name
+      const { error: updateError } = await supabase.from("blog_posts").update({
+        image_link
+      }).eq("blog_id", blog_id);
+      if (updateError) {
+        return new Response(JSON.stringify({
+          error: "Failed to update blog post with default image link",
+          details: updateError.message
+        }), {
+          status: 500
+        });
       }
-    ]);
-    if (insertError) {
-      return new Response(JSON.stringify({
-        error: "Failed to create blog post",
-        details: insertError.message
-      }), {
-        status: 500
-      });
     }
     return new Response(JSON.stringify({
-      message: "Blog post created successfully."
+      message: "Blog post created successfully.",
+      blog_id
     }), {
       status: 200,
       headers: {

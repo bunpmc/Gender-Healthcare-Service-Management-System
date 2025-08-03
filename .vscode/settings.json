@@ -19,6 +19,5 @@
   "[typescript]": {
     "editor.defaultFormatter": "denoland.vscode-deno"
   },
-  "postman.settings.dotenv-detection-notification-visibility": false,
   "deno.enable": true
 }

@@ -11,14 +11,8 @@ import { LoggerService } from '../../core/services/logger.service';
 @Component({
   selector: 'app-admin-staff-management',
   imports: [CommonModule, StaffManagementContainerComponent],
-  template: `
-    <app-staff-management-container 
-      [config]="staffManagementConfig"
-      [allStaff]="staffMembers"
-      [loading]="isLoading"
-      [events]="staffEvents">
-    </app-staff-management-container>
-  `,
+  templateUrl: './staff-management.component.html',
+  styleUrls: ['./staff-management.component.css'],
   standalone: true
 })
 export class AdminStaffManagementComponent implements OnInit {
@@ -73,15 +67,15 @@ export class AdminStaffManagementComponent implements OnInit {
         this.staffMembers = result.data;
       } else {
         this.errorHandler.handleApiError(
-          result.error, 
-          'loadStaff', 
+          result.error,
+          'loadStaff',
           'Failed to load staff directory'
         );
       }
     } catch (error) {
       this.errorHandler.handleApiError(
-        error, 
-        'loadStaff', 
+        error,
+        'loadStaff',
         'An unexpected error occurred while loading staff'
       );
     } finally {
@@ -151,7 +145,7 @@ export class AdminStaffManagementComponent implements OnInit {
   handleExportData(staffList: Staff[]) {
     // Implement export functionality
     const dataStr = JSON.stringify(staffList, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
     const exportFileDefaultName = 'staff_data.json';
     const linkElement = document.createElement('a');
     linkElement.setAttribute('href', dataUri);
@@ -183,5 +177,20 @@ export class AdminStaffManagementComponent implements OnInit {
         alert('Edge function test failed. Check console for details.');
       }
     }
+  }
+
+  // Helper methods for template
+  getDoctorCount(): number {
+    return this.staffMembers.filter(staff => staff.role === 'doctor').length;
+  }
+
+  getReceptionistCount(): number {
+    return this.staffMembers.filter(staff => staff.role === 'receptionist').length;
+  }
+
+  getActiveStaffCount(): number {
+    // Assuming all loaded staff are currently active
+    // This could be enhanced with actual activity tracking
+    return this.staffMembers.length;
   }
 }

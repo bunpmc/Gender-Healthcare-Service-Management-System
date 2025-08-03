@@ -177,58 +177,9 @@ export class PeriodTrackingComponent implements OnInit {
   ngOnInit(): void {
     this.loadPeriodData();
     this.generateCalendar();
-
-    // Add debug testing
-    this.testDatabaseConnection();
   }
 
-  // =========== DEBUG METHODS ===========
-  async testDatabaseConnection(): Promise<void> {
-    console.log('🧪 COMPONENT: Testing database connection...');
-    try {
-      await this.periodService.testDatabaseConnection();
-    } catch (error) {
-      console.error('❌ COMPONENT: Database test failed:', error);
-      alert(`❌ Database connection failed: ${error}`);
-    }
-  }
 
-  // Test API key validation
-  testApiKey(): void {
-    console.log('🧪 COMPONENT: Testing API key validation...');
-    this.periodService.testUserDataRetrieval();
-  }
-
-  // Test method to manually trigger period logging
-  testPeriodLogging(): void {
-    console.log('🧪 COMPONENT: Testing period logging to DATABASE...');
-
-    const testData: PeriodTrackingRequest = {
-      patient_id: 'test-user-123',
-      start_date: '2024-01-15',
-      cycle_length: 28,
-      period_length: 5,
-      flow_intensity: 'medium',
-      symptoms: ['cramps', 'bloating'],
-      period_description: 'Test period entry - DATABASE ONLY'
-    };
-
-    console.log('📝 COMPONENT: Test data to be sent to database:', testData);
-
-    this.periodService.logPeriodData(testData).subscribe({
-      next: (response) => {
-        console.log('✅ COMPONENT: Test period logged to database successfully:', response);
-        alert(`✅ SUCCESS: Period logged to database!\nPeriod ID: ${response.period_id}\nCheck console for full details.`);
-
-        // Reload period history to see the new entry
-        this.loadPeriodData();
-      },
-      error: (error) => {
-        console.error('❌ COMPONENT: Test period logging to database failed:', error);
-        alert(`❌ ERROR: Failed to log period to database!\nError: ${error.message}\nCheck console for full details.`);
-      }
-    });
-  }
 
   // =========== DATA LOADING ===========
   private loadPeriodData(): void {

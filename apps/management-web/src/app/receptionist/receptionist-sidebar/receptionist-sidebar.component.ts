@@ -15,10 +15,10 @@ interface NavigationItem {
   imports: [CommonModule, RouterModule],
   template: `
     <!-- Modern Reception Portal Sidebar -->
-    <nav class="h-full flex flex-col bg-gradient-to-b from-slate-50 via-blue-50 to-indigo-50 shadow-2xl border-r border-white/20 backdrop-blur-sm">
+    <nav class="h-full flex flex-col bg-gradient-to-b from-slate-50 via-blue-50 to-indigo-50 shadow-2xl border-r border-white/20 backdrop-blur-sm rounded-2xl">
 
       <!-- Sidebar Header -->
-      <div class="p-6 border-b border-indigo-100/50">
+      <div class="p-6 border-b border-indigo-100/50 rounded-t-2xl">
         <div class="flex items-center space-x-3">
           <div class="w-12 h-12 bg-gradient-to-br from-indigo-600 to-purple-700 rounded-2xl flex items-center justify-center shadow-lg">
             <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -104,9 +104,9 @@ interface NavigationItem {
         </div>
       </div>
 
-      <!-- Status Section -->
-      <div class="px-4 py-4 border-t border-indigo-100/50">
-        <div class="px-4 py-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200/50 shadow-sm">
+      <!-- Footer Section -->
+      <div class="px-6 py-4 border-t border-white/20">
+        <div class="px-4 py-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl border border-green-200/50 shadow-sm">
           <div class="flex items-center">
             <div class="flex-shrink-0">
               <div class="h-3 w-3 bg-green-500 rounded-full animate-pulse shadow-lg"></div>

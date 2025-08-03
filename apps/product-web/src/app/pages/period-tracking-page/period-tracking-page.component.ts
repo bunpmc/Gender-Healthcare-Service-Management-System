@@ -177,37 +177,89 @@ export class PeriodTrackingComponent implements OnInit {
   ngOnInit(): void {
     this.loadPeriodData();
     this.generateCalendar();
+
+    // Add debug testing
+    this.testDatabaseConnection();
+  }
+
+  // =========== DEBUG METHODS ===========
+  async testDatabaseConnection(): Promise<void> {
+    console.log('🧪 COMPONENT: Testing database connection...');
+    try {
+      await this.periodService.testDatabaseConnection();
+    } catch (error) {
+      console.error('❌ COMPONENT: Database test failed:', error);
+      alert(`❌ Database connection failed: ${error}`);
+    }
+  }
+
+  // Test API key validation
+  testApiKey(): void {
+    console.log('🧪 COMPONENT: Testing API key validation...');
+    this.periodService.testUserDataRetrieval();
+  }
+
+  // Test method to manually trigger period logging
+  testPeriodLogging(): void {
+    console.log('🧪 COMPONENT: Testing period logging to DATABASE...');
+
+    const testData: PeriodTrackingRequest = {
+      patient_id: 'test-user-123',
+      start_date: '2024-01-15',
+      cycle_length: 28,
+      period_length: 5,
+      flow_intensity: 'medium',
+      symptoms: ['cramps', 'bloating'],
+      period_description: 'Test period entry - DATABASE ONLY'
+    };
+
+    console.log('📝 COMPONENT: Test data to be sent to database:', testData);
+
+    this.periodService.logPeriodData(testData).subscribe({
+      next: (response) => {
+        console.log('✅ COMPONENT: Test period logged to database successfully:', response);
+        alert(`✅ SUCCESS: Period logged to database!\nPeriod ID: ${response.period_id}\nCheck console for full details.`);
+
+        // Reload period history to see the new entry
+        this.loadPeriodData();
+      },
+      error: (error) => {
+        console.error('❌ COMPONENT: Test period logging to database failed:', error);
+        alert(`❌ ERROR: Failed to log period to database!\nError: ${error.message}\nCheck console for full details.`);
+      }
+    });
   }
 
   // =========== DATA LOADING ===========
   private loadPeriodData(): void {
+    console.log('🔄 COMPONENT: Loading period data from DATABASE...');
     this.isLoading.set(true);
     this.error.set(null);
 
-    // Load period history
+    // Load period history from database only
     this.periodService.getPeriodHistory().subscribe({
       next: (history) => {
+        console.log('✅ COMPONENT: Period history loaded from database:', history);
         this.periodHistory.set(history);
         this.generateCalendar();
 
-        // Load period stats after history is loaded
+        // Load period stats from database after history is loaded
         this.periodService.getPeriodStats().subscribe({
           next: (stats) => {
+            console.log('✅ COMPONENT: Period stats loaded from database:', stats);
             this.periodStats.set(stats);
             this.isLoading.set(false);
           },
-          error: (err) => {
-            this.error.set(
-              this.translate.instant('PERIOD.ERRORS.LOAD_STATS_FAILED')
-            );
+          error: (statsError) => {
+            console.error('❌ COMPONENT: Failed to load period stats from database:', statsError);
+            this.error.set('Failed to load period statistics from database');
             this.isLoading.set(false);
           },
         });
       },
-      error: (err) => {
-        this.error.set(
-          this.translate.instant('PERIOD.ERRORS.LOAD_HISTORY_FAILED')
-        );
+      error: (historyError) => {
+        console.error('❌ COMPONENT: Failed to load period history from database:', historyError);
+        this.error.set('Failed to load period history from database');
         this.isLoading.set(false);
       },
     });
@@ -785,15 +837,17 @@ export class PeriodTrackingComponent implements OnInit {
     this.formState.update((state) => ({ ...state, isSubmitting: true }));
     this.isLoading.set(true);
 
-    // Use the period service to save data
+    // Use the period service to save data to DATABASE
+    console.log('🚀 COMPONENT: Submitting period data to database:', sanitizedForm);
     this.periodService.logPeriodData(sanitizedForm).subscribe({
       next: (response) => {
+        console.log('✅ COMPONENT: Period data saved to database successfully:', response);
         this.isLoading.set(false);
         this.formState.update((state) => ({ ...state, isSubmitting: false }));
         this.showLogForm.set(false);
         this.resetForm();
 
-        // Reload data first
+        // Reload data first from database
         this.loadPeriodData();
 
         // Calculate and show predictions
@@ -803,10 +857,11 @@ export class PeriodTrackingComponent implements OnInit {
         this.showSuccessModal.set(true);
       },
       error: (error) => {
+        console.error('❌ COMPONENT: Failed to save period data to database:', error);
         this.isLoading.set(false);
         this.formState.update((state) => ({ ...state, isSubmitting: false }));
 
-        const errorMsg = this.translate.instant('PERIOD.ERRORS.SAVE_FAILED');
+        const errorMsg = `Failed to save to database: ${error.message || 'Unknown error'}`;
         alert(errorMsg);
       },
     });

@@ -1,6 +1,6 @@
 <!-- Enhanced Patient Management Content -->
 <div class="space-y-6 animate-fadeIn">
-  <div class="container mx-auto max-w-full">
+  <div class="container mx-auto max-w-6xl px-4">
     <!-- Enhanced Search Bar -->
     <app-patient-search-bar
       [totalResults]="filteredPatients.length"
@@ -29,6 +29,7 @@
       (sortChange)="onSortChange($event)"
       (bulkAction)="onBulkAction($event)"
     ></app-patient-table>
+
     <!-- Enhanced Pagination -->
     <div
       *ngIf="!isLoading && filteredPatients.length > 0"
@@ -113,8 +114,6 @@
       No patients found.
     </div>
   </div>
-
-
 
   <!-- View Patient Modal -->
   <div

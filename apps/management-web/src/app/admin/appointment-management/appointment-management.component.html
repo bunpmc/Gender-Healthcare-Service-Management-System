@@ -1,6 +1,6 @@
 <!-- Enhanced Appointment Management Content -->
 <div class="space-y-6 animate-fadeIn">
-  <div class="container mx-auto max-w-full">
+  <div class="container mx-auto max-w-6xl px-4">
     <!-- Enhanced Search Bar -->
     <app-appointment-search-bar
       [totalResults]="filteredAppointments.length"
@@ -19,18 +19,20 @@
     </div>
 
     <!-- Enhanced Appointment Table -->
-    <app-appointment-table
-      *ngIf="!isLoading"
-      [paginatedAppointments]="paginatedAppointments"
-      [totalAppointments]="filteredAppointments.length"
-      [currentPage]="currentPage"
-      (viewAppointmentEvent)="openViewAppointmentModal($event)"
-      (editAppointmentEvent)="openEditAppointmentModal($event)"
-      (deleteAppointmentEvent)="onDeleteAppointment($event)"
-      (sortChange)="onSortChange($event)"
-      (bulkAction)="onBulkAction($event)"
-      (clearFiltersEvent)="clearAllFilters()"
-    ></app-appointment-table>
+    <div class="overflow-x-auto">
+      <app-appointment-table
+        *ngIf="!isLoading"
+        [paginatedAppointments]="paginatedAppointments"
+        [totalAppointments]="filteredAppointments.length"
+        [currentPage]="currentPage"
+        (viewAppointmentEvent)="openViewAppointmentModal($event)"
+        (editAppointmentEvent)="openEditAppointmentModal($event)"
+        (deleteAppointmentEvent)="onDeleteAppointment($event)"
+        (sortChange)="onSortChange($event)"
+        (bulkAction)="onBulkAction($event)"
+        (clearFiltersEvent)="clearAllFilters()"
+      ></app-appointment-table>
+    </div>
 
     <!-- Enhanced Pagination -->
     <div

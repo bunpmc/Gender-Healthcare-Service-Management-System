@@ -1,4 +1,4 @@
-/* Modern Admin Portal Header Styles */
+/* Clean Admin Portal Header Styles */
 
 /* Header Element - Ensure proper stacking context */
 header {
@@ -21,6 +21,7 @@ header {
     opacity: 0;
     transform: translateY(-30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -54,6 +55,7 @@ header {
     opacity: 0;
     transform: translateY(-10px) scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -66,9 +68,12 @@ header {
 }
 
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
   }
+
   50% {
     opacity: .8;
   }
@@ -88,9 +93,12 @@ header {
 }
 
 @keyframes logoFloat {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0px);
   }
+
   50% {
     transform: translateY(-3px);
   }
@@ -131,7 +139,8 @@ header {
   }
 
   .profile-btn {
-    min-height: 44px; /* Minimum touch target size */
+    min-height: 44px;
+    /* Minimum touch target size */
     min-width: 44px;
   }
 

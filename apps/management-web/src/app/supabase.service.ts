@@ -1812,7 +1812,7 @@ export class SupabaseService {
 
       return { success: true, data: service };
     } catch (error: any) {
-      console.error('❌ Error in getMedicalServiceById:', error);
+      this.logger.error('❌ Error in getMedicalServiceById:', error);
       return {
         success: false,
         error: error.message || 'Failed to fetch medical service',
@@ -1842,7 +1842,7 @@ export class SupabaseService {
         .single();
 
       if (error) {
-        console.error('❌ Error creating medical service:', error);
+        this.logger.error('❌ Error creating medical service:', error);
         return { success: false, error: error.message };
       }
 
@@ -1868,7 +1868,7 @@ export class SupabaseService {
 
       return { success: true, data: createdService };
     } catch (error: any) {
-      console.error('❌ Error in createMedicalService:', error);
+      this.logger.error('❌ Error in createMedicalService:', error);
       return {
         success: false,
         error: error.message || 'Failed to create medical service',
@@ -1897,7 +1897,7 @@ export class SupabaseService {
         .single();
 
       if (error) {
-        console.error('❌ Error updating medical service:', error);
+        this.logger.error('❌ Error updating medical service:', error);
         return { success: false, error: error.message };
       }
 
@@ -1923,7 +1923,7 @@ export class SupabaseService {
 
       return { success: true, data: updatedService };
     } catch (error: any) {
-      console.error('❌ Error in updateMedicalService:', error);
+      this.logger.error('❌ Error in updateMedicalService:', error);
       return {
         success: false,
         error: error.message || 'Failed to update medical service',
@@ -1941,13 +1941,13 @@ export class SupabaseService {
         .eq('service_id', serviceId);
 
       if (error) {
-        console.error('❌ Error deleting medical service:', error);
+        this.logger.error('❌ Error deleting medical service:', error);
         return { success: false, error: error.message };
       }
 
       return { success: true };
     } catch (error: any) {
-      console.error('❌ Error in deleteMedicalService:', error);
+      this.logger.error('❌ Error in deleteMedicalService:', error);
       return {
         success: false,
         error: error.message || 'Failed to delete medical service',
@@ -1966,13 +1966,13 @@ export class SupabaseService {
         .eq('service_id', serviceId);
 
       if (error) {
-        console.error('❌ Error toggling medical service status:', error);
+        this.logger.error('❌ Error toggling medical service status:', error);
         return { success: false, error: error.message };
       }
 
       return { success: true };
     } catch (error: any) {
-      console.error('❌ Error in toggleMedicalServiceStatus:', error);
+      this.logger.error('❌ Error in toggleMedicalServiceStatus:', error);
       return {
         success: false,
         error: error.message || 'Failed to toggle service status',
@@ -1994,13 +1994,13 @@ export class SupabaseService {
         .order('category_name', { ascending: true });
 
       if (error) {
-        console.error('❌ Error fetching service categories:', error);
+        this.logger.error('❌ Error fetching service categories:', error);
         return { success: false, error: error.message };
       }
 
       return { success: true, data: data || [] };
     } catch (error: any) {
-      console.error('❌ Error in getServiceCategories:', error);
+      this.logger.error('❌ Error in getServiceCategories:', error);
       return {
         success: false,
         error: error.message || 'Failed to fetch service categories',
@@ -2019,7 +2019,7 @@ export class SupabaseService {
         .single();
 
       if (error) {
-        console.error('❌ Error fetching service category:', error);
+        this.logger.error('❌ Error fetching service category:', error);
         return { success: false, error: error.message };
       }
 
@@ -2029,7 +2029,7 @@ export class SupabaseService {
 
       return { success: true, data };
     } catch (error: any) {
-      console.error('❌ Error in getServiceCategoryById:', error);
+      this.logger.error('❌ Error in getServiceCategoryById:', error);
       return {
         success: false,
         error: error.message || 'Failed to fetch service category',
@@ -2053,13 +2053,13 @@ export class SupabaseService {
         .single();
 
       if (error) {
-        console.error('❌ Error creating service category:', error);
+        this.logger.error('❌ Error creating service category:', error);
         return { success: false, error: error.message };
       }
 
       return { success: true, data };
     } catch (error: any) {
-      console.error('❌ Error in createServiceCategory:', error);
+      this.logger.error('❌ Error in createServiceCategory:', error);
       return {
         success: false,
         error: error.message || 'Failed to create service category',
@@ -2082,13 +2082,13 @@ export class SupabaseService {
         .single();
 
       if (error) {
-        console.error('❌ Error updating service category:', error);
+        this.logger.error('❌ Error updating service category:', error);
         return { success: false, error: error.message };
       }
 
       return { success: true, data };
     } catch (error: any) {
-      console.error('❌ Error in updateServiceCategory:', error);
+      this.logger.error('❌ Error in updateServiceCategory:', error);
       return {
         success: false,
         error: error.message || 'Failed to update service category',
@@ -2107,7 +2107,7 @@ export class SupabaseService {
         .eq('category_id', categoryId);
 
       if (countError) {
-        console.error('❌ Error checking category usage:', countError);
+        this.logger.error('❌ Error checking category usage:', countError);
         return { success: false, error: countError.message };
       }
 
@@ -2124,13 +2124,13 @@ export class SupabaseService {
         .eq('category_id', categoryId);
 
       if (error) {
-        console.error('❌ Error deleting service category:', error);
+        this.logger.error('❌ Error deleting service category:', error);
         return { success: false, error: error.message };
       }
 
       return { success: true };
     } catch (error: any) {
-      console.error('❌ Error in deleteServiceCategory:', error);
+      this.logger.error('❌ Error in deleteServiceCategory:', error);
       return {
         success: false,
         error: error.message || 'Failed to delete service category',
@@ -2152,7 +2152,7 @@ export class SupabaseService {
 
   // Get blog posts for a doctor
   async getDoctorBlogPosts(doctor_id: string) {
-    console.log('🔍 Fetching blog posts for doctor_id:', doctor_id);
+    this.logger.info('🔍 Fetching blog posts for doctor_id:', doctor_id);
 
     const { data, error } = await supabase
       .from('blog_posts')
@@ -2161,8 +2161,8 @@ export class SupabaseService {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('❌ Supabase error in getDoctorBlogPosts:', error);
-      console.error('❌ Error details:', {
+      this.logger.error('❌ Supabase error in getDoctorBlogPosts:', error);
+      this.logger.error('❌ Error details:', {
         message: error.message,
         details: error.details,
         hint: error.hint,
@@ -2177,7 +2177,7 @@ export class SupabaseService {
       'blog-uploads'
     ) as BlogPost[];
 
-    console.log(
+    this.logger.info(
       '✅ Successfully fetched blog posts:',
       processedData?.length || 0,
       'posts'
@@ -2192,7 +2192,7 @@ export class SupabaseService {
     error?: string;
   }> {
     try {
-      console.log('🔍 Fetching all blog posts');
+      this.logger.info('🔍 Fetching all blog posts');
 
       const { data, error } = await supabase
         .from('blog_posts')
@@ -2205,7 +2205,7 @@ export class SupabaseService {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('❌ Supabase error in getAllBlogPosts:', error);
+        this.logger.error('❌ Supabase error in getAllBlogPosts:', error);
         return { success: false, error: error.message };
       }
 
@@ -2217,14 +2217,14 @@ export class SupabaseService {
         doctor_name: post.staff_members?.full_name || 'Unknown Doctor',
       }));
 
-      console.log(
+      this.logger.info(
         '✅ Successfully fetched all blog posts:',
         processedData?.length || 0,
         'posts'
       );
       return { success: true, data: processedData };
     } catch (error: any) {
-      console.error('❌ Unexpected error in getAllBlogPosts:', error);
+      this.logger.error('❌ Unexpected error in getAllBlogPosts:', error);
       return { success: false, error: 'An unexpected error occurred' };
     }
   }
@@ -2236,7 +2236,7 @@ export class SupabaseService {
     error?: string;
   }> {
     try {
-      console.log(
+      this.logger.info(
         '🔍 Fetching published blog posts',
         limit ? `(limit: ${limit})` : ''
       );
@@ -2259,7 +2259,7 @@ export class SupabaseService {
       const { data, error } = await query;
 
       if (error) {
-        console.error('❌ Supabase error in getPublishedBlogPosts:', error);
+        this.logger.error('❌ Supabase error in getPublishedBlogPosts:', error);
         return { success: false, error: error.message };
       }
 
@@ -2271,14 +2271,14 @@ export class SupabaseService {
         doctor_name: post.staff_members?.full_name || 'Unknown Doctor',
       }));
 
-      console.log(
+      this.logger.info(
         '✅ Successfully fetched published blog posts:',
         processedData?.length || 0,
         'posts'
       );
       return { success: true, data: processedData };
     } catch (error: any) {
-      console.error('❌ Unexpected error in getPublishedBlogPosts:', error);
+      this.logger.error('❌ Unexpected error in getPublishedBlogPosts:', error);
       return { success: false, error: 'An unexpected error occurred' };
     }
   }
@@ -2293,7 +2293,7 @@ export class SupabaseService {
     error?: string;
   }> {
     try {
-      console.log('🔍 Fetching blog post by ID:', blogId);
+      this.logger.info('🔍 Fetching blog post by ID:', blogId);
 
       // First, get the blog post
       const { data, error } = await supabase
@@ -2308,7 +2308,7 @@ export class SupabaseService {
         .single();
 
       if (error) {
-        console.error('❌ Supabase error in getBlogPostById:', error);
+        this.logger.error('❌ Supabase error in getBlogPostById:', error);
         return { success: false, error: error.message };
       }
 
@@ -2324,7 +2324,7 @@ export class SupabaseService {
           .eq('blog_id', blogId);
 
         if (updateError) {
-          console.warn('⚠️ Failed to increment view count:', updateError);
+          this.logger.warn('⚠️ Failed to increment view count:', updateError);
           // Don't fail the entire request if view count update fails
         } else {
           data.view_count = (data.view_count || 0) + 1;
@@ -2337,13 +2337,13 @@ export class SupabaseService {
         doctor_name: data.staff_members?.full_name || 'Unknown Doctor',
       };
 
-      console.log(
+      this.logger.info(
         '✅ Successfully fetched blog post:',
         processedData.blog_title
       );
       return { success: true, data: processedData };
     } catch (error: any) {
-      console.error('❌ Unexpected error in getBlogPostById:', error);
+      this.logger.error('❌ Unexpected error in getBlogPostById:', error);
       return { success: false, error: 'An unexpected error occurred' };
     }
   }
@@ -2546,8 +2546,8 @@ export class SupabaseService {
     doctor_id: string,
     blogData: CreateBlogPostRequest
   ): Promise<BlogPost> {
-    console.log('📝 Creating blog post for doctor_id:', doctor_id);
-    console.log('📝 Blog data:', blogData);
+    this.logger.info('📝 Creating blog post for doctor_id:', doctor_id);
+    this.logger.info('📝 Blog data:', blogData);
 
     const insertData = {
       doctor_id,
@@ -2556,7 +2556,7 @@ export class SupabaseService {
         blogData.blog_status === 'published' ? new Date().toISOString() : null,
     };
 
-    console.log('📝 Insert data:', insertData);
+    this.logger.info('📝 Insert data:', insertData);
 
     const { data, error } = await supabase
       .from('blog_posts')
@@ -2565,8 +2565,8 @@ export class SupabaseService {
       .single();
 
     if (error) {
-      console.error('❌ Supabase error in createBlogPost:', error);
-      console.error('❌ Error details:', {
+      this.logger.error('❌ Supabase error in createBlogPost:', error);
+      this.logger.error('❌ Error details:', {
         message: error.message,
         details: error.details,
         hint: error.hint,
@@ -2581,7 +2581,7 @@ export class SupabaseService {
       'blog-uploads'
     ) as BlogPost;
 
-    console.log('✅ Successfully created blog post:', processedData);
+    this.logger.info('✅ Successfully created blog post:', processedData);
     return processedData;
   }
 
@@ -2678,7 +2678,7 @@ export class SupabaseService {
     doctor_id: string,
     reportData: CreatePatientReportRequest
   ): Promise<PatientReport> {
-    console.log('🔍 Creating patient report with data:', {
+    this.logger.info('🔍 Creating patient report with data:', {
       doctor_id,
       reportData,
       insertData: {
@@ -2695,7 +2695,7 @@ export class SupabaseService {
       .single();
 
     if (guestCheck && !guestError) {
-      console.warn('⚠️ Attempted to create report for guest:', guestCheck);
+      this.logger.warn('⚠️ Attempted to create report for guest:', guestCheck);
       throw new Error(`Reports cannot be created for guests. "${(guestCheck as any).full_name}" is a guest user. Only registered patients can have medical reports.`);
     }
 
@@ -2706,7 +2706,7 @@ export class SupabaseService {
       .eq('id', reportData.patient_id)
       .single();
 
-    console.log('🔍 Patient existence check:', {
+    this.logger.info('🔍 Patient existence check:', {
       patient_id: reportData.patient_id,
       patientFound: !!patientCheck,
       patientData: patientCheck,
@@ -2733,7 +2733,7 @@ export class SupabaseService {
       .single();
 
     if (error) {
-      console.error('🔍 Insert error details:', {
+      this.logger.error('🔍 Insert error details:', {
         error,
         code: error.code,
         message: error.message,
@@ -2743,7 +2743,7 @@ export class SupabaseService {
       throw error;
     }
 
-    console.log('✅ Patient report created successfully:', data);
+    this.logger.info('✅ Patient report created successfully:', data);
     return data;
   }
 
@@ -2772,7 +2772,7 @@ export class SupabaseService {
     error?: string;
   }> {
     try {
-      console.log('🏥 Loading all appointments for receptionist...');
+      this.logger.info('🏥 Loading all appointments for receptionist...');
 
       // Fetch patient appointments
       const { data: patientAppointments, error: patientError } = await supabase
@@ -2808,7 +2808,7 @@ export class SupabaseService {
         .order('created_at', { ascending: false });
 
       if (patientError) {
-        console.error('❌ Error fetching patient appointments:', patientError);
+        this.logger.error('❌ Error fetching patient appointments:', patientError);
         return { success: false, error: patientError.message };
       }
 
@@ -2846,7 +2846,7 @@ export class SupabaseService {
         .order('created_at', { ascending: false });
 
       if (guestError) {
-        console.error('❌ Error fetching guest appointments:', guestError);
+        this.logger.error('❌ Error fetching guest appointments:', guestError);
         return { success: false, error: guestError.message };
       }
 
@@ -2919,7 +2919,7 @@ export class SupabaseService {
       const allAppointments = [...transformedPatientAppointments, ...transformedGuestAppointments]
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
-      console.log('✅ Loaded appointments:', {
+      this.logger.info('✅ Loaded appointments:', {
         patient_appointments: transformedPatientAppointments.length,
         guest_appointments: transformedGuestAppointments.length,
         total: allAppointments.length
@@ -2927,7 +2927,7 @@ export class SupabaseService {
 
       return { success: true, data: allAppointments };
     } catch (error: any) {
-      console.error('❌ Error in getAllAppointmentsForReceptionist:', error);
+      this.logger.error('❌ Error in getAllAppointmentsForReceptionist:', error);
       return {
         success: false,
         error: error.message || 'Failed to fetch appointments'
@@ -2942,7 +2942,7 @@ export class SupabaseService {
     slotId?: string
   ): Promise<{ success: boolean; error?: string }> {
     try {
-      console.log('✅ Approving appointment:', { appointmentId, appointmentType, slotId });
+      this.logger.info('✅ Approving appointment:', { appointmentId, appointmentType, slotId });
 
       const tableName = appointmentType === 'patient' ? 'appointments' : 'guest_appointments';
       const idField = appointmentType === 'patient' ? 'appointment_id' : 'guest_appointment_id';
@@ -2957,7 +2957,7 @@ export class SupabaseService {
         .eq(idField, appointmentId);
 
       if (updateError) {
-        console.error('❌ Error updating appointment status:', updateError);
+        this.logger.error('❌ Error updating appointment status:', updateError);
         return { success: false, error: updateError.message };
       }
 
@@ -2966,10 +2966,10 @@ export class SupabaseService {
         await this.incrementSlotCount(slotId);
       }
 
-      console.log('✅ Appointment approved successfully');
+      this.logger.info('✅ Appointment approved successfully');
       return { success: true };
     } catch (error: any) {
-      console.error('❌ Error in approveAppointment:', error);
+      this.logger.error('❌ Error in approveAppointment:', error);
       return { success: false, error: error.message || 'Failed to approve appointment' };
     }
   }
@@ -2981,7 +2981,7 @@ export class SupabaseService {
     reason?: string
   ): Promise<{ success: boolean; error?: string }> {
     try {
-      console.log('❌ Rejecting appointment:', { appointmentId, appointmentType, reason });
+      this.logger.info('❌ Rejecting appointment:', { appointmentId, appointmentType, reason });
 
       const tableName = appointmentType === 'patient' ? 'appointments' : 'guest_appointments';
       const idField = appointmentType === 'patient' ? 'appointment_id' : 'guest_appointment_id';
@@ -3001,14 +3001,14 @@ export class SupabaseService {
         .eq(idField, appointmentId);
 
       if (error) {
-        console.error('❌ Error rejecting appointment:', error);
+        this.logger.error('❌ Error rejecting appointment:', error);
         return { success: false, error: error.message };
       }
 
-      console.log('✅ Appointment rejected successfully');
+      this.logger.info('✅ Appointment rejected successfully');
       return { success: true };
     } catch (error: any) {
-      console.error('❌ Error in rejectAppointment:', error);
+      this.logger.error('❌ Error in rejectAppointment:', error);
       return { success: false, error: error.message || 'Failed to reject appointment' };
     }
   }
@@ -3021,7 +3021,7 @@ export class SupabaseService {
     notes?: string
   ): Promise<{ success: boolean; error?: string }> {
     try {
-      console.log('🔄 Updating appointment status:', { appointmentId, appointmentType, status, notes });
+      this.logger.info('🔄 Updating appointment status:', { appointmentId, appointmentType, status, notes });
 
       const tableName = appointmentType === 'patient' ? 'appointments' : 'guest_appointments';
       const idField = appointmentType === 'patient' ? 'appointment_id' : 'guest_appointment_id';
@@ -3041,14 +3041,14 @@ export class SupabaseService {
         .eq(idField, appointmentId);
 
       if (error) {
-        console.error('❌ Error updating appointment status:', error);
+        this.logger.error('❌ Error updating appointment status:', error);
         return { success: false, error: error.message };
       }
 
-      console.log('✅ Appointment status updated successfully');
+      this.logger.info('✅ Appointment status updated successfully');
       return { success: true };
     } catch (error: any) {
-      console.error('❌ Error in updateAppointmentStatus:', error);
+      this.logger.error('❌ Error in updateAppointmentStatus:', error);
       return { success: false, error: error.message || 'Failed to update appointment status' };
     }
   }
@@ -3056,7 +3056,7 @@ export class SupabaseService {
   // Get appointments for a specific doctor (for doctor dashboard)
   async getAppointmentsByDoctor(doctorId: string): Promise<any[]> {
     try {
-      console.log('👨‍⚕️ Loading appointments for doctor:', doctorId);
+      this.logger.info('👨‍⚕️ Loading appointments for doctor:', doctorId);
 
       // Get patient appointments for this doctor
       const { data: patientAppointments, error: patientError } = await supabase
@@ -3091,7 +3091,7 @@ export class SupabaseService {
         .order('appointment_date', { ascending: true });
 
       if (patientError) {
-        console.error('❌ Error fetching patient appointments:', patientError);
+        this.logger.error('❌ Error fetching patient appointments:', patientError);
         throw patientError;
       }
 
@@ -3128,7 +3128,7 @@ export class SupabaseService {
         .order('appointment_date', { ascending: true });
 
       if (guestError) {
-        console.error('❌ Error fetching guest appointments:', guestError);
+        this.logger.error('❌ Error fetching guest appointments:', guestError);
         throw guestError;
       }
 
@@ -3202,7 +3202,7 @@ export class SupabaseService {
           return dateA.getTime() - dateB.getTime();
         });
 
-      console.log('✅ Loaded doctor appointments:', {
+      this.logger.info('✅ Loaded doctor appointments:', {
         patient_appointments: transformedPatientAppointments.length,
         guest_appointments: transformedGuestAppointments.length,
         total: allAppointments.length
@@ -3210,7 +3210,7 @@ export class SupabaseService {
 
       return allAppointments;
     } catch (error: any) {
-      console.error('❌ Error in getAppointmentsByDoctor:', error);
+      this.logger.error('❌ Error in getAppointmentsByDoctor:', error);
       throw error;
     }
   }
@@ -3248,7 +3248,7 @@ export class SupabaseService {
     }
   ): Promise<{ success: boolean; data?: any; error?: string }> {
     try {
-      console.log('🏥 Creating patient appointment by receptionist:', {
+      this.logger.info('🏥 Creating patient appointment by receptionist:', {
         receptionistId,
         appointmentData
       });
@@ -3325,7 +3325,7 @@ export class SupabaseService {
         .single();
 
       if (insertError) {
-        console.error('❌ Error creating appointment:', insertError);
+        this.logger.error('❌ Error creating appointment:', insertError);
         return {
           success: false,
           error: insertError.message
@@ -3337,13 +3337,13 @@ export class SupabaseService {
         await this.incrementSlotCount(appointmentData.slot_id);
       }
 
-      console.log('✅ Patient appointment created successfully:', newAppointment);
+      this.logger.info('✅ Patient appointment created successfully:', newAppointment);
       return {
         success: true,
         data: newAppointment
       };
     } catch (error: any) {
-      console.error('❌ Error in createPatientAppointment:', error);
+      this.logger.error('❌ Error in createPatientAppointment:', error);
       return {
         success: false,
         error: error.message || 'Failed to create appointment'
@@ -3370,7 +3370,7 @@ export class SupabaseService {
     }
   ): Promise<{ success: boolean; data?: any; error?: string }> {
     try {
-      console.log('🏥 Creating guest appointment by receptionist:', {
+      this.logger.info('🏥 Creating guest appointment by receptionist:', {
         receptionistId,
         appointmentData
       });
@@ -3388,7 +3388,7 @@ export class SupabaseService {
       if (existingGuest && !guestCheckError) {
         // Use existing guest
         guestId = existingGuest.guest_id;
-        console.log('📋 Using existing guest:', existingGuest);
+        this.logger.info('📋 Using existing guest:', existingGuest);
       } else {
         // Create new guest
         const { data: newGuest, error: guestCreateError } = await supabase
@@ -3412,7 +3412,7 @@ export class SupabaseService {
         }
 
         guestId = newGuest.guest_id;
-        console.log('✅ Created new guest:', newGuest);
+        this.logger.info('✅ Created new guest:', newGuest);
       }
 
       // Verify doctor exists
@@ -3473,7 +3473,7 @@ export class SupabaseService {
         .single();
 
       if (insertError) {
-        console.error('❌ Error creating guest appointment:', insertError);
+        this.logger.error('❌ Error creating guest appointment:', insertError);
         return {
           success: false,
           error: insertError.message
@@ -3485,13 +3485,13 @@ export class SupabaseService {
         await this.incrementSlotCount(appointmentData.slot_id);
       }
 
-      console.log('✅ Guest appointment created successfully:', newAppointment);
+      this.logger.info('✅ Guest appointment created successfully:', newAppointment);
       return {
         success: true,
         data: newAppointment
       };
     } catch (error: any) {
-      console.error('❌ Error in createGuestAppointment:', error);
+      this.logger.error('❌ Error in createGuestAppointment:', error);
       return {
         success: false,
         error: error.message || 'Failed to create guest appointment'
@@ -3502,7 +3502,7 @@ export class SupabaseService {
   // Helper method to increment slot count
   private async incrementSlotCount(slotId: string): Promise<void> {
     try {
-      console.log('📊 Incrementing slot count for slot:', slotId);
+      this.logger.info('📊 Incrementing slot count for slot:', slotId);
 
       // Get current count
       const { data: currentSlot, error: fetchError } = await supabase
@@ -3512,18 +3512,18 @@ export class SupabaseService {
         .single();
 
       if (fetchError) {
-        console.error('❌ Error fetching current slot count:', fetchError);
+        this.logger.error('❌ Error fetching current slot count:', fetchError);
         return;
       }
 
       if (!currentSlot) {
-        console.warn('⚠️ Slot not found:', slotId);
+        this.logger.warn('⚠️ Slot not found:', slotId);
         return;
       }
 
       // Check if slot is already full
       if (currentSlot.appointments_count >= currentSlot.max_appointments) {
-        console.warn('⚠️ Slot is already full:', {
+        this.logger.warn('⚠️ Slot is already full:', {
           slotId,
           current: currentSlot.appointments_count,
           max: currentSlot.max_appointments
@@ -3539,16 +3539,16 @@ export class SupabaseService {
         .eq('doctor_slot_id', slotId);
 
       if (updateError) {
-        console.error('❌ Error updating slot count:', updateError);
+        this.logger.error('❌ Error updating slot count:', updateError);
       } else {
-        console.log('✅ Slot count updated:', {
+        this.logger.info('✅ Slot count updated:', {
           slotId,
           oldCount: currentSlot.appointments_count,
           newCount: newCount
         });
       }
     } catch (error: any) {
-      console.error('❌ Error in incrementSlotCount:', error);
+      this.logger.error('❌ Error in incrementSlotCount:', error);
     }
   }
 
@@ -3603,7 +3603,7 @@ export class SupabaseService {
         .single();
 
       if (error) {
-        console.error(`Error updating ${tableName}:`, error);
+        this.logger.error(`Error updating ${tableName}:`, error);
         return { success: false, error: error.message };
       }
 
@@ -3627,7 +3627,7 @@ export class SupabaseService {
         data: { ...data, appointment_type: appointmentType || 'patient' },
       };
     } catch (error) {
-      console.error('Unexpected error updating appointment:', error);
+      this.logger.error('Unexpected error updating appointment:', error);
       return { success: false, error: 'An unexpected error occurred' };
     }
   }
@@ -3682,7 +3682,7 @@ export class SupabaseService {
             .eq(alternateIdField, appointmentId);
 
           if (alternateError) {
-            console.error(
+            this.logger.error(
               `Error deleting from both tables:`,
               error,
               alternateError
@@ -3696,13 +3696,13 @@ export class SupabaseService {
           return { success: true };
         }
 
-        console.error(`Error deleting from ${tableName}:`, error);
+        this.logger.error(`Error deleting from ${tableName}:`, error);
         return { success: false, error: error.message };
       }
 
       return { success: true };
     } catch (error) {
-      console.error('Unexpected error deleting appointment:', error);
+      this.logger.error('Unexpected error deleting appointment:', error);
       return { success: false, error: 'An unexpected error occurred' };
     }
   }
@@ -3719,7 +3719,7 @@ export class SupabaseService {
         .select('appointment_status, visit_type, created_at');
 
       if (error) {
-        console.error('Error fetching appointment stats:', error);
+        this.logger.error('Error fetching appointment stats:', error);
         return { success: false, error: error.message };
       }
 
@@ -3745,7 +3745,7 @@ export class SupabaseService {
 
       return { success: true, data: stats };
     } catch (error) {
-      console.error('Unexpected error fetching appointment stats:', error);
+      this.logger.error('Unexpected error fetching appointment stats:', error);
       return { success: false, error: 'An unexpected error occurred' };
     }
   }
@@ -3880,7 +3880,7 @@ export class SupabaseService {
       error,
     } = await supabase.auth.getUser();
     if (error) {
-      console.error('Error getting current user:', error);
+      this.logger.error('Error getting current user:', error);
       return null;
     }
     return user;
@@ -3894,7 +3894,7 @@ export class SupabaseService {
     });
 
     if (error) {
-      console.error('Error signing in:', error);
+      this.logger.error('Error signing in:', error);
       throw error;
     }
 
@@ -3918,7 +3918,7 @@ export class SupabaseService {
     const timestamp = new Date().toISOString();
 
     try {
-      console.log('🔐 Authenticating staff with Supabase Auth:', {
+      this.logger.info('🔐 Authenticating staff with Supabase Auth:', {
         email,
         timestamp,
       });
@@ -3938,7 +3938,7 @@ export class SupabaseService {
         });
 
         if (data.user) {
-          console.log('✅ Staff authenticated with Supabase Auth');
+          this.logger.info('✅ Staff authenticated with Supabase Auth');
           return {
             success: true,
             staff: authResult.staff,
@@ -3947,13 +3947,13 @@ export class SupabaseService {
         }
 
         if (error) {
-          console.log(
+          this.logger.info(
             '⚠️ Supabase Auth failed, proceeding with staff-only auth:',
             error.message
           );
         }
       } catch (supabaseError: any) {
-        console.log(
+        this.logger.info(
           '⚠️ Supabase Auth error, proceeding with staff-only auth:',
           supabaseError.message
         );
@@ -3965,7 +3965,7 @@ export class SupabaseService {
         staff: authResult.staff,
       };
     } catch (error: any) {
-      console.error('❌ Staff authentication error:', error);
+      this.logger.error('❌ Staff authentication error:', error);
 
       return {
         success: false,
@@ -3982,7 +3982,7 @@ export class SupabaseService {
   async signOut() {
     const { error } = await supabase.auth.signOut();
     if (error) {
-      console.error('Error signing out:', error);
+      this.logger.error('Error signing out:', error);
       throw error;
     }
   }
@@ -4023,7 +4023,7 @@ export class SupabaseService {
     const timestamp = new Date().toISOString();
 
     try {
-      console.log('🔍 Authenticating staff:', { email, timestamp });
+      this.logger.info('🔍 Authenticating staff:', { email, timestamp });
 
 
 
@@ -4067,7 +4067,7 @@ export class SupabaseService {
         };
       }
 
-      console.log('✅ Staff authentication successful:', {
+      this.logger.info('✅ Staff authentication successful:', {
         staff_id: staff.staff_id,
         role: staff.role,
         email: staff.working_email,
@@ -4079,7 +4079,7 @@ export class SupabaseService {
         staff,
       };
     } catch (error: any) {
-      console.error('❌ Staff authentication error:', error);
+      this.logger.error('❌ Staff authentication error:', error);
 
       return {
         success: false,
@@ -4211,7 +4211,7 @@ export class SupabaseService {
 
       return [...transformedPatientAppointments, ...transformedGuestAppointments];
     } catch (error) {
-      console.error('Error fetching slot appointments:', error);
+      this.logger.error('Error fetching slot appointments:', error);
       return [];
     }
   }

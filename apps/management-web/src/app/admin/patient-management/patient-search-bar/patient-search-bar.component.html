@@ -1,19 +1,37 @@
-<!-- Enhanced Patient Search and Filter Bar -->
-<div class="bg-white rounded-2xl shadow-xl border border-white/20 p-6 mb-6">
-  <!-- Header Section -->
-  <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6">
-    <div>
-      <h2 class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
-        Patient Management
-      </h2>
-      <p class="text-gray-600 mt-1">Search, filter, and manage patient records</p>
+<!-- Enhanced Patient Search Bar with Standardized Design -->
+<div class="space-y-6">
+  <!-- Search and Quick Actions Row -->
+  <div class="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+    <!-- Enhanced Search Input -->
+    <div class="flex-1 w-full max-w-md">
+      <div class="relative">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+        </div>
+        <input
+          type="text"
+          [(ngModel)]="searchQuery"
+          (input)="applyFilters()"
+          placeholder="Search patients by name, email, or phone..."
+          class="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors text-sm placeholder-gray-500 shadow-sm"
+        />
+        <div *ngIf="searchQuery" class="absolute inset-y-0 right-0 pr-3 flex items-center">
+          <button (click)="clearSearch()" class="text-gray-400 hover:text-gray-600 transition-colors">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
     </div>
-    <div class="flex items-center space-x-3 mt-4 lg:mt-0">
-      <!-- Export Button -->
+
+    <!-- Action Buttons -->
+    <div class="flex flex-wrap items-center gap-3">
       <button
         (click)="exportPatients()"
-        class="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors duration-200"
-        title="Export patient data"
+        class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors"
       >
         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -23,117 +41,101 @@
     </div>
   </div>
 
-  <!-- Search and Filter Section -->
-  <div class="space-y-4">
-    <!-- Main Search Bar -->
-    <div class="relative">
-      <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-        </svg>
-      </div>
-      <input
-        [(ngModel)]="searchQuery"
-        (input)="applyFilters()"
-        type="text"
-        placeholder="Search by name, email, phone, or patient ID..."
-        class="w-full pl-12 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200"
-        [attr.aria-label]="'Search patients'"
-      />
-      <!-- Clear Search Button -->
-      <button
-        *ngIf="searchQuery"
-        (click)="clearSearch()"
-        class="absolute inset-y-0 right-0 pr-4 flex items-center"
-        title="Clear search"
+  <!-- Advanced Filters Row -->
+  <div class="flex flex-wrap gap-3 items-center">
+    <span class="text-sm font-medium text-gray-700">Filters:</span>
+
+    <!-- Gender Filter -->
+    <div class="relative w-full sm:w-auto">
+      <select
+        [(ngModel)]="genderFilter"
+        (change)="applyFilters()"
+        class="appearance-none bg-white border border-gray-300 rounded-xl px-4 py-2 pr-8 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors w-full sm:w-auto"
       >
-        <svg class="h-5 w-5 text-gray-400 hover:text-gray-600 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        <option value="">All Genders</option>
+        <option *ngFor="let gender of genderOptions" [value]="gender">{{ gender | titlecase }}</option>
+      </select>
+      <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
         </svg>
-      </button>
-    </div>
-
-    <!-- Advanced Filters -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      <!-- Gender Filter -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Gender</label>
-        <select
-          [(ngModel)]="genderFilter"
-          (change)="applyFilters()"
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200"
-          [attr.aria-label]="'Filter by gender'"
-        >
-          <option value="">All Genders</option>
-          <option *ngFor="let gender of genderOptions" [value]="gender">{{ gender | titlecase }}</option>
-        </select>
-      </div>
-
-      <!-- Status Filter -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-        <select
-          [(ngModel)]="statusFilter"
-          (change)="applyFilters()"
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200"
-          [attr.aria-label]="'Filter by status'"
-        >
-          <option value="">All Statuses</option>
-          <option *ngFor="let status of statusOptions" [value]="status">{{ status | titlecase }}</option>
-        </select>
-      </div>
-
-      <!-- Age Range Filter -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Age Range</label>
-        <select
-          [(ngModel)]="ageRangeFilter"
-          (change)="applyFilters()"
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200"
-          [attr.aria-label]="'Filter by age range'"
-        >
-          <option value="">All Ages</option>
-          <option value="0-18">0-18 years</option>
-          <option value="19-35">19-35 years</option>
-          <option value="36-50">36-50 years</option>
-          <option value="51-65">51-65 years</option>
-          <option value="65+">65+ years</option>
-        </select>
-      </div>
-
-      <!-- Date Range Filter -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Registration Date</label>
-        <select
-          [(ngModel)]="dateRangeFilter"
-          (change)="applyFilters()"
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200"
-          [attr.aria-label]="'Filter by registration date'"
-        >
-          <option value="">All Time</option>
-          <option value="today">Today</option>
-          <option value="week">This Week</option>
-          <option value="month">This Month</option>
-          <option value="quarter">This Quarter</option>
-          <option value="year">This Year</option>
-        </select>
       </div>
     </div>
 
-    <!-- Filter Actions -->
-    <div class="flex items-center justify-between pt-2">
-      <div class="flex items-center space-x-4">
-        <button
-          (click)="clearAllFilters()"
-          class="text-sm text-gray-600 hover:text-gray-800 underline transition-colors duration-200"
-          [disabled]="!hasActiveFilters()"
-        >
-          Clear All Filters
-        </button>
-        <span class="text-sm text-gray-500" *ngIf="totalResults !== undefined">
-          {{ totalResults }} patient{{ totalResults !== 1 ? 's' : '' }} found
-        </span>
+    <!-- Status Filter -->
+    <div class="relative w-full sm:w-auto">
+      <select
+        [(ngModel)]="statusFilter"
+        (change)="applyFilters()"
+        class="appearance-none bg-white border border-gray-300 rounded-xl px-4 py-2 pr-8 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors w-full sm:w-auto"
+      >
+        <option value="">All Statuses</option>
+        <option *ngFor="let status of statusOptions" [value]="status">{{ status | titlecase }}</option>
+      </select>
+      <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
       </div>
     </div>
+
+    <!-- Age Range Filter -->
+    <div class="relative w-full sm:w-auto">
+      <select
+        [(ngModel)]="ageRangeFilter"
+        (change)="applyFilters()"
+        class="appearance-none bg-white border border-gray-300 rounded-xl px-4 py-2 pr-8 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors w-full sm:w-auto"
+      >
+        <option value="">All Ages</option>
+        <option value="0-18">0-18 years</option>
+        <option value="19-35">19-35 years</option>
+        <option value="36-50">36-50 years</option>
+        <option value="51-65">51-65 years</option>
+        <option value="65+">65+ years</option>
+      </select>
+      <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Registration Date Filter -->
+    <div class="relative w-full sm:w-auto">
+      <select
+        [(ngModel)]="dateRangeFilter"
+        (change)="applyFilters()"
+        class="appearance-none bg-white border border-gray-300 rounded-xl px-4 py-2 pr-8 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors w-full sm:w-auto"
+      >
+        <option value="">All Dates</option>
+        <option value="today">Today</option>
+        <option value="week">This Week</option>
+        <option value="month">This Month</option>
+        <option value="quarter">This Quarter</option>
+        <option value="year">This Year</option>
+      </select>
+      <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Clear Filters Button -->
+    <button
+      *ngIf="hasActiveFilters()"
+      (click)="clearAllFilters()"
+      class="inline-flex items-center px-3 py-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+    >
+      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+      </svg>
+      Clear Filters
+    </button>
+
+    <!-- Results Count -->
+    <span *ngIf="totalResults !== undefined" class="text-sm text-gray-500 ml-auto">
+      {{ totalResults }} patient{{ totalResults !== 1 ? 's' : '' }} found
+    </span>
   </div>
 </div>

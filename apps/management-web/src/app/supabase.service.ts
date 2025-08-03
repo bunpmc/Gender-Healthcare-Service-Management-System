@@ -2,6 +2,7 @@ import { Patient } from './models/patient.interface';
 import { Injectable } from '@angular/core';
 import { supabase } from './supabase-client';
 import { from, Observable } from 'rxjs';
+import { LoggerService } from './core/services/logger.service';
 import {
   Staff,
   DoctorDetails,
@@ -42,6 +43,8 @@ import {
   providedIn: 'root',
 })
 export class SupabaseService {
+  constructor(private logger: LoggerService) {}
+
   // Đếm số bệnh nhân theo tháng
   getPatientCountByMonth(year: number, month: number): Observable<number> {
     return from(
@@ -106,7 +109,7 @@ export class SupabaseService {
     });
 
     if (error) {
-      console.error('Lỗi tìm kiếm bệnh nhân: ', error.message);
+      this.logger.error('Lỗi tìm kiếm bệnh nhân: ', error.message);
       throw error;
     }
 

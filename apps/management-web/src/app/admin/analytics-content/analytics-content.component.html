@@ -1,0 +1,194 @@
+<!-- Loading State -->
+<div *ngIf="isLoading" class="flex items-center justify-center min-h-screen">
+  <div class="text-center">
+    <div class="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600 mx-auto"></div>
+    <p class="mt-4 text-gray-600">Loading analytics data...</p>
+  </div>
+</div>
+
+<!-- Error State -->
+<div *ngIf="hasError && !isLoading" class="flex items-center justify-center min-h-96">
+  <div class="text-center">
+    <div class="text-red-500 text-6xl mb-4">⚠️</div>
+    <h2 class="text-xl font-semibold text-gray-900 mb-2">Unable to load analytics</h2>
+    <p class="text-gray-600 mb-4">Please try refreshing the page or contact support.</p>
+    <button
+      (click)="refreshData()"
+      class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
+      Try Again
+    </button>
+  </div>
+</div>
+
+<!-- Analytics Dashboard -->
+<div *ngIf="!isLoading && !hasError" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 space-y-8 animate-fadeIn">
+  <!-- Header Section -->
+  <section class="bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-500 rounded-2xl px-8 py-6 flex flex-col lg:flex-row lg:items-center lg:justify-between shadow-xl mb-8">
+    <div class="flex items-center gap-4">
+      <div class="bg-white rounded-xl flex items-center justify-center w-10 h-10">
+        <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-xl font-bold text-white">Healthcare Analytics Dashboard</h1>
+        <p class="text-sm text-indigo-100">Comprehensive insights and performance metrics</p>
+        <div class="flex items-center mt-2 text-sm text-indigo-200">
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          Last updated: {{ lastUpdated }}
+        </div>
+      </div>
+    </div>
+    <div class="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 mt-4 lg:mt-0">
+      <!-- Date Range Selector -->
+      <div class="flex items-center space-x-2">
+        <label class="text-sm font-medium text-white">Period:</label>
+        <select
+          [(ngModel)]="selectedPeriod"
+          (change)="onPeriodChange()"
+          class="px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+          <option value="7d">Last 7 Days</option>
+          <option value="30d">Last 30 Days</option>
+          <option value="90d">Last 3 Months</option>
+          <option value="1y">Last Year</option>
+        </select>
+      </div>
+      <button
+        (click)="refreshData()"
+        [disabled]="isRefreshing"
+        class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 disabled:opacity-50">
+        <svg class="w-4 h-4 mr-2" [class.animate-spin]="isRefreshing" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+        </svg>
+        <span>{{ isRefreshing ? 'Refreshing...' : 'Refresh' }}</span>
+      </button>
+      <button
+        (click)="exportReport()"
+        class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg hover:from-green-700 hover:to-emerald-700 transition-all duration-200">
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+        </svg>
+        <span>Export</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- KPI Cards -->
+  <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div *ngFor="let kpi of kpiCards; trackBy: trackByKpiTitle"
+         class="bg-white rounded-2xl p-6 shadow-xl border border-gray-100 hover:shadow-2xl transition-all duration-300 transform hover:scale-105">
+      <div class="flex items-center justify-between mb-4">
+        <div [class]="'w-10 h-10 rounded-xl flex items-center justify-center ' + kpi.color">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="kpi.icon"></path>
+          </svg>
+        </div>
+        <div *ngIf="!kpi.loading" [class]="'px-2 py-1 rounded-lg text-xs font-medium ' + getChangeColorClass(kpi.changeType)">
+          {{ kpi.change }}
+        </div>
+        <div *ngIf="kpi.loading" class="animate-pulse bg-gray-200 h-6 w-16 rounded"></div>
+      </div>
+      <div class="space-y-2">
+        <h3 class="text-sm font-medium text-gray-600">{{ kpi.title }}</h3>
+        <div *ngIf="!kpi.loading" class="text-3xl font-bold text-gray-900">{{ kpi.value }}</div>
+        <div *ngIf="kpi.loading" class="animate-pulse bg-gray-200 h-8 w-24 rounded"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Charts Section -->
+  <section class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden p-6 mb-8">
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-xl font-bold text-gray-900">Analytics Charts</h2>
+      <div class="flex items-center space-x-2">
+        <div class="w-3 h-3 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full"></div>
+        <span class="text-sm text-gray-600">Real-time Data</span>
+      </div>
+    </div>
+    <app-css-charts></app-css-charts>
+  </section>
+
+  <!-- Detailed Analytics Sections -->
+  <section class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+    <!-- Patient Demographics -->
+    <div *ngIf="hasPatientDemographicData()" class="bg-white rounded-2xl p-6 shadow-xl border border-gray-100 overflow-hidden">
+      <h2 class="text-xl font-bold text-gray-900 mb-6">Patient Demographics</h2>
+      <div class="space-y-4">
+        <!-- Age Distribution -->
+        <div *ngIf="getAgeDistributionArray().length > 0">
+          <h3 class="text-sm font-medium text-gray-600 mb-3">Age Distribution</h3>
+          <div class="space-y-2">
+            <div *ngFor="let item of getAgeDistributionArray()" class="flex items-center justify-between">
+              <span class="text-sm text-gray-700">{{ item.ageGroup }}</span>
+              <span class="text-sm font-medium text-gray-900">{{ item.count }}</span>
+            </div>
+          </div>
+        </div>
+        <!-- Gender Distribution -->
+        <div *ngIf="getGenderDistributionArray().length > 0">
+          <h3 class="text-sm font-medium text-gray-600 mb-3">Gender Distribution</h3>
+          <div class="space-y-2">
+            <div *ngFor="let item of getGenderDistributionArray()" class="flex items-center justify-between">
+              <span class="text-sm text-gray-700">{{ item.gender }}</span>
+              <span class="text-sm font-medium text-gray-900">{{ item.count }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- System Usage -->
+    <div class="bg-white rounded-2xl p-6 shadow-xl border border-gray-100 overflow-hidden">
+      <h2 class="text-xl font-bold text-gray-900 mb-6">System Usage</h2>
+      <div class="space-y-6">
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm font-medium text-gray-600">Active Users</span>
+            <span class="text-lg font-bold text-indigo-600">{{ analyticsData?.systemStats?.activeUsers || 0 }}</span>
+          </div>
+          <div class="w-full bg-gray-200 rounded-full h-2">
+            <div class="bg-indigo-600 h-2 rounded-full" [style.width.%]="getUsagePercentage()"></div>
+          </div>
+        </div>
+        <div>
+          <h3 class="text-sm font-medium text-gray-600 mb-3">Peak Usage Hours</h3>
+          <div class="space-y-2">
+            <div class="text-sm text-gray-600">9:00 AM - 11:00 AM: Peak activity</div>
+            <div class="text-sm text-gray-600">2:00 PM - 4:00 PM: High activity</div>
+            <div class="text-sm text-gray-600">6:00 PM - 8:00 PM: Moderate activity</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="bg-white rounded-2xl p-6 shadow-xl border border-gray-100 overflow-hidden">
+      <h2 class="text-xl font-bold text-gray-900 mb-6">Quick Statistics</h2>
+      <div class="space-y-4">
+        <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+          <div>
+            <p class="text-sm font-medium text-blue-900">Completion Rate</p>
+            <p class="text-xs text-blue-600">Appointments</p>
+          </div>
+          <div class="text-2xl font-bold text-blue-600">{{ getCompletionRate() }}%</div>
+        </div>
+        <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+          <div>
+            <p class="text-sm font-medium text-green-900">Staff Utilization</p>
+            <p class="text-xs text-green-600">Average</p>
+          </div>
+          <div class="text-2xl font-bold text-green-600">{{ getStaffUtilization() }}%</div>
+        </div>
+        <div class="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
+          <div>
+            <p class="text-sm font-medium text-purple-900">Revenue Growth</p>
+            <p class="text-xs text-purple-600">This Month</p>
+          </div>
+          <div class="text-2xl font-bold text-purple-600">+{{ getRevenueGrowth() }}%</div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

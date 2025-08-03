@@ -29,8 +29,11 @@ interface StatsCard {
 interface RecentActivity {
   id: string;
   type: 'appointment' | 'patient' | 'staff' | 'system';
+  title: string;
+  description: string;
   message: string;
   timestamp: Date;
+  status: string;
   priority: 'low' | 'medium' | 'high';
 }
 
@@ -38,182 +41,10 @@ interface RecentActivity {
   selector: 'app-dashboard-content',
   standalone: true,
   imports: [CommonModule],
-  template: `
-    <!-- Loading State -->
-    <div *ngIf="isLoading" class="flex items-center justify-center min-h-screen">
-      <div class="text-center">
-        <div class="relative">
-          <div class="inline-block animate-spin rounded-full h-16 w-16 border-4 border-indigo-200 border-t-indigo-600 mb-6"></div>
-          <div class="absolute inset-0 flex items-center justify-center">
-            <div class="w-8 h-8 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full animate-pulse"></div>
-          </div>
-        </div>
-        <h3 class="text-lg font-semibold text-gray-900 mb-2">Loading Dashboard</h3>
-        <p class="text-gray-600">Fetching real-time data from database...</p>
-      </div>
-    </div>
-
-    <!-- Error State -->
-    <div *ngIf="hasError && !isLoading" class="flex items-center justify-center min-h-96">
-      <div class="text-center max-w-md">
-        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-          </svg>
-        </div>
-        <h3 class="text-lg font-semibold text-gray-900 mb-2">Unable to Load Dashboard</h3>
-        <p class="text-gray-600 mb-4">{{ errorMessage }}</p>
-        <button
-          (click)="retryLoadData()"
-          class="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-300">
-          Try Again
-        </button>
-      </div>
-    </div>
-
-    <!-- Dashboard Content -->
-    <div *ngIf="!isLoading && !hasError" class="space-y-8 animate-fadeIn">
-      <!-- Header Section -->
-      <div class="bg-gradient-to-r from-white via-indigo-50 to-purple-50 rounded-3xl p-8 shadow-2xl border border-white/30 backdrop-blur-sm">
-        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-          <div>
-            <h1 class="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-3">
-              Healthcare Admin Dashboard
-            </h1>
-            <p class="text-gray-600 text-lg">Real-time insights and system management</p>
-            <div class="flex items-center mt-2 text-sm text-gray-500">
-              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
-              Last updated: {{ lastUpdated }}
-            </div>
-          </div>
-          <div class="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
-            <div class="px-6 py-3 bg-gradient-to-r from-indigo-100 to-purple-100 rounded-2xl border border-indigo-200">
-              <p class="text-sm font-medium text-indigo-700">{{ getCurrentDate() }}</p>
-            </div>
-            <button
-              (click)="refreshData()"
-              [disabled]="isRefreshing"
-              class="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-2xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 disabled:opacity-50 flex items-center space-x-2">
-              <svg class="w-4 h-4" [class.animate-spin]="isRefreshing" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-              </svg>
-              <span>{{ isRefreshing ? 'Refreshing...' : 'Refresh' }}</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Stats Cards Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div *ngFor="let card of statsCards; trackBy: trackByCardTitle"
-             class="bg-white rounded-2xl p-6 shadow-xl border border-white/20 hover:shadow-2xl transition-all duration-300 transform hover:scale-105">
-          <div class="flex items-center justify-between mb-4">
-            <div [class]="'w-12 h-12 rounded-xl flex items-center justify-center ' + card.color">
-              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="card.icon"></path>
-              </svg>
-            </div>
-            <div *ngIf="!card.loading" [class]="'px-2 py-1 rounded-lg text-xs font-medium ' + getChangeColorClass(card.changeType)">
-              {{ card.change }}
-            </div>
-            <div *ngIf="card.loading" class="animate-pulse bg-gray-200 h-6 w-16 rounded"></div>
-          </div>
-          <div class="space-y-2">
-            <h3 class="text-sm font-medium text-gray-600">{{ card.title }}</h3>
-            <div *ngIf="!card.loading" class="text-3xl font-bold text-gray-900">{{ card.value }}</div>
-            <div *ngIf="card.loading" class="animate-pulse bg-gray-200 h-8 w-20 rounded"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Charts and Analytics Section -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <!-- Recent Activity -->
-        <div class="bg-white rounded-2xl p-6 shadow-xl border border-white/20">
-          <div class="flex items-center justify-between mb-6">
-            <h2 class="text-xl font-bold text-gray-900">Recent Activity</h2>
-            <button class="text-indigo-600 hover:text-indigo-700 text-sm font-medium">View All</button>
-          </div>
-          <div class="space-y-4">
-            <div *ngIf="recentActivities.length === 0 && !isLoading" class="text-center py-8 text-gray-500">
-              No recent activities
-            </div>
-            <div *ngFor="let activity of recentActivities; trackBy: trackByActivityId"
-                 class="flex items-start space-x-4 p-4 rounded-xl hover:bg-gray-50 transition-colors duration-200">
-              <div [class]="'w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ' + getActivityIconColor(activity.type)">
-                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="getActivityIcon(activity.type)"></path>
-                </svg>
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium text-gray-900">{{ activity.message }}</p>
-                <p class="text-xs text-gray-500 mt-1">{{ activity.timestamp | date:'short' }}</p>
-              </div>
-              <div [class]="'px-2 py-1 rounded-full text-xs font-medium ' + getPriorityColorClass(activity.priority)">
-                {{ activity.priority }}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Quick Actions -->
-        <div class="bg-white rounded-2xl p-6 shadow-xl border border-white/20">
-          <h2 class="text-xl font-bold text-gray-900 mb-6">Quick Actions</h2>
-          <div class="grid grid-cols-2 gap-4">
-            <button *ngFor="let action of quickActions"
-                    class="p-4 rounded-xl border-2 border-dashed border-gray-200 hover:border-indigo-300 hover:bg-indigo-50 transition-all duration-300 text-center group">
-              <div [class]="'w-8 h-8 mx-auto mb-3 rounded-lg flex items-center justify-center ' + action.color">
-                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="action.icon"></path>
-                </svg>
-              </div>
-              <p class="text-sm font-medium text-gray-700 group-hover:text-indigo-700">{{ action.title }}</p>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- System Status -->
-      <div class="bg-white rounded-2xl p-6 shadow-xl border border-white/20">
-        <h2 class="text-xl font-bold text-gray-900 mb-6">System Status</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div *ngFor="let status of systemStatus" class="text-center">
-            <div [class]="'w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ' + status.color">
-              <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="status.icon"></path>
-              </svg>
-            </div>
-            <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ status.title }}</h3>
-            <p [class]="'text-sm font-medium ' + getStatusTextColor(status.status)">{{ status.message }}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  `,
-  styles: [`
-    .animate-fadeIn {
-      animation: fadeIn 0.5s ease-in-out;
-    }
-
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    /* Smooth transitions for all elements */
-    * {
-      transition: all 0.3s ease-in-out;
-    }
-  `]
+  templateUrl: './dashboard-content.component.html',
+  styleUrls: ['./dashboard-content.component.css']
 })
+
 export class DashboardContentComponent implements OnInit {
   private supabaseService = inject(SupabaseService);
 
@@ -421,29 +252,41 @@ export class DashboardContentComponent implements OnInit {
         {
           id: '1',
           type: 'patient',
+          title: 'New Patient Registrations',
+          description: `${this.dashboardStats.newPatientsThisMonth} new patients registered this month`,
           message: `${this.dashboardStats.newPatientsThisMonth} new patients registered this month`,
           timestamp: new Date(),
+          status: 'completed',
           priority: 'medium'
         },
         {
           id: '2',
           type: 'appointment',
+          title: 'Today\'s Appointments',
+          description: `${this.dashboardStats.todayAppointments} appointments scheduled for today`,
           message: `${this.dashboardStats.todayAppointments} appointments scheduled for today`,
           timestamp: new Date(Date.now() - 3600000),
+          status: 'active',
           priority: this.dashboardStats.todayAppointments > 10 ? 'high' : 'low'
         },
         {
           id: '3',
           type: 'staff',
+          title: 'Active Staff Members',
+          description: `${this.dashboardStats.activeStaff} staff members currently active`,
           message: `${this.dashboardStats.activeStaff} staff members currently active`,
           timestamp: new Date(Date.now() - 7200000),
+          status: 'online',
           priority: 'low'
         },
         {
           id: '4',
           type: 'system',
+          title: 'System Backup',
+          description: 'Database backup completed successfully',
           message: 'Database backup completed successfully',
           timestamp: new Date(Date.now() - 10800000),
+          status: 'completed',
           priority: 'low'
         }
       ];
@@ -581,6 +424,69 @@ export class DashboardContentComponent implements OnInit {
       case 'warning': return 'text-yellow-600';
       case 'error': return 'text-red-600';
       default: return 'text-gray-600';
+    }
+  }
+
+  // Additional methods used in template
+  getFormattedTime(): string {
+    return new Date().toLocaleTimeString();
+  }
+
+  navigateToAppointments(): void {
+    // Navigation logic for appointments
+    console.log('Navigating to appointments');
+  }
+
+  navigateToPatients(): void {
+    // Navigation logic for patients
+    console.log('Navigating to patients');
+  }
+
+  navigateToStaff(): void {
+    // Navigation logic for staff
+    console.log('Navigating to staff');
+  }
+
+  refreshActivity(): void {
+    this.isRefreshing = true;
+    // Simulate refresh
+    setTimeout(() => {
+      this.isRefreshing = false;
+      this.loadDashboardData();
+    }, 1000);
+  }
+
+  getActivityColor(type: string): string {
+    switch (type) {
+      case 'patient': return 'bg-blue-500';
+      case 'appointment': return 'bg-green-500';
+      case 'staff': return 'bg-purple-500';
+      case 'system': return 'bg-gray-500';
+      default: return 'bg-gray-400';
+    }
+  }
+
+  getRelativeTime(timestamp: Date): string {
+    const now = new Date();
+    const diff = now.getTime() - timestamp.getTime();
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (days > 0) return `${days} day${days > 1 ? 's' : ''} ago`;
+    if (hours > 0) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    if (minutes > 0) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+    return 'Just now';
+  }
+
+  getStatusBadgeClass(status: string): string {
+    switch (status) {
+      case 'completed': return 'bg-green-100 text-green-800';
+      case 'active': return 'bg-blue-100 text-blue-800';
+      case 'pending': return 'bg-yellow-100 text-yellow-800';
+      case 'online': return 'bg-green-100 text-green-800';
+      case 'offline': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   }
 

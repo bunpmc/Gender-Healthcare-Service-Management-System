@@ -1,4 +1,17 @@
 /* You can add global styles to this file, and also import other style files */
+/* Critical CSS - Loaded first */
+@import './styles/critical.css';
+
+/* Shared component styles */
+@import './styles/components.css';
+
+/* Custom utilities for bundle optimization */
+@import './styles/utilities.css';
+
+/* Layout-specific styles - loaded only when needed */
+@import './styles/layouts.css';
+
+/* Tailwind CSS layers */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

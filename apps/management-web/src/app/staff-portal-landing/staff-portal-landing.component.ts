@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
+import { LoggerService } from '../core/services/logger.service';
 
 @Component({
   selector: 'app-staff-portal-landing',
@@ -126,14 +127,14 @@ import { Router, RouterModule } from '@angular/router';
 })
 export class StaffPortalLandingComponent implements OnInit {
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private logger: LoggerService) {}
 
   ngOnInit(): void {
-    console.log('🏥 Staff Portal Landing initialized');
+    this.logger.info('🏥 Staff Portal Landing initialized');
   }
 
   navigateToPortal(portalType: string): void {
-    console.log('🚀 Navigating to unified staff login for:', portalType);
+    this.logger.debug('🚀 Navigating to unified staff login for:', portalType);
 
     // All staff roles now use the unified login page
     this.router.navigate(['/login']);

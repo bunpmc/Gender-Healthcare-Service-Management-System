@@ -1,0 +1,379 @@
+/* CSS Charts Component Styles */
+
+:host {
+    display: block;
+}
+
+/* Loading Animation */
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Chart Container Styles */
+.chart-container {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0 1rem 3rem;
+}
+
+/* Chart Grid */
+.charts-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    width: 100%;
+}
+
+@media (min-width: 1024px) {
+    .charts-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* Chart Section */
+.chart-section {
+    background: white;
+    border-radius: 1rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #f3f4f6;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Chart Header */
+.chart-header {
+    border-radius: 1rem 1rem 0 0;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.chart-header.blue-gradient {
+    background: linear-gradient(to right, #2563eb, #4f46e5);
+}
+
+.chart-header.green-gradient {
+    background: linear-gradient(to right, #10b981, #059669);
+}
+
+.chart-header.purple-gradient {
+    background: linear-gradient(to right, #8b5cf6, #ec4899);
+}
+
+.chart-header.cyan-gradient {
+    background: linear-gradient(to right, #3b82f6, #06b6d4);
+}
+
+.chart-header.orange-gradient {
+    background: linear-gradient(to right, #eab308, #ea580c);
+}
+
+/* Chart Icon */
+.chart-icon-container {
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+}
+
+.chart-icon-container.blue {
+    background-color: #dbeafe;
+}
+
+.chart-icon-container.green {
+    background-color: #dcfce7;
+}
+
+.chart-icon-container.purple {
+    background-color: #f3e8ff;
+}
+
+.chart-icon-container.orange {
+    background-color: #fed7aa;
+}
+
+.chart-icon {
+    width: 1.75rem;
+    height: 1.75rem;
+}
+
+/* Chart Header Text */
+.chart-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: white;
+    margin: 0;
+}
+
+.chart-subtitle {
+    font-size: 0.875rem;
+    margin: 0;
+    opacity: 0.8;
+}
+
+/* Chart Content */
+.chart-content {
+    padding: 1.5rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+/* Chart Item */
+.chart-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.chart-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+    min-width: fit-content;
+}
+
+.chart-bar-container {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+    margin-left: 1rem;
+}
+
+.chart-bar-background {
+    flex: 1;
+    background-color: #e5e7eb;
+    border-radius: 9999px;
+    overflow: hidden;
+}
+
+.chart-bar-fill {
+    border-radius: 9999px;
+    transition: all 1000ms ease-out;
+}
+
+.chart-value {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #111827;
+    text-align: right;
+    min-width: fit-content;
+}
+
+/* Bar Heights */
+.bar-height-3 {
+    height: 0.75rem;
+}
+
+.bar-height-4 {
+    height: 1rem;
+}
+
+/* Bottom Charts Grid */
+.bottom-charts-grid {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    margin-top: 0.5rem;
+}
+
+@media (min-width: 768px) {
+    .bottom-charts-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Appointment Status Cards */
+.appointment-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+}
+
+.appointment-card {
+    background: linear-gradient(to bottom right, #f9fafb, #f3f4f6);
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    border: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.appointment-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+}
+
+.appointment-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+}
+
+.appointment-indicator {
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 50%;
+}
+
+.appointment-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 0.5rem;
+    text-align: right;
+}
+
+.appointment-progress {
+    width: 100%;
+    background-color: #e5e7eb;
+    border-radius: 9999px;
+    height: 0.5rem;
+}
+
+.appointment-progress-fill {
+    height: 0.5rem;
+    border-radius: 9999px;
+    transition: all 1000ms ease-out;
+}
+
+/* Loading State */
+.loading-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 0;
+}
+
+.loading-content {
+    text-align: center;
+}
+
+.loading-spinner {
+    width: 4rem;
+    height: 4rem;
+    border: 2px solid transparent;
+    border-bottom-color: #4f46e5;
+    border-radius: 50%;
+    margin: 0 auto 1rem;
+}
+
+.loading-text {
+    color: #6b7280;
+    margin: 0;
+}
+
+/* Error State */
+.error-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 0;
+}
+
+.error-content {
+    text-align: center;
+}
+
+.error-icon {
+    width: 4rem;
+    height: 4rem;
+    color: #ef4444;
+    margin: 0 auto 1rem;
+}
+
+.error-title {
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: #111827;
+    margin: 0 0 0.5rem;
+}
+
+.error-message {
+    color: #6b7280;
+    margin: 0 0 1rem;
+}
+
+.error-retry-button {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    background-color: #4f46e5;
+    color: white;
+    border-radius: 0.5rem;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.error-retry-button:hover {
+    background-color: #4338ca;
+}
+
+.error-retry-icon {
+    width: 1rem;
+    height: 1rem;
+    margin-right: 0.5rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .chart-container {
+        padding: 0 0.5rem 2rem;
+    }
+
+    .charts-grid {
+        gap: 1.5rem;
+    }
+
+    .chart-content {
+        padding: 1rem;
+    }
+
+    .appointment-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .chart-title {
+        font-size: 1.125rem;
+    }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+
+    .chart-bar-fill,
+    .appointment-progress-fill {
+        transition: none;
+    }
+
+    .animate-spin {
+        animation: none;
+    }
+}
+
+/* Focus States */
+.error-retry-button:focus {
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.2);
+}

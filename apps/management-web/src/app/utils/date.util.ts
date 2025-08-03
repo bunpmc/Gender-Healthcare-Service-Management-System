@@ -48,7 +48,7 @@ export class DateUtil {
       
       return new Intl.DateTimeFormat(this.VI_LOCALE, this.FORMATS[format]).format(dateObj);
     } catch (error) {
-      console.warn('Error formatting date:', error);
+      // Silent error handling for production - invalid date formats
       return '';
     }
   }
@@ -69,7 +69,7 @@ export class DateUtil {
       const format = use12Hour ? this.FORMATS.TIME_12H : this.FORMATS.TIME_ONLY;
       return new Intl.DateTimeFormat(this.VI_LOCALE, format).format(dateObj);
     } catch (error) {
-      console.warn('Error formatting time:', error);
+      // Silent error handling for production - invalid time formats
       return '';
     }
   }
@@ -112,7 +112,7 @@ export class DateUtil {
       
       return this.formatDate(date, 'DATE_SHORT');
     } catch (error) {
-      console.warn('Error calculating relative time:', error);
+      // Silent error handling for production - invalid relative time calculation
       return '';
     }
   }

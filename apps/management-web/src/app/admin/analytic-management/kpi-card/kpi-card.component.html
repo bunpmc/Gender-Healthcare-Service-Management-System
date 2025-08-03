@@ -5,10 +5,10 @@
   <div class="flex flex-wrap justify-between w-full max-w-full">
     <!-- Appointments Card -->
     <div
-      class="flex flex-col items-start bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-2xl p-5 w-full sm:w-1/5 shadow hover:shadow-lg transition-all"
+      class="flex flex-col items-start bg-white rounded-2xl shadow-xl border border-white/20 p-6 w-full sm:w-1/5 hover:shadow-2xl transition-all duration-300 group"
     >
-      <p class="text-sm text-blue-700 font-medium mb-1">Appointments</p>
-      <p class="text-3xl font-bold text-blue-900 mb-1">{{ appointments }}</p>
+      <p class="text-sm text-blue-600 font-semibold mb-2 group-hover:text-blue-700 transition-colors">Appointments</p>
+      <p class="text-4xl font-bold text-gray-900 mb-2 group-hover:text-purple-600 transition-colors">{{ appointments }}</p>
       <div class="flex items-center text-xs mb-2">
         <span
           [ngClass]="{
@@ -44,23 +44,23 @@
               d="M19 14l-7 7m0 0l-7-7m7 7V3"
             />
           </svg>
-          {{ appointmentsChange | number : "1.0-2" }}% so với tháng trước
+          {{ appointmentsChange | number : "1.0-2" }}% vs last month
         </span>
       </div>
-      <div class="w-full h-8">
+      <div class="w-full h-10 mt-4">
         <!-- Chart temporarily disabled until ng2-charts is properly installed -->
-        <div class="w-full h-8 bg-gray-100 rounded flex items-center justify-center">
-          <span class="text-xs text-gray-500">Chart</span>
+        <div class="w-full h-10 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl flex items-center justify-center border border-purple-100">
+          <span class="text-xs text-purple-600 font-medium">Chart</span>
         </div>
       </div>
     </div>
 
     <!-- New Patients Card -->
     <div
-      class="flex flex-col items-start bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-2xl p-5 w-full sm:w-1/5 shadow hover:shadow-lg transition-all"
+      class="flex flex-col items-start bg-white rounded-2xl shadow-xl border border-white/20 p-6 w-full sm:w-1/5 hover:shadow-2xl transition-all duration-300 group"
     >
-      <p class="text-sm text-green-700 font-medium mb-1">New Patients</p>
-      <p class="text-3xl font-bold text-green-900 mb-1">{{ newPatients }}</p>
+      <p class="text-sm text-green-600 font-semibold mb-2 group-hover:text-green-700 transition-colors">New Patients</p>
+      <p class="text-4xl font-bold text-gray-900 mb-2 group-hover:text-purple-600 transition-colors">{{ newPatients }}</p>
       <div class="flex items-center text-xs mb-2">
         <span
           [ngClass]="{
@@ -96,23 +96,23 @@
               d="M19 14l-7 7m0 0l-7-7m7 7V3"
             />
           </svg>
-          {{ newPatientsChange | number : "1.0-2" }}% so với tháng trước
+          {{ newPatientsChange | number : "1.0-2" }}% vs last month
         </span>
       </div>
-      <div class="w-full h-8">
+      <div class="w-full h-10 mt-4">
         <!-- Chart temporarily disabled until ng2-charts is properly installed -->
-        <div class="w-full h-8 bg-gray-100 rounded flex items-center justify-center">
-          <span class="text-xs text-gray-500">Chart</span>
+        <div class="w-full h-10 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl flex items-center justify-center border border-purple-100">
+          <span class="text-xs text-purple-600 font-medium">Chart</span>
         </div>
       </div>
     </div>
 
     <!-- Revenue Card -->
     <div
-      class="flex flex-col items-start bg-gradient-to-br from-yellow-50 to-yellow-100 border border-yellow-200 rounded-2xl p-5 w-full sm:w-1/5 shadow hover:shadow-lg transition-all"
+      class="flex flex-col items-start bg-white rounded-2xl shadow-xl border border-white/20 p-6 w-full sm:w-1/5 hover:shadow-2xl transition-all duration-300 group"
     >
-      <p class="text-sm text-yellow-700 font-medium mb-1">Revenue</p>
-      <p class="text-3xl font-bold text-yellow-900 mb-1">${{ revenue }}</p>
+      <p class="text-sm text-yellow-600 font-semibold mb-2 group-hover:text-yellow-700 transition-colors">Revenue</p>
+      <p class="text-4xl font-bold text-gray-900 mb-2 group-hover:text-purple-600 transition-colors">${{ revenue }}</p>
       <div class="flex items-center text-xs mb-2">
         <span
           [ngClass]="{
@@ -148,23 +148,23 @@
               d="M19 14l-7 7m0 0l-7-7m7 7V3"
             />
           </svg>
-          {{ revenueChange | number : "1.0-2" }}% so với tháng trước
+          {{ revenueChange | number : "1.0-2" }}% vs last month
         </span>
       </div>
-      <div class="w-full h-8">
+      <div class="w-full h-10 mt-4">
         <!-- Chart temporarily disabled until ng2-charts is properly installed -->
-        <div class="w-full h-8 bg-gray-100 rounded flex items-center justify-center">
-          <span class="text-xs text-gray-500">Chart</span>
+        <div class="w-full h-10 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl flex items-center justify-center border border-purple-100">
+          <span class="text-xs text-purple-600 font-medium">Chart</span>
         </div>
       </div>
     </div>
 
     <!-- Task Completion Card -->
     <div
-      class="flex flex-col bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-2xl p-5 w-full sm:w-1/5 shadow hover:shadow-lg transition-all"
+      class="flex flex-col bg-white rounded-2xl shadow-xl border border-white/20 p-6 w-full sm:w-1/5 hover:shadow-2xl transition-all duration-300 group"
     >
-      <p class="text-sm text-purple-700 font-medium mb-1">Task Completion</p>
-      <p class="text-3xl font-bold text-purple-900 mb-1">
+      <p class="text-sm text-purple-600 font-semibold mb-2 group-hover:text-purple-700 transition-colors">Task Completion</p>
+      <p class="text-4xl font-bold text-gray-900 mb-2 group-hover:text-purple-600 transition-colors">
         {{ taskCompletion }}%
       </p>
       <div class="flex items-center text-xs mb-2">
@@ -202,13 +202,13 @@
               d="M19 14l-7 7m0 0l-7-7m7 7V3"
             />
           </svg>
-          {{ taskCompletionChange | number : "1.0-2" }}% so với hôm qua
+          {{ taskCompletionChange | number : "1.0-2" }}% vs yesterday
         </span>
       </div>
-      <div class="w-full h-8">
+      <div class="w-full h-10 mt-4">
         <!-- Chart temporarily disabled until ng2-charts is properly installed -->
-        <div class="w-full h-8 bg-gray-100 rounded flex items-center justify-center">
-          <span class="text-xs text-gray-500">Chart</span>
+        <div class="w-full h-10 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl flex items-center justify-center border border-purple-100">
+          <span class="text-xs text-purple-600 font-medium">Chart</span>
         </div>
       </div>
     </div>

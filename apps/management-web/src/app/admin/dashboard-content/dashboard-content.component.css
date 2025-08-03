@@ -1,0 +1,187 @@
+/* Dashboard Content Component Styles */
+
+.animate-fadeIn {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Loading spinner enhancements */
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Pulse animation for loading states */
+.animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Card hover effects */
+.hover\:scale-105:hover {
+    transform: scale(1.05);
+    transition: transform 0.3s ease-in-out;
+}
+
+.hover\:shadow-2xl:hover {
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+/* Smooth transitions for all interactive elements */
+button,
+.transition-all,
+.transition-colors {
+    transition: all 0.3s ease-in-out;
+}
+
+/* Custom gradient backgrounds */
+.bg-gradient-to-r {
+    background-image: linear-gradient(to right, var(--tw-gradient-stops));
+}
+
+/* Status badge enhancements */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    font-weight: 500;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    border-radius: 9999px;
+    padding: 0.25rem 0.75rem;
+}
+
+.status-success {
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+.status-warning {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.status-error {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+.status-info {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+/* Activity timeline styles */
+.activity-item {
+    position: relative;
+    padding-left: 3rem;
+}
+
+.activity-item::before {
+    content: '';
+    position: absolute;
+    left: 1.25rem;
+    top: 2.5rem;
+    bottom: -1rem;
+    width: 2px;
+    background-color: #e5e7eb;
+}
+
+.activity-item:last-child::before {
+    display: none;
+}
+
+/* Responsive design improvements */
+@media (max-width: 1024px) {
+    .xl\:grid-cols-3 {
+        grid-template-columns: repeat(1, minmax(0, 1fr));
+    }
+
+    .lg\:grid-cols-4 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .md\:grid-cols-2 {
+        grid-template-columns: repeat(1, minmax(0, 1fr));
+    }
+
+    .md\:grid-cols-3 {
+        grid-template-columns: repeat(1, minmax(0, 1fr));
+    }
+
+    .lg\:grid-cols-4 {
+        grid-template-columns: repeat(1, minmax(0, 1fr));
+    }
+
+    .hidden.md\:block {
+        display: none !important;
+    }
+}
+
+@media (max-width: 640px) {
+    .px-8 {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .py-6 {
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+    }
+
+    .text-2xl {
+        font-size: 1.5rem;
+        line-height: 2rem;
+    }
+}
+
+/* Dark mode support (optional) */
+@media (prefers-color-scheme: dark) {
+    .bg-white {
+        background-color: #1f2937;
+    }
+
+    .text-gray-900 {
+        color: #f9fafb;
+    }
+
+    .text-gray-600 {
+        color: #d1d5db;
+    }
+
+    .border-gray-100 {
+        border-color: #374151;
+    }
+}

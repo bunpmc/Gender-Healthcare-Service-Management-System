@@ -75,7 +75,7 @@ serve(async (req) => {
 
     // ✅ Sinh mật khẩu
     // const password = generatePassword(6);
-       const password = 1234;
+       const password = "1234";
     // ✅ Tạo tài khoản auth với mật khẩu
     const { data: user, error: userError } = await supabase.auth.admin.createUser({
       email: working_email,

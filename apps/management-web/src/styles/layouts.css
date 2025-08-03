@@ -1,0 +1,188 @@
+/**
+ * Layout Utilities
+ * Layout-specific styles for different portal sections
+ */
+
+/* Admin Portal Layout */
+.admin-layout {
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    grid-template-rows: auto 1fr;
+    min-height: 100vh;
+    background-color: var(--gray-50);
+}
+
+.admin-sidebar {
+    grid-column: 1;
+    grid-row: 1 / -1;
+    background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.admin-main {
+    grid-column: 2;
+    grid-row: 1 / -1;
+    padding: var(--spacing-lg);
+    overflow-y: auto;
+}
+
+/* Doctor Portal Layout */
+.doctor-layout {
+    display: flex;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.doctor-sidebar {
+    width: 280px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.doctor-main {
+    flex: 1;
+    background: var(--gray-50);
+    border-radius: 24px 0 0 24px;
+    padding: var(--spacing-xl);
+    margin: var(--spacing-lg) 0 var(--spacing-lg) var(--spacing-lg);
+    overflow-y: auto;
+}
+
+/* Receptionist Portal Layout */
+.receptionist-layout {
+    display: flex;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+}
+
+.receptionist-sidebar {
+    width: 260px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(20px);
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.receptionist-main {
+    flex: 1;
+    background: var(--gray-50);
+    border-radius: 20px 0 0 20px;
+    padding: var(--spacing-lg);
+    margin: var(--spacing-md) 0 var(--spacing-md) var(--spacing-md);
+    overflow-y: auto;
+}
+
+/* Shared Layout Components */
+.layout-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-md) var(--spacing-lg);
+    background: white;
+    border-bottom: 1px solid var(--gray-200);
+    box-shadow: var(--shadow-sm);
+}
+
+.layout-content {
+    flex: 1;
+    padding: var(--spacing-lg);
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+/* Navigation Styles */
+.nav-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.nav-item {
+    margin-bottom: var(--spacing-xs);
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    padding: var(--spacing-sm) var(--spacing-md);
+    color: inherit;
+    text-decoration: none;
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.nav-link.active {
+    background-color: rgba(255, 255, 255, 0.2);
+    font-weight: 600;
+}
+
+.nav-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: var(--spacing-sm);
+    flex-shrink: 0;
+}
+
+/* Dashboard Grid Layout */
+.dashboard-grid {
+    display: grid;
+    gap: var(--spacing-lg);
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.dashboard-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--gray-100);
+}
+
+/* Responsive Layout */
+@media (max-width: 768px) {
+    .admin-layout {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto 1fr;
+    }
+
+    .admin-sidebar {
+        grid-column: 1;
+        grid-row: 1;
+        position: static;
+    }
+
+    .admin-main {
+        grid-column: 1;
+        grid-row: 2 / -1;
+        padding: var(--spacing-md);
+    }
+
+    .doctor-layout,
+    .receptionist-layout {
+        flex-direction: column;
+    }
+
+    .doctor-sidebar,
+    .receptionist-sidebar {
+        width: 100%;
+        height: auto;
+    }
+
+    .doctor-main,
+    .receptionist-main {
+        border-radius: 0;
+        margin: 0;
+        padding: var(--spacing-md);
+    }
+
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-md);
+    }
+}

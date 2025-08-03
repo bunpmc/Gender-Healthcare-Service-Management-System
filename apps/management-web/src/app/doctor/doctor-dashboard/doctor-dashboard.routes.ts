@@ -1,15 +1,35 @@
 import { Routes } from '@angular/router';
-import { DashboardComponent } from '../dashboard/dashboard.component';
-import { PatientsComponent } from '../patients/patients.component';
-import { BlogPostsComponent } from '../blog-posts/blog-posts.component';
-import { ProfileComponent } from '../profile/profile.component';
-import { ConsultantMeetingsComponent } from '../consultant-meetings/consultant-meetings.component';
 import { DoctorAuthGuard } from '../doctor-auth.guard';
 
 export const doctorDashboardRoutes: Routes = [
-  { path: '', component: DashboardComponent, canActivate: [DoctorAuthGuard] },
-  { path: 'profile', component: ProfileComponent, canActivate: [DoctorAuthGuard] },
-  { path: 'consultant-meetings', component: ConsultantMeetingsComponent, canActivate: [DoctorAuthGuard] },
-  { path: 'patients', component: PatientsComponent, canActivate: [DoctorAuthGuard] },
-  { path: 'blog-posts', component: BlogPostsComponent, canActivate: [DoctorAuthGuard] }
+  { 
+    path: '', 
+    loadComponent: () => import('../dashboard/dashboard.component').then(m => m.DashboardComponent), 
+    canActivate: [DoctorAuthGuard] 
+  },
+  { 
+    path: 'profile', 
+    loadComponent: () => import('../profile/profile.component').then(m => m.ProfileComponent), 
+    canActivate: [DoctorAuthGuard] 
+  },
+  { 
+    path: 'consultant-meetings', 
+    loadComponent: () => import('../consultant-meetings/consultant-meetings.component').then(m => m.ConsultantMeetingsComponent), 
+    canActivate: [DoctorAuthGuard] 
+  },
+  { 
+    path: 'patients', 
+    loadComponent: () => import('../patients/patients.component').then(m => m.PatientsComponent), 
+    canActivate: [DoctorAuthGuard] 
+  },
+  { 
+    path: 'blog-posts', 
+    loadComponent: () => import('../blog-posts/blog-posts.component').then(m => m.BlogPostsComponent), 
+    canActivate: [DoctorAuthGuard] 
+  },
+  { 
+    path: 'staff-management', 
+    loadComponent: () => import('../staff-management/staff-management.component').then(m => m.DoctorStaffManagementComponent), 
+    canActivate: [DoctorAuthGuard] 
+  }
 ];

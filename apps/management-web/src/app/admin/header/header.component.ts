@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, HostListener, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { LoggerService } from '../../core/services/logger.service';
 
 @Component({
   selector: 'app-header',
@@ -10,6 +11,7 @@ import { Router } from '@angular/router';
 })
 export class HeaderComponent implements OnInit {
   private router = inject(Router);
+  private logger = inject(LoggerService);
 
   showProfileMenu: boolean = false;
   adminName: string = 'Administrator';
@@ -20,6 +22,7 @@ export class HeaderComponent implements OnInit {
     if (userName) {
       this.adminName = userName;
     }
+    this.logger.info('Admin header initialized', { adminName: this.adminName });
   }
 
   // Close dropdowns when clicking outside
@@ -33,32 +36,48 @@ export class HeaderComponent implements OnInit {
     }
   }
 
-  toggleProfileMenu() {
+  toggleProfileMenu(event?: Event) {
+    if (event) {
+      event.stopPropagation();
+    }
     this.showProfileMenu = !this.showProfileMenu;
+    this.logger.debug('Profile menu toggled', { isOpen: this.showProfileMenu });
   }
 
-  async logout() {
-    console.log('🚪 Admin logout initiated');
+  async logout(event?: Event) {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    
+    this.logger.info('🚪 Admin logout initiated');
 
-    // Clear all admin session data
-    localStorage.removeItem('role');
-    localStorage.removeItem('staff_id');
-    localStorage.removeItem('user_name');
-    localStorage.removeItem('user_email');
+    try {
+      // Clear all admin session data
+      localStorage.removeItem('role');
+      localStorage.removeItem('staff_id');
+      localStorage.removeItem('user_name');
+      localStorage.removeItem('user_email');
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
 
-    console.log('✅ Session data cleared, redirecting to login');
+      this.logger.info('✅ Session data cleared, redirecting to login');
 
-    // Close profile menu
-    this.showProfileMenu = false;
+      // Close profile menu
+      this.showProfileMenu = false;
 
-    // Redirect to login
-    this.router.navigate(['/login']).then(success => {
+      // Redirect to login
+      const success = await this.router.navigate(['/login']);
       if (success) {
-        console.log('✅ Successfully redirected to login page');
+        this.logger.info('✅ Successfully redirected to login page');
       } else {
-        console.error('❌ Failed to redirect, using fallback');
+        this.logger.warn('❌ Router navigation failed, using fallback');
         window.location.href = '/login';
       }
-    });
+    } catch (error) {
+      this.logger.error('❌ Error during logout', error);
+      // Fallback navigation
+      window.location.href = '/login';
+    }
   }
 }

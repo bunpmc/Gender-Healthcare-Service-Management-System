@@ -65,6 +65,6 @@ export class KpiCardComponent implements OnInit {
     this.newPatients = await this.supabaseService.getNewPatientsCount(startISO, endISO);
     this.revenue = await this.supabaseService.getRevenueSum(startISO, endISO);
     this.taskCompletion = await this.supabaseService.getTaskCompletionRatio(startISO, endISO);
-    // ...tính toán các biến change nếu cần...
+    // ...calculate change variables if needed...
   }
 }

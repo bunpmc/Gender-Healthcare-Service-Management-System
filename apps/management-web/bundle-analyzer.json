@@ -1,0 +1,12 @@
+{
+    "name": "webpack-bundle-analyzer",
+    "version": "1.0.0",
+    "description": "Bundle analysis configuration for management-web",
+    "scripts": {
+        "analyze": "ng build --configuration production --stats-json && npx webpack-bundle-analyzer dist/management-web/stats.json",
+        "analyze:dev": "ng build --stats-json && npx webpack-bundle-analyzer dist/management-web/stats.json"
+    },
+    "devDependencies": {
+        "webpack-bundle-analyzer": "^4.9.0"
+    }
+}

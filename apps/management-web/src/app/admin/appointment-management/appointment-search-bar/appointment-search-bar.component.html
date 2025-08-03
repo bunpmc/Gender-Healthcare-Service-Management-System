@@ -50,7 +50,7 @@
       <select
         [(ngModel)]="statusFilter"
         (change)="applyFilters()"
-        class="appearance-none bg-white border border-gray-300 rounded-xl px-4 py-2 pr-8 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors w-full sm:w-auto"
+        class="appearance-none bg-white border border-gray-300 rounded-xl px-4 py-2 pr-10 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors w-full sm:w-auto min-w-[130px] cursor-pointer"
       >
         <option value="">All Statuses</option>
         <option value="pending">Pending</option>
@@ -59,9 +59,9 @@
         <option value="completed">Completed</option>
         <option value="cancelled">Cancelled</option>
       </select>
-      <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+      <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"></path>
         </svg>
       </div>
     </div>
@@ -71,7 +71,7 @@
       <select
         [(ngModel)]="visitTypeFilter"
         (change)="applyFilters()"
-        class="appearance-none bg-white border border-gray-300 rounded-xl px-4 py-2 pr-8 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors w-full sm:w-auto"
+        class="appearance-none bg-white border border-gray-300 rounded-xl px-4 py-2 pr-10 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors w-full sm:w-auto min-w-[130px] cursor-pointer"
       >
         <option value="">All Types</option>
         <option value="consultation">Consultation</option>
@@ -79,9 +79,9 @@
         <option value="emergency">Emergency</option>
         <option value="routine_checkup">Routine Checkup</option>
       </select>
-      <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+      <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"></path>
         </svg>
       </div>
     </div>
@@ -91,16 +91,16 @@
       <select
         [(ngModel)]="doctorFilter"
         (change)="applyFilters()"
-        class="appearance-none bg-white border border-gray-300 rounded-xl px-4 py-2 pr-8 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors w-full sm:w-auto"
+        class="appearance-none bg-white border border-gray-300 rounded-xl px-4 py-2 pr-10 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors w-full sm:w-auto min-w-[140px] cursor-pointer"
       >
         <option value="">All Doctors</option>
         <option *ngFor="let doctor of doctors" [value]="doctor.staff_id">
           {{ doctor.full_name }}
         </option>
       </select>
-      <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+      <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"></path>
         </svg>
       </div>
     </div>
@@ -110,7 +110,7 @@
       <select
         [(ngModel)]="dateRangeFilter"
         (change)="applyFilters()"
-        class="appearance-none bg-white border border-gray-300 rounded-xl px-4 py-2 pr-8 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors w-full sm:w-auto"
+        class="appearance-none bg-white border border-gray-300 rounded-xl px-4 py-2 pr-10 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors w-full sm:w-auto min-w-[130px] cursor-pointer"
       >
         <option value="">All Dates</option>
         <option value="today">Today</option>
@@ -119,9 +119,9 @@
         <option value="next_week">Next Week</option>
         <option value="this_month">This Month</option>
       </select>
-      <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+      <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"></path>
         </svg>
       </div>
     </div>
@@ -131,15 +131,15 @@
       <select
         [(ngModel)]="appointmentTypeFilter"
         (change)="applyFilters()"
-        class="appearance-none bg-white border border-gray-300 rounded-xl px-4 py-2 pr-8 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors w-full sm:w-auto"
+        class="appearance-none bg-white border border-gray-300 rounded-xl px-4 py-2 pr-10 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors w-full sm:w-auto min-w-[130px] cursor-pointer"
       >
         <option value="">All Types</option>
         <option value="patient">Patient</option>
         <option value="guest">Guest</option>
       </select>
-      <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+      <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"></path>
         </svg>
       </div>
     </div>
@@ -148,7 +148,7 @@
     <button
       *ngIf="hasActiveFilters()"
       (click)="clearAllFilters()"
-      class="inline-flex items-center px-3 py-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+      class="inline-flex items-center px-3 py-2 text-sm text-gray-600 hover:text-gray-800 transition-colors rounded-lg hover:bg-gray-50"
     >
       <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>

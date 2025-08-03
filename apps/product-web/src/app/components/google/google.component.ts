@@ -17,7 +17,7 @@ export class GoogleComponent {
       this.isLoading = true;
 
       // Get the current origin dynamically
-      const currentOrigin = environment.getCurrentOrigin();
+      const currentOrigin = window.location.origin;
       const redirectUrl = `${currentOrigin}${environment.authCallbackUrl}`;
 
       console.log('Using redirect URL:', redirectUrl);

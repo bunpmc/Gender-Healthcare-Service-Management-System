@@ -6,6 +6,7 @@ import { StaffManagementConfig, StaffManagementEvents } from '../../shared/staff
 import { SupabaseService } from '../../supabase.service';
 import { EdgeFunctionService } from '../../edge-function.service';
 import { ErrorHandlerService } from '../../core/services/error-handler.service';
+import { LoggerService } from '../../core/services/logger.service';
 
 @Component({
   selector: 'app-admin-staff-management',
@@ -56,7 +57,8 @@ export class AdminStaffManagementComponent implements OnInit {
   constructor(
     private supabaseService: SupabaseService,
     private edgeFunctionService: EdgeFunctionService,
-    private errorHandler: ErrorHandlerService
+    private errorHandler: ErrorHandlerService,
+    private logger: LoggerService
   ) { }
 
   async ngOnInit() {
@@ -94,12 +96,12 @@ export class AdminStaffManagementComponent implements OnInit {
       const result = await this.edgeFunctionService.createStaffMember(staffData);
       if (result.success) {
         await this.loadStaff(); // Reload data
-        console.log('Staff created successfully');
+        this.logger.info('Staff created successfully');
       } else {
-        console.error('Error creating staff:', result.error);
+        this.logger.error('Error creating staff:', result.error);
       }
     } catch (error) {
-      console.error('Error creating staff:', error);
+      this.logger.error('Error creating staff:', error);
     } finally {
       this.isLoading = false;
     }
@@ -111,12 +113,12 @@ export class AdminStaffManagementComponent implements OnInit {
       const result = await this.supabaseService.updateStaffMember(staffData.staff_id, staffData);
       if (result.success) {
         await this.loadStaff(); // Reload data
-        console.log('Staff updated successfully');
+        this.logger.info('Staff updated successfully');
       } else {
-        console.error('Error updating staff:', result.error);
+        this.logger.error('Error updating staff:', result.error);
       }
     } catch (error) {
-      console.error('Error updating staff:', error);
+      this.logger.error('Error updating staff:', error);
     } finally {
       this.isLoading = false;
     }
@@ -129,12 +131,12 @@ export class AdminStaffManagementComponent implements OnInit {
         const result = await this.supabaseService.deleteStaffMember(staff.staff_id);
         if (result.success) {
           await this.loadStaff(); // Reload data
-          console.log('Staff deleted successfully');
+          this.logger.info('Staff deleted successfully');
         } else {
-          console.error('Error deleting staff:', result.error);
+          this.logger.error('Error deleting staff:', result.error);
         }
       } catch (error) {
-        console.error('Error deleting staff:', error);
+        this.logger.error('Error deleting staff:', error);
       } finally {
         this.isLoading = false;
       }
@@ -142,7 +144,7 @@ export class AdminStaffManagementComponent implements OnInit {
   }
 
   handleViewStaff(staff: Staff) {
-    console.log('Viewing staff:', staff);
+    this.logger.debug('Viewing staff:', staff);
     // Additional view logic if needed
   }
 
@@ -159,12 +161,12 @@ export class AdminStaffManagementComponent implements OnInit {
 
   async handleTestEdgeFunction() {
     try {
-      console.log('Testing edge function...');
+      this.logger.debug('Testing edge function...');
       const result = await this.edgeFunctionService.testCreateStaffEdgeFunction();
-      console.log('Edge function result:', result);
+      this.logger.info('Edge function result:', result);
       alert('Edge function test completed. Check console for details.');
     } catch (error) {
-      console.error('Error testing edge function:', error);
+      this.logger.error('Error testing edge function:', error);
       alert('Edge function test failed. Check console for details.');
     }
   }
@@ -172,12 +174,12 @@ export class AdminStaffManagementComponent implements OnInit {
   async handleCustomAction(actionId: string, staff: Staff) {
     if (actionId === 'test-edge') {
       try {
-        console.log('Testing edge function...');
+        this.logger.debug('Testing edge function...');
         const result = await this.edgeFunctionService.testCreateStaffEdgeFunction();
-        console.log('Edge function result:', result);
+        this.logger.info('Edge function result:', result);
         alert('Edge function test completed. Check console for details.');
       } catch (error) {
-        console.error('Error testing edge function:', error);
+        this.logger.error('Error testing edge function:', error);
         alert('Edge function test failed. Check console for details.');
       }
     }

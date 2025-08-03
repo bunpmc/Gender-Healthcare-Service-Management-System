@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
+import { LoggerService } from '../../core/services/logger.service';
 
 interface NavigationItem {
   name: string;
@@ -474,14 +475,14 @@ export class ReceptionistSidebarComponent implements OnInit {
     }
   ];
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private logger: LoggerService) {}
 
   ngOnInit(): void {
-    console.log('📋 Receptionist sidebar initialized');
+    this.logger.info('📋 Receptionist sidebar initialized');
   }
 
   quickAction(action: string): void {
-    console.log('⚡ Quick action triggered:', action);
+    this.logger.debug('⚡ Quick action triggered:', action);
 
     switch (action) {
       case 'new-appointment':
@@ -500,7 +501,7 @@ export class ReceptionistSidebarComponent implements OnInit {
         });
         break;
       default:
-        console.warn('Unknown quick action:', action);
+        this.logger.warn('Unknown quick action:', action);
     }
   }
 }

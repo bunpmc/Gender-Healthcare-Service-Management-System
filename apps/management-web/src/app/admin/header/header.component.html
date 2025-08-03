@@ -20,8 +20,9 @@
     <div class="flex items-center space-x-3">
       <div class="relative">
         <button
-          (click)="toggleProfileMenu()"
-          class="flex items-center space-x-3 px-3 py-2 bg-white/80 backdrop-blur-sm rounded-xl border border-white/40 hover:bg-white/90 transition-all duration-300 hover:scale-105 hover:shadow-lg"
+          type="button"
+          (click)="toggleProfileMenu($event)"
+          class="profile-btn flex items-center space-x-3 px-3 py-2 bg-white/80 backdrop-blur-sm rounded-xl border border-white/40 hover:bg-white/90 transition-all duration-300 hover:scale-105 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
         >
           <div class="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-700 rounded-lg flex items-center justify-center">
             <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -35,17 +36,21 @@
         </button>
 
         <!-- Profile Dropdown -->
-        <div *ngIf="showProfileMenu" class="absolute right-0 mt-3 w-56 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 py-2 z-50">
+        <div *ngIf="showProfileMenu" class="profile-dropdown absolute right-0 mt-3 w-56 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 py-2 z-50">
           <div class="px-4 py-3 border-b border-gray-100">
             <p class="text-base font-semibold text-gray-900">{{ adminName }}</p>
             <p class="text-xs text-gray-500">Administrator</p>
           </div>
           <div class="py-2">
-            <button (click)="logout()" class="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50/50 transition-colors">
+            <button 
+              type="button"
+              (click)="logout($event)" 
+              class="logout-btn flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50/50 transition-colors focus:outline-none focus:bg-red-50"
+            >
               <svg class="w-4 h-4 mr-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
               </svg>
-              Log Out
+              Đăng xuất
             </button>
           </div>
         </div>

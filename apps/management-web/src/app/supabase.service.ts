@@ -45,7 +45,7 @@ import {
 export class SupabaseService {
   constructor(private logger: LoggerService) {}
 
-  // Đếm số bệnh nhân theo tháng
+  // Count patients by month
   getPatientCountByMonth(year: number, month: number): Observable<number> {
     return from(
       supabase
@@ -60,7 +60,7 @@ export class SupabaseService {
     );
   }
 
-  // Tính doanh thu theo ngày
+  // Get appointment count by day
   getAppointmentCountByDay(targetDate: string): Observable<number> {
     return from(
       supabase
@@ -72,7 +72,7 @@ export class SupabaseService {
     );
   }
 
-  // Tính doanh thu theo ngày
+  // Calculate daily revenue
   getDailyRevenue(targetDate: string): Observable<number> {
     return from(
       supabase
@@ -84,17 +84,17 @@ export class SupabaseService {
     );
   }
 
-  // Hàm helper để format ngày tháng
+  // Helper function to format date
   private formatDate(date: Date): string {
     return date.toISOString().split('T')[0];
   }
 
-  // Lấy ngày hôm nay
+  // Get today's date
   getTodayDate(): string {
     return this.formatDate(new Date());
   }
 
-  // Lấy ngày hôm qua
+  // Get yesterday's date
   getYesterdayDate(): string {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
@@ -109,7 +109,7 @@ export class SupabaseService {
     });
 
     if (error) {
-      this.logger.error('Lỗi tìm kiếm bệnh nhân: ', error.message);
+      this.logger.error('Error searching patients: ', error.message);
       throw error;
     }
 
@@ -117,10 +117,10 @@ export class SupabaseService {
   }
   //#region DASHBOARD
 
-  // Thêm method này vào SupabaseService class
+  // Add this method to SupabaseService class
 
   /**
-   * Lấy số lượng appointments có status pending
+   * Get count of appointments with pending status
    */
   async getPendingAppointmentsCount(): Promise<number> {
     try {
@@ -130,19 +130,19 @@ export class SupabaseService {
         .eq('appointment_status', 'pending');
 
       if (error) {
-        console.error('Error fetching pending appointments count:', error);
+        this.logger.error('Error fetching pending appointments count:', error);
         throw error;
       }
 
       return count || 0;
     } catch (error) {
-      console.error('Error in getPendingAppointmentsCount:', error);
+      this.logger.error('Error in getPendingAppointmentsCount:', error);
       throw error;
     }
   }
 
   /**
-   * Lấy số lượng appointments pending cho ngày hôm nay
+   * Get count of pending appointments for today
    */
   async getTodayPendingAppointmentsCount(): Promise<number> {
     try {
@@ -155,7 +155,7 @@ export class SupabaseService {
         .eq('appointment_date', today);
 
       if (error) {
-        console.error(
+        this.logger.error(
           'Error fetching today pending appointments count:',
           error
         );
@@ -164,13 +164,13 @@ export class SupabaseService {
 
       return count || 0;
     } catch (error) {
-      console.error('Error in getTodayPendingAppointmentsCount:', error);
+      this.logger.error('Error in getTodayPendingAppointmentsCount:', error);
       throw error;
     }
   }
 
   /**
-   * Lấy số lượng appointments pending cho ngày mai (upcoming)
+   * Get count of pending appointments for tomorrow (upcoming)
    */
   async getUpcomingPendingAppointmentsCount(): Promise<number> {
     try {
@@ -185,7 +185,7 @@ export class SupabaseService {
         .gte('appointment_date', tomorrowStr);
 
       if (error) {
-        console.error(
+        this.logger.error(
           'Error fetching upcoming pending appointments count:',
           error
         );
@@ -194,13 +194,13 @@ export class SupabaseService {
 
       return count || 0;
     } catch (error) {
-      console.error('Error in getUpcomingPendingAppointmentsCount:', error);
+      this.logger.error('Error in getUpcomingPendingAppointmentsCount:', error);
       throw error;
     }
   }
 
   /*
-   * Lấy notifications
+   * Get notifications
    */
   async getRecentNotifications(limit: number = 5): Promise<any[]> {
     const { data, error } = await supabase
@@ -222,7 +222,7 @@ export class SupabaseService {
       .limit(limit);
 
     if (error) {
-      console.error('Error fetching notifications:', error);
+      this.logger.error('Error fetching notifications:', error);
       throw error;
     }
 
@@ -245,7 +245,7 @@ export class SupabaseService {
       .order('created_at', { ascending: true });
 
     if (error) {
-      console.error("Error fetching today's appointments:", error);
+      this.logger.error("Error fetching today's appointments:", error);
       throw error;
     }
 
@@ -254,7 +254,7 @@ export class SupabaseService {
 
   //#endregion
 
-  //#region ANALYTIC
+  //#region ANALYTICS
 
   // 🟦 KPI: Appointments Count
   async getAppointmentsCount(start: string, end: string): Promise<number> {
@@ -265,7 +265,7 @@ export class SupabaseService {
       .lte('created_at', end);
 
     if (error) {
-      console.error('Error fetching appointments count:', error);
+      this.logger.error('Error fetching appointments count:', error);
       throw error;
     }
 
@@ -281,7 +281,7 @@ export class SupabaseService {
       .lte('created_at', end);
 
     if (error) {
-      console.error('Error fetching new patients count:', error);
+      this.logger.error('Error fetching new patients count:', error);
       throw error;
     }
 
@@ -381,7 +381,7 @@ export class SupabaseService {
   // 🟩 CHART: Monthly Patient Growth
   async getMonthlyPatientGrowth(months: number = 6): Promise<any[]> {
     try {
-      console.log(
+      this.logger.info(
         `🔄 Fetching monthly patient growth for last ${months} months...`
       );
       const monthsData = [];
@@ -414,7 +414,7 @@ export class SupabaseService {
           .lte('created_at', endOfMonth);
 
         if (error) {
-          console.error(
+          this.logger.error(
             `❌ Error fetching patient count for ${date.toLocaleDateString()}:`,
             error
           );
@@ -432,13 +432,13 @@ export class SupabaseService {
         });
       }
 
-      console.log(
+      this.logger.info(
         '✅ Successfully fetched monthly patient growth:',
         monthsData
       );
       return monthsData;
     } catch (error: any) {
-      console.error('❌ Error fetching monthly patient growth:', error);
+      this.logger.error('❌ Error fetching monthly patient growth:', error);
       throw new Error(
         `Database error: ${error.message || 'Unable to fetch patient growth data'
         }`
@@ -449,7 +449,7 @@ export class SupabaseService {
   // 🟩 CHART: Monthly Revenue Data
   async getMonthlyRevenue(months: number = 6): Promise<any[]> {
     try {
-      console.log(`🔄 Fetching monthly revenue for last ${months} months...`);
+      this.logger.info(`🔄 Fetching monthly revenue for last ${months} months...`);
       const monthsData = [];
       const currentDate = new Date();
 
@@ -480,7 +480,7 @@ export class SupabaseService {
           .lte('created_at', endOfMonth);
 
         if (error) {
-          console.error(
+          this.logger.error(
             `❌ Error fetching revenue for ${date.toLocaleDateString()}:`,
             error
           );
@@ -501,10 +501,10 @@ export class SupabaseService {
         });
       }
 
-      console.log('✅ Successfully fetched monthly revenue:', monthsData);
+      this.logger.info('✅ Successfully fetched monthly revenue:', monthsData);
       return monthsData;
     } catch (error: any) {
-      console.error('❌ Error fetching monthly revenue:', error);
+      this.logger.error('❌ Error fetching monthly revenue:', error);
       throw new Error(
         `Database error: ${error.message || 'Unable to fetch revenue data'}`
       );
@@ -514,13 +514,13 @@ export class SupabaseService {
   // 🟩 CHART: Appointment Status Distribution
   async getAppointmentStatusDistribution(): Promise<any[]> {
     try {
-      console.log('🔄 Fetching appointment status distribution...');
+      this.logger.info('🔄 Fetching appointment status distribution...');
       const { data, error } = await supabase
         .from('appointments')
         .select('appointment_status');
 
       if (error) {
-        console.error('❌ Error fetching appointment status:', error);
+        this.logger.error('❌ Error fetching appointment status:', error);
         throw new Error(
           `Failed to fetch appointment status data: ${error.message}`
         );
@@ -537,13 +537,13 @@ export class SupabaseService {
         value: count,
       }));
 
-      console.log(
+      this.logger.info(
         '✅ Successfully fetched appointment status distribution:',
         result
       );
       return result;
     } catch (error: any) {
-      console.error(
+      this.logger.error(
         '❌ Error fetching appointment status distribution:',
         error
       );
@@ -616,7 +616,7 @@ export class SupabaseService {
         todayRevenue: todayRevenue || 0,
       };
     } catch (error) {
-      console.error('Error fetching admin dashboard stats:', error);
+      this.logger.error('Error fetching admin dashboard stats:', error);
       throw error;
     }
   }
@@ -681,7 +681,7 @@ export class SupabaseService {
 
       return activities.slice(0, 8); // Return top 8 activities
     } catch (error) {
-      console.error('Error fetching recent activities:', error);
+      this.logger.error('Error fetching recent activities:', error);
       throw error;
     }
   }
@@ -721,7 +721,7 @@ export class SupabaseService {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Error fetching patients:', error);
+        this.logger.error('Error fetching patients:', error);
         return { success: false, error: error.message };
       }
 
@@ -733,7 +733,7 @@ export class SupabaseService {
 
       return { success: true, data: processedData };
     } catch (error) {
-      console.error('Unexpected error fetching patients:', error);
+      this.logger.error('Unexpected error fetching patients:', error);
       return { success: false, error: 'An unexpected error occurred' };
     }
   }
@@ -749,7 +749,7 @@ export class SupabaseService {
         .single();
 
       if (error) {
-        console.error('Error creating patient:', error);
+        this.logger.error('Error creating patient:', error);
         return { success: false, error: error.message };
       }
 
@@ -761,7 +761,7 @@ export class SupabaseService {
 
       return { success: true, data: processedData };
     } catch (error) {
-      console.error('Unexpected error creating patient:', error);
+      this.logger.error('Unexpected error creating patient:', error);
       return { success: false, error: 'An unexpected error occurred' };
     }
   }
@@ -786,13 +786,13 @@ export class SupabaseService {
         .single();
 
       if (error) {
-        console.error('Error updating patient:', error);
+        this.logger.error('Error updating patient:', error);
         return { success: false, error: error.message };
       }
 
       return { success: true, data: data };
     } catch (error) {
-      console.error('Unexpected error updating patient:', error);
+      this.logger.error('Unexpected error updating patient:', error);
       return { success: false, error: 'An unexpected error occurred' };
     }
   }
@@ -810,13 +810,13 @@ export class SupabaseService {
         .eq('id', patientId);
 
       if (error) {
-        console.error('Error soft deleting patient:', error);
+        this.logger.error('Error soft deleting patient:', error);
         return { success: false, error: error.message };
       }
 
       return { success: true };
     } catch (error) {
-      console.error('Unexpected error soft deleting patient:', error);
+      this.logger.error('Unexpected error soft deleting patient:', error);
       return { success: false, error: 'An unexpected error occurred' };
     }
   }
@@ -834,13 +834,13 @@ export class SupabaseService {
         .eq('id', patientId);
 
       if (error) {
-        console.error('Error restoring patient:', error);
+        this.logger.error('Error restoring patient:', error);
         return { success: false, error: error.message };
       }
 
       return { success: true };
     } catch (error) {
-      console.error('Unexpected error restoring patient:', error);
+      this.logger.error('Unexpected error restoring patient:', error);
       return { success: false, error: 'An unexpected error occurred' };
     }
   }
@@ -918,7 +918,7 @@ export class SupabaseService {
         .order('created_at', { ascending: false });
 
       if (patientError) {
-        console.error('Error fetching patient appointments:', patientError);
+        this.logger.error('Error fetching patient appointments:', patientError);
         return { success: false, error: patientError.message };
       }
 
@@ -956,7 +956,7 @@ export class SupabaseService {
         .order('created_at', { ascending: false });
 
       if (guestError) {
-        console.error('Error fetching guest appointments:', guestError);
+        this.logger.error('Error fetching guest appointments:', guestError);
         return { success: false, error: guestError.message };
       }
 
@@ -1061,7 +1061,7 @@ export class SupabaseService {
 
       return { success: true, data: allAppointments };
     } catch (error) {
-      console.error('Unexpected error fetching appointments:', error);
+      this.logger.error('Unexpected error fetching appointments:', error);
       return { success: false, error: 'An unexpected error occurred' };
     }
   }
@@ -1151,7 +1151,7 @@ export class SupabaseService {
         total: filteredAppointments.length,
       };
     } catch (error) {
-      console.error('Error in getAppointments:', error);
+      this.logger.error('Error in getAppointments:', error);
       return { appointments: [], total: 0 };
     }
   }
@@ -1208,7 +1208,7 @@ export class SupabaseService {
         .not('patient_id', 'is', null);
 
       if (patientError) {
-        console.error('Error fetching doctor patients:', patientError);
+        this.logger.error('Error fetching doctor patients:', patientError);
         return { success: false, error: patientError.message };
       }
 
@@ -1232,7 +1232,7 @@ export class SupabaseService {
         .not('guest_id', 'is', null);
 
       if (guestError) {
-        console.error('Error fetching doctor guests:', guestError);
+        this.logger.error('Error fetching doctor guests:', guestError);
         return { success: false, error: guestError.message };
       }
 
@@ -1273,7 +1273,7 @@ export class SupabaseService {
 
       return { success: true, data: processedData };
     } catch (error) {
-      console.error('Unexpected error fetching doctor patients and guests:', error);
+      this.logger.error('Unexpected error fetching doctor patients and guests:', error);
       return { success: false, error: 'An unexpected error occurred' };
     }
   }
@@ -1297,7 +1297,7 @@ export class SupabaseService {
     const currentRole = localStorage.getItem('role');
     const isAdmin = currentRole === 'administrator';
 
-    console.log('📋 Getting staff members:', {
+    this.logger.info('📋 Getting staff members:', {
       userRole: currentRole,
       isAdmin,
       timestamp: new Date().toISOString()
@@ -1309,7 +1309,7 @@ export class SupabaseService {
       .order('full_name', { ascending: true });
 
     if (error) {
-      console.error('❌ Error fetching staff members:', error);
+      this.logger.error('❌ Error fetching staff members:', error);
       throw error;
     }
 
@@ -1335,7 +1335,7 @@ export class SupabaseService {
         .order('full_name', { ascending: true });
 
       if (error) {
-        console.error('Error fetching staff:', error);
+        this.logger.error('Error fetching staff:', error);
         return { success: false, error: error.message };
       }
 
@@ -1347,7 +1347,7 @@ export class SupabaseService {
 
       return { success: true, data: processedData };
     } catch (error) {
-      console.error('Unexpected error fetching staff:', error);
+      this.logger.error('Unexpected error fetching staff:', error);
       return { success: false, error: 'An unexpected error occurred' };
     }
   }
@@ -1362,7 +1362,7 @@ export class SupabaseService {
       const currentRole = localStorage.getItem('role');
       const isAdmin = currentRole === 'administrator';
 
-      console.log('✏️ Updating staff member:', {
+      this.logger.info('✏️ Updating staff member:', {
         staffId,
         userRole: currentRole,
         isAdmin,
@@ -1383,13 +1383,13 @@ export class SupabaseService {
         .single();
 
       if (error) {
-        console.error('Error updating staff member:', error);
+        this.logger.error('Error updating staff member:', error);
         return { success: false, error: error.message };
       }
 
       return { success: true, data: data as Staff };
     } catch (error) {
-      console.error('Unexpected error updating staff member:', error);
+      this.logger.error('Unexpected error updating staff member:', error);
       return { success: false, error: 'An unexpected error occurred' };
     }
   }
@@ -1410,8 +1410,8 @@ export class SupabaseService {
     }
   ): Promise<{ success: boolean; data?: Staff; error?: string }> {
     try {
-      console.log('🚀 Creating staff member with edge function using POST (No Auth)...');
-      console.log('📝 Input data:', staffData);
+      this.logger.info('🚀 Creating staff member with edge function using POST (No Auth)...');
+      this.logger.info('📝 Input data:', staffData);
 
       // Prepare FormData
       const formData = new FormData();
@@ -1448,28 +1448,28 @@ export class SupabaseService {
         formData.append('image_link', staffData.image_link);
       }
 
-      console.log('📤 FormData prepared with fields:');
+      this.logger.info('📤 FormData prepared with fields:');
       for (let [key, value] of formData.entries()) {
-        console.log(`  ${key}: ${value}`);
+        this.logger.info(`  ${key}: ${value}`);
       }
 
       const edgeFunctionUrl = 'https://xzxxodxplyetecrsbxmc.supabase.co/functions/v1/create-staff';
-      console.log('🔗 Edge function URL:', edgeFunctionUrl);
+      this.logger.info('🔗 Edge function URL:', edgeFunctionUrl);
 
       // Make HTTP POST request with FormData (No Authorization header)
-      console.log('📡 Making POST request to edge function (No Auth)...');
+      this.logger.info('📡 Making POST request to edge function (No Auth)...');
       const response = await fetch(edgeFunctionUrl, {
         method: 'POST',
         // No headers needed - let browser set Content-Type with boundary for FormData
         body: formData
       });
 
-      console.log('📥 Response status:', response.status, response.statusText);
-      console.log('📥 Response headers:', Object.fromEntries(response.headers.entries()));
+      this.logger.info('📥 Response status:', response.status, response.statusText);
+      this.logger.info('📥 Response headers:', Object.fromEntries(response.headers.entries()));
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('💥 HTTP Error:', {
+        this.logger.error('💥 HTTP Error:', {
           status: response.status,
           statusText: response.statusText,
           body: errorText
@@ -1481,18 +1481,18 @@ export class SupabaseService {
       }
 
       const responseData = await response.json();
-      console.log('📥 Edge function response data:', responseData);
+      this.logger.info('📥 Edge function response data:', responseData);
 
       if (responseData?.error) {
-        console.error('🚫 Edge function returned error:', responseData.error);
+        this.logger.error('🚫 Edge function returned error:', responseData.error);
         return { success: false, error: responseData.error };
       }
 
-      console.log('✅ Staff member created successfully:', responseData);
+      this.logger.info('✅ Staff member created successfully:', responseData);
       return { success: true, data: responseData as Staff };
     } catch (error: any) {
-      console.error('💥 Unexpected error creating staff member:', error);
-      console.error('💥 Error stack:', error.stack);
+      this.logger.error('💥 Unexpected error creating staff member:', error);
+      this.logger.error('💥 Error stack:', error.stack);
       return { success: false, error: error.message || 'An unexpected error occurred' };
     }
   }
@@ -1500,7 +1500,7 @@ export class SupabaseService {
   // Test edge function connectivity using HTTP POST (No Authentication)
   async testCreateStaffEdgeFunction(): Promise<{ success: boolean; error?: string; details?: any }> {
     try {
-      console.log('🧪 Testing create-staff edge function connectivity with POST (No Auth)...');
+      this.logger.info('🧪 Testing create-staff edge function connectivity with POST (No Auth)...');
 
       // Test with minimal required data using FormData
       const formData = new FormData();
@@ -1508,13 +1508,13 @@ export class SupabaseService {
       formData.append('working_email', 'test@example.com');
       formData.append('role', 'receptionist');
 
-      console.log('📤 Test FormData prepared with fields:');
+      this.logger.info('📤 Test FormData prepared with fields:');
       for (let [key, value] of formData.entries()) {
-        console.log(`  ${key}: ${value}`);
+        this.logger.info(`  ${key}: ${value}`);
       }
 
       const edgeFunctionUrl = 'https://xzxxodxplyetecrsbxmc.supabase.co/functions/v1/create-staff';
-      console.log('🔗 Test URL:', edgeFunctionUrl);
+      this.logger.info('🔗 Test URL:', edgeFunctionUrl);
 
       const response = await fetch(edgeFunctionUrl, {
         method: 'POST',
@@ -1522,12 +1522,12 @@ export class SupabaseService {
         body: formData
       });
 
-      console.log('📥 Test response status:', response.status, response.statusText);
-      console.log('📥 Test response headers:', Object.fromEntries(response.headers.entries()));
+      this.logger.info('📥 Test response status:', response.status, response.statusText);
+      this.logger.info('📥 Test response headers:', Object.fromEntries(response.headers.entries()));
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('💥 Test HTTP Error:', {
+        this.logger.error('💥 Test HTTP Error:', {
           status: response.status,
           statusText: response.statusText,
           body: errorText
@@ -1544,14 +1544,14 @@ export class SupabaseService {
       }
 
       const responseData = await response.json();
-      console.log('📥 Test response data:', responseData);
+      this.logger.info('📥 Test response data:', responseData);
 
       return {
         success: true,
         details: responseData
       };
     } catch (error: any) {
-      console.error('💥 Test edge function error:', error);
+      this.logger.error('💥 Test edge function error:', error);
       return {
         success: false,
         error: error.message,
@@ -1579,13 +1579,13 @@ export class SupabaseService {
         .single();
 
       if (error) {
-        console.error('Error adding staff member:', error);
+        this.logger.error('Error adding staff member:', error);
         return { success: false, error: error.message };
       }
 
       return { success: true, data: data as Staff };
     } catch (error) {
-      console.error('Unexpected error adding staff member:', error);
+      this.logger.error('Unexpected error adding staff member:', error);
       return { success: false, error: 'An unexpected error occurred' };
     }
   }
@@ -1613,7 +1613,7 @@ export class SupabaseService {
         if (checkError.code === 'PGRST116') {
           return { success: false, error: 'Staff member not found' };
         }
-        console.error('Error checking staff member:', checkError);
+        this.logger.error('Error checking staff member:', checkError);
         return { success: false, error: checkError.message };
       }
 
@@ -1628,13 +1628,13 @@ export class SupabaseService {
         .eq('staff_id', staffId);
 
       if (updateError) {
-        console.error('Error soft deleting staff member:', updateError);
+        this.logger.error('Error soft deleting staff member:', updateError);
         return { success: false, error: updateError.message };
       }
 
       return { success: true };
     } catch (error) {
-      console.error('Unexpected error deleting staff member:', error);
+      this.logger.error('Unexpected error deleting staff member:', error);
       return { success: false, error: 'An unexpected error occurred' };
     }
   }
@@ -1656,9 +1656,9 @@ export class SupabaseService {
     if (error) throw error;
 
     // Debug logging
-    console.log('🔍 Raw Supabase response:', data);
-    console.log('🔍 Doctor details from response:', data?.doctor_details);
-    console.log(
+    this.logger.debug('🔍 Raw Supabase response:', data);
+    this.logger.debug('🔍 Doctor details from response:', data?.doctor_details);
+    this.logger.debug(
       '🔍 Is doctor_details array?',
       Array.isArray(data?.doctor_details)
     );
@@ -1666,7 +1666,7 @@ export class SupabaseService {
     // Process the image URL for staff-uploads bucket
     if (data) {
       const processedData = this.processImageUrls(data, 'staff-uploads');
-      console.log('🔍 Processed doctor profile with image URL:', processedData);
+      this.logger.debug('🔍 Processed doctor profile with image URL:', processedData);
       return processedData;
     }
 
@@ -1710,7 +1710,7 @@ export class SupabaseService {
       ]);
 
       if (servicesResult.error) {
-        console.error(
+        this.logger.error(
           '❌ Error fetching medical services:',
           servicesResult.error
         );
@@ -1718,7 +1718,7 @@ export class SupabaseService {
       }
 
       if (categoriesResult.error) {
-        console.error(
+        this.logger.error(
           '❌ Error fetching service categories:',
           categoriesResult.error
         );
@@ -1753,7 +1753,7 @@ export class SupabaseService {
 
       return { success: true, data: processedServices };
     } catch (error: any) {
-      console.error('❌ Error in getMedicalServices:', error);
+      this.logger.error('❌ Error in getMedicalServices:', error);
       return {
         success: false,
         error: error.message || 'Failed to fetch medical services',
@@ -1782,7 +1782,7 @@ export class SupabaseService {
         .single();
 
       if (serviceError) {
-        console.error('❌ Error fetching medical service:', serviceError);
+        this.logger.error('❌ Error fetching medical service:', serviceError);
         return { success: false, error: serviceError.message };
       }
 

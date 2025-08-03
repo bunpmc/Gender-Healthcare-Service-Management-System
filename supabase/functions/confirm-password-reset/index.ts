@@ -25,6 +25,26 @@ serve(async (req)=>{
         status: 400
       });
     }
+//     function isStrongPassword(password: string): boolean {
+//   const minLength = 8;
+//   const hasUpperCase = /[A-Z]/.test(password);
+//   const hasLowerCase = /[a-z]/.test(password);
+//   const hasNumber = /[0-9]/.test(password);
+//   const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+//   return password.length >= minLength && hasUpperCase && hasLowerCase && hasNumber && hasSpecialChar;
+// }
+
+// if (!isStrongPassword(new_password)) {
+//   return new Response(JSON.stringify({
+//     error: 'Password is too weak. It must be at least 8 characters long and include uppercase, lowercase, number, and special character.'
+//   }), {
+//     headers: {
+//       ...corsHeaders,
+//       'Content-Type': 'application/json'
+//     },
+//     status: 400
+//   });
+// }
     const { data: otp, error: otpError } = await supabase.from('otps').select('*').eq('email', email).eq('otp_code', otp_code).eq('is_used', false).gte('expires_at', new Date().toISOString()).maybeSingle();
     if (otpError || !otp) {
       return new Response(JSON.stringify({

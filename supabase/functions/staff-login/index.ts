@@ -82,8 +82,10 @@ serve(async (req)=>{
       }
     });
   } catch (e) {
+     const errorMessage = e instanceof Error ? e.message : 'Unknown error';
     return new Response(JSON.stringify({
-      error: e.message
+      
+      error: errorMessage
     }), {
       status: 500,
       headers: {

@@ -7,7 +7,8 @@ import {
   type ServiceDetail,
 } from '../models/service.model';
 import { ServiceBooking } from '../models/booking.model';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 
 // ================== SERVICE DECORATOR ==================
 @Injectable({
@@ -15,7 +16,7 @@ import { Observable } from 'rxjs';
 })
 export class MedicalService {
   // =========== CONSTRUCTOR ===========
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   // =========== PRIVATE HEADER BUILDER ===========
   private getHeaders(): HttpHeaders {
@@ -114,14 +115,31 @@ export class MedicalService {
 
   // =========== FETCH SERVICES FOR BOOKING (NEW ENDPOINT) ===========
   /**
-   * Lấy danh sách dịch vụ cho booking từ endpoint mới
+   * Lấy danh sách dịch vụ cho booking từ database function
    */
   fetchServiceBooking(): Observable<ServiceBooking[]> {
-    return this.http.get<ServiceBooking[]>(
-      `${environment.apiEndpoint}/fetch-serviceBooking`,
+    return this.http.post<any>(
+      `${environment.supabaseUrl}/rest/v1/rpc/fetch_servicebooking`,
+      {},
       {
-        headers: this.getHeaders(),
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': environment.supabaseKey,
+          'Authorization': `Bearer ${environment.supabaseKey}`
+        },
       }
+    ).pipe(
+      map((response) => {
+        // The function returns a JSONB array, so we need to handle it properly
+        if (Array.isArray(response)) {
+          return response;
+        }
+        return [];
+      }),
+      catchError((error) => {
+        console.error('Error fetching services for booking:', error);
+        return of([]);
+      })
     );
   }
 }

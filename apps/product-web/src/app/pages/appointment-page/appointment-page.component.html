@@ -13,18 +13,6 @@
   </div>
 
   <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-    <!-- Debug Info (Remove in production) -->
-    <div
-      class="max-w-4xl mx-auto mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm"
-    >
-      <strong>Debug Info:</strong>
-      Step: {{ currentStep }} | Auth: {{ isUserLoggedIn() ? "Yes" : "No" }} |
-      Type: {{ bookingType || "None" }} | Profile Step:
-      {{ shouldShowProfileStep() ? "Show" : "Hide" }} | UseProfile:
-      Direct booking (no profile selection)
-    </div>
-
-    <!-- Error/Success -->
     @if (errorMessage) {
     <div
       class="text-red-500 text-sm mb-4 text-center flex items-center justify-center gap-1"
@@ -166,8 +154,6 @@
       </form>
     </div>
     }
-
-    <!-- Profile Selection Step Removed - Direct to Patient Info -->
 
     <!-- STEP 1: Patient Information (Profile selection removed) -->
     @if (shouldShowPatientInfoStep()) {
@@ -385,7 +371,7 @@
         </button>
         <button
           type="submit"
-          class="bg-[#4e6688] text-white font-bold px-10 py-3 rounded-xl shadow-sm hover:shadow-lg transition focus:outline-none focus:ring-2 focus:ring-[#98d2c0] focus:ring-offset-2"
+          class="bg-[#4e6688] text-[#4e6688] font-bold px-10 py-3 rounded-xl shadow-sm hover:shadow-lg transition focus:outline-none focus:ring-2 focus:ring-[#98d2c0] focus:ring-offset-2"
         >
           <span class="flex items-center gap-2">
             CONTINUE
@@ -409,8 +395,7 @@
     }
 
     <!-- STEP 2/3: Select Service (serfirst) or Doctor (docfirst) -->
-    @if ((currentStep === 2 && !isUserLoggedIn()) || (currentStep === 3 &&
-    isUserLoggedIn())) {
+    @if (shouldShowServiceStep() || shouldShowDoctorStep()) {
     <form
       class="max-w-7xl mx-auto bg-white rounded-2xl shadow-lg px-8 py-10 space-y-10"
     >
@@ -674,8 +659,7 @@
     }
 
     <!-- STEP 3/4: Second Selection Step -->
-    @if ((currentStep === 3 && !isUserLoggedIn()) || (currentStep === 4 &&
-    isUserLoggedIn())) {
+    @if (shouldShowSecondSelectionStep()) {
     <form
       class="max-w-7xl mx-auto bg-white rounded-2xl shadow-lg px-8 py-10 space-y-10"
     >

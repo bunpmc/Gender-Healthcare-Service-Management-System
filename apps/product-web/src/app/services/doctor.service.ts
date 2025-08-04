@@ -4,7 +4,8 @@ import { Injectable } from '@angular/core';
 import { environment } from '../environments/environment';
 import { type Doctor, type DoctorDetail } from '../models/doctor.model';
 import { DoctorBooking } from '../models/booking.model';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 
 // ================== SERVICE DECORATOR ==================
 @Injectable({
@@ -12,7 +13,7 @@ import { Observable } from 'rxjs';
 })
 export class DoctorService {
   // =========== CONSTRUCTOR ===========
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   // =========== PRIVATE HEADER BUILDER ===========
   private getHeaders(): HttpHeaders {
@@ -39,14 +40,31 @@ export class DoctorService {
 
   // =========== FETCH DOCTORS FOR BOOKING (APPOINTMENT PAGE) ===========
   /**
-   * Lấy danh sách bác sĩ cho appointment booking từ endpoint fetch-doctorBooking
+   * Lấy danh sách bác sĩ cho appointment booking từ database function
    */
   fetchDoctorBooking(): Observable<DoctorBooking[]> {
-    return this.http.get<DoctorBooking[]>(
-      `${environment.apiEndpoint}/fetch-doctorBooking`,
+    return this.http.post<any>(
+      `${environment.supabaseUrl}/rest/v1/rpc/fetch_doctorbooking`,
+      {},
       {
-        headers: this.getHeaders(),
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': environment.supabaseKey,
+          'Authorization': `Bearer ${environment.supabaseKey}`
+        },
       }
+    ).pipe(
+      map((response) => {
+        // The function returns a JSONB array, so we need to handle it properly
+        if (Array.isArray(response)) {
+          return response;
+        }
+        return [];
+      }),
+      catchError((error) => {
+        console.error('Error fetching doctors for booking:', error);
+        return of([]);
+      })
     );
   }
 

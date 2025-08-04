@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { DoctorService } from '../../services/doctor.service';
 import { MedicalService } from '../../services/medical.service';
-import { BookingService } from '../../services/booking.service';
+import { AppointmentService } from '../../services/appointment.service';
 import { AuthService } from '../../services/auth.service';
 import { HeaderComponent } from '../../components/header/header.component';
 import { FooterComponent } from '../../components/footer/footer.component';
@@ -45,7 +45,7 @@ export class AppointmentPageComponent implements OnInit {
   private translate = inject(TranslateService);
   private doctorService = inject(DoctorService);
   private medicalService = inject(MedicalService);
-  private bookingService = inject(BookingService);
+  private appointmentService = inject(AppointmentService);
   private authService = inject(AuthService);
   currentStep: number = 0;
   bookingType: 'docfirst' | 'serfirst' | null = null;
@@ -91,8 +91,8 @@ export class AppointmentPageComponent implements OnInit {
 
   // ========== INIT ==========
   ngOnInit(): void {
-    console.log('🚀 AppointmentPage: Initializing component');
-    console.log('📊 Initial state:', {
+    console.log('AppointmentPage: Initializing component');
+    console.log('Initial state:', {
       currentStep: this.currentStep,
       bookingType: this.bookingType,
       isAuthenticated: this.authService.isAuthenticated(),
@@ -109,7 +109,7 @@ export class AppointmentPageComponent implements OnInit {
       );
       if (savedRegion) {
         this.selectedPhoneRegion = savedRegion;
-        console.log('📞 Restored phone region:', savedRegion.name);
+        console.log('Restored phone region:', savedRegion.name);
       }
     }
 
@@ -140,16 +140,12 @@ export class AppointmentPageComponent implements OnInit {
     });
 
     if (isAuthenticated) {
-      // For logged-in users, reset to beginning to show profile selection
       console.log(
         '👤 User is authenticated - resetting to step 0 for profile selection'
       );
-      this.currentStep = 0; // Start at booking type selection
-      // useProfile removed
+      this.currentStep = 0;
     } else {
-      // For guests, maintain current progress (step persistence)
       if (this.booking.type) {
-        // Resume from saved progress
         console.log(
           '👥 Guest user - resuming from saved progress:',
           this.booking.type
@@ -161,8 +157,6 @@ export class AppointmentPageComponent implements OnInit {
         this.currentStep = 0; // Start at booking type selection
       }
     }
-
-    console.log('✅ Flow adjusted - currentStep:', this.currentStep);
   }
 
   private handleAuthChange(): void {
@@ -174,7 +168,6 @@ export class AppointmentPageComponent implements OnInit {
     }
   }
 
-  // ========== LOAD DATA FROM API ==========
   private loadDoctors(): void {
     this.doctorService.fetchDoctorBooking().subscribe({
       next: (doctors) => {
@@ -227,42 +220,37 @@ export class AppointmentPageComponent implements OnInit {
   }
 
   get progressWidth(): string {
-    // Total steps:
-    // Guests: 0(booking type) -> 1(patient info) -> 2(first selection) -> 3(second selection) -> 4(slot) -> 5(confirmation) = 6 steps
-    // Logged-in: 0(booking type) -> 1(profile) -> 2(patient info) -> 3(first selection) -> 4(second selection) -> 5(slot) -> 6(confirmation) = 7 steps
     const totalSteps = this.authService.isAuthenticated() ? 7 : 6;
     const percent = Math.floor((this.currentStep / (totalSteps - 1)) * 100);
     return percent + '%';
   }
 
-  // ========== ENHANCED STEP NAVIGATION ==========
   chooseBookingType(type: 'serfirst' | 'docfirst' | null) {
-    console.log('📋 Choosing booking type:', type);
+    console.log('Choosing booking type:', type);
 
     if (type) {
       this.bookingType = type;
       this.booking.type = type;
 
       const isAuthenticated = this.authService.isAuthenticated();
-      console.log('🔄 Setting booking type:', {
+      console.log('Setting booking type:', {
         type,
         isAuthenticated,
         currentStep: this.currentStep,
       });
 
-      // Skip profile selection, go directly to patient info (Step 1)
       console.log('📝 Going directly to patient info (Step 1)');
       this.currentStep = 1;
 
       this.errorMessage = null;
       this.saveBookingState();
 
-      console.log('✅ Booking type set - new step:', this.currentStep);
+      console.log('Booking type set - new step:', this.currentStep);
     }
   }
 
   goToNextStep() {
-    console.log('➡️ Going to next step:', {
+    console.log('Going to next step:', {
       currentStep: this.currentStep,
       bookingType: this.bookingType,
       serviceStep: this.getServiceStep(),
@@ -444,7 +432,7 @@ export class AppointmentPageComponent implements OnInit {
   }
 
   private loadDoctorSlots(doctor_id: string): void {
-    this.bookingService.fetchSlotsByDoctorId(doctor_id).subscribe({
+    this.appointmentService.fetchSlotsByDoctorId(doctor_id).subscribe({
       next: (response: any) => {
         if (response && response.slots) {
           const apiSlots = response.slots.map((slot: any) => ({
@@ -803,17 +791,17 @@ export class AppointmentPageComponent implements OnInit {
   }
 
   // ========== UI EVENTS ==========
-  onDoctorSearchChange(): void {}
-  onDoctorGenderFilterChange(): void {}
-  onDoctorSortChange(): void {}
+  onDoctorSearchChange(): void { }
+  onDoctorGenderFilterChange(): void { }
+  onDoctorSortChange(): void { }
   clearDoctorSearch(): void {
     this.doctorSearch = '';
   }
   clearDoctorGenderFilter(): void {
     this.doctorGenderFilter = '';
   }
-  onServiceSearchChange(): void {}
-  onServiceSortChange(): void {}
+  onServiceSearchChange(): void { }
+  onServiceSortChange(): void { }
   clearServiceSearch(): void {
     this.serviceSearch = '';
   }
@@ -1099,20 +1087,40 @@ export class AppointmentPageComponent implements OnInit {
   }
 
   shouldShowServiceStep(): boolean {
-    // Service step is now step 2 (profile selection removed)
-    return this.currentStep === 2 && this.bookingType === 'serfirst';
+    // Service step varies based on auth status and booking type
+    if (this.bookingType === 'serfirst') {
+      return (this.currentStep === 2 && !this.authService.isAuthenticated()) ||
+        (this.currentStep === 3 && this.authService.isAuthenticated());
+    }
+    return false;
   }
 
   shouldShowDoctorStep(): boolean {
-    const doctorStep =
-      this.bookingType === 'serfirst'
-        ? this.authService.isAuthenticated()
-          ? 4
-          : 3
-        : this.authService.isAuthenticated()
-        ? 3
-        : 3;
-    return this.currentStep === doctorStep;
+    // Doctor step varies based on auth status and booking type
+    if (this.bookingType === 'docfirst') {
+      // Doctor-first: show doctors at step 2 for guests, step 3 for logged-in
+      return (this.currentStep === 2 && !this.authService.isAuthenticated()) ||
+        (this.currentStep === 3 && this.authService.isAuthenticated());
+    } else if (this.bookingType === 'serfirst') {
+      // Service-first: show doctors at step 3 for guests, step 4 for logged-in
+      return (this.currentStep === 3 && !this.authService.isAuthenticated()) ||
+        (this.currentStep === 4 && this.authService.isAuthenticated());
+    }
+    return false;
+  }
+
+  shouldShowSecondSelectionStep(): boolean {
+    // Second selection step: opposite of first selection
+    if (this.bookingType === 'serfirst') {
+      // Service-first: show doctors at step 3 for guests, step 4 for logged-in
+      return (this.currentStep === 3 && !this.authService.isAuthenticated()) ||
+        (this.currentStep === 4 && this.authService.isAuthenticated());
+    } else if (this.bookingType === 'docfirst') {
+      // Doctor-first: show services at step 3 for guests, step 4 for logged-in
+      return (this.currentStep === 3 && !this.authService.isAuthenticated()) ||
+        (this.currentStep === 4 && this.authService.isAuthenticated());
+    }
+    return false;
   }
 
   shouldShowSlotStep(): boolean {

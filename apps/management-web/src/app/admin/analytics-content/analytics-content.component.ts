@@ -72,94 +72,75 @@ interface KPICard {
   template: `
     <!-- Loading State -->
     <div *ngIf="isLoading" class="flex items-center justify-center min-h-screen">
-      <div class="text-center">
-        <div class="relative">
-          <div class="inline-block animate-spin rounded-full h-16 w-16 border-4 border-indigo-200 border-t-indigo-600 mb-6"></div>
-          <div class="absolute inset-0 flex items-center justify-center">
-            <div class="w-8 h-8 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full animate-pulse"></div>
-          </div>
-        </div>
-        <h3 class="text-lg font-semibold text-gray-900 mb-2">Loading Analytics</h3>
-        <p class="text-gray-600">Fetching comprehensive data insights...</p>
-      </div>
+      <!-- ...loading UI... -->
     </div>
 
     <!-- Error State -->
     <div *ngIf="hasError && !isLoading" class="flex items-center justify-center min-h-96">
-      <div class="text-center max-w-md">
-        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-          </svg>
-        </div>
-        <h3 class="text-lg font-semibold text-gray-900 mb-2">Unable to Load Analytics</h3>
-        <p class="text-gray-600 mb-4">{{ errorMessage }}</p>
-        <button
-          (click)="retryLoadData()"
-          class="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-300">
-          Try Again
-        </button>
-      </div>
+      <!-- ...error UI... -->
     </div>
 
     <!-- Analytics Dashboard -->
-    <div *ngIf="!isLoading && !hasError" class="space-y-8 animate-fadeIn">
+    <div *ngIf="!isLoading && !hasError" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 space-y-8 animate-fadeIn">
       <!-- Header Section -->
-      <div class="bg-gradient-to-r from-white via-indigo-50 to-purple-50 rounded-3xl p-8 shadow-2xl border border-white/30 backdrop-blur-sm">
-        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between">
-          <div class="mb-4 lg:mb-0">
-            <h1 class="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-3">
-              Healthcare Analytics Dashboard
-            </h1>
-            <p class="text-gray-600 text-lg">Comprehensive insights and performance metrics</p>
-            <div class="flex items-center mt-2 text-sm text-gray-500">
+      <section class="bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-500 rounded-2xl px-8 py-6 flex flex-col lg:flex-row lg:items-center lg:justify-between shadow-xl mb-8">
+        <div class="flex items-center gap-4">
+          <div class="bg-white rounded-xl flex items-center justify-center w-10 h-10">
+            <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-xl font-bold text-white">Healthcare Analytics Dashboard</h1>
+            <p class="text-sm text-indigo-100">Comprehensive insights and performance metrics</p>
+            <div class="flex items-center mt-2 text-sm text-indigo-200">
               <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
               </svg>
               Last updated: {{ lastUpdated }}
             </div>
           </div>
-          <div class="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
-            <!-- Date Range Selector -->
-            <div class="flex items-center space-x-2">
-              <label class="text-sm font-medium text-gray-700">Period:</label>
-              <select
-                [(ngModel)]="selectedPeriod"
-                (change)="onPeriodChange()"
-                class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                <option value="7d">Last 7 Days</option>
-                <option value="30d">Last 30 Days</option>
-                <option value="90d">Last 3 Months</option>
-                <option value="1y">Last Year</option>
-              </select>
-            </div>
-            <button
-              (click)="refreshData()"
-              [disabled]="isRefreshing"
-              class="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-2xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 disabled:opacity-50 flex items-center space-x-2">
-              <svg class="w-4 h-4" [class.animate-spin]="isRefreshing" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-              </svg>
-              <span>{{ isRefreshing ? 'Refreshing...' : 'Refresh' }}</span>
-            </button>
-            <button
-              (click)="exportReport()"
-              class="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-2xl hover:from-green-700 hover:to-emerald-700 transition-all duration-300 flex items-center space-x-2">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-              </svg>
-              <span>Export</span>
-            </button>
-          </div>
         </div>
-      </div>
+        <div class="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 mt-4 lg:mt-0">
+          <!-- Date Range Selector -->
+          <div class="flex items-center space-x-2">
+            <label class="text-sm font-medium text-white">Period:</label>
+            <select
+              [(ngModel)]="selectedPeriod"
+              (change)="onPeriodChange()"
+              class="px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+              <option value="7d">Last 7 Days</option>
+              <option value="30d">Last 30 Days</option>
+              <option value="90d">Last 3 Months</option>
+              <option value="1y">Last Year</option>
+            </select>
+          </div>
+          <button
+            (click)="refreshData()"
+            [disabled]="isRefreshing"
+            class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 disabled:opacity-50">
+            <svg class="w-4 h-4 mr-2" [class.animate-spin]="isRefreshing" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+            </svg>
+            <span>{{ isRefreshing ? 'Refreshing...' : 'Refresh' }}</span>
+          </button>
+          <button
+            (click)="exportReport()"
+            class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg hover:from-green-700 hover:to-emerald-700 transition-all duration-200">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            <span>Export</span>
+          </button>
+        </div>
+      </section>
 
       <!-- KPI Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div *ngFor="let kpi of kpiCards; trackBy: trackByKpiTitle"
-             class="bg-white rounded-2xl p-6 shadow-xl border border-white/20 hover:shadow-2xl transition-all duration-300 transform hover:scale-105">
+             class="bg-white rounded-2xl p-6 shadow-xl border border-gray-100 hover:shadow-2xl transition-all duration-300 transform hover:scale-105">
           <div class="flex items-center justify-between mb-4">
-            <div [class]="'w-12 h-12 rounded-xl flex items-center justify-center ' + kpi.color">
+            <div [class]="'w-10 h-10 rounded-xl flex items-center justify-center ' + kpi.color">
               <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="kpi.icon"></path>
               </svg>
@@ -175,28 +156,27 @@ interface KPICard {
             <div *ngIf="kpi.loading" class="animate-pulse bg-gray-200 h-8 w-24 rounded"></div>
           </div>
         </div>
-      </div>
+      </section>
 
       <!-- Charts Section -->
-      <div class="mb-8">
+      <section class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden p-6 mb-8">
         <div class="flex items-center justify-between mb-6">
-          <h2 class="text-2xl font-bold text-gray-900">Analytics Charts</h2>
+          <h2 class="text-xl font-bold text-gray-900">Analytics Charts</h2>
           <div class="flex items-center space-x-2">
             <div class="w-3 h-3 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full"></div>
             <span class="text-sm text-gray-600">Real-time Data</span>
           </div>
         </div>
         <app-css-charts></app-css-charts>
-      </div>
-
-
+      </section>
 
       <!-- Detailed Analytics Sections -->
-      <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
-        <!-- Patient Demographics - Only show if we have actual patient data -->
-        <div *ngIf="hasPatientDemographicData()" class="bg-white rounded-2xl p-6 shadow-xl border border-white/20">
+      <section class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        <!-- Patient Demographics -->
+        <div *ngIf="hasPatientDemographicData()" class="bg-white rounded-2xl p-6 shadow-xl border border-gray-100 overflow-hidden">
           <h2 class="text-xl font-bold text-gray-900 mb-6">Patient Demographics</h2>
           <div class="space-y-4">
+            <!-- Age Distribution -->
             <div *ngIf="getAgeDistributionArray().length > 0">
               <h3 class="text-sm font-medium text-gray-600 mb-3">Age Distribution</h3>
               <div class="space-y-2">
@@ -206,6 +186,7 @@ interface KPICard {
                 </div>
               </div>
             </div>
+            <!-- Gender Distribution -->
             <div *ngIf="getGenderDistributionArray().length > 0">
               <h3 class="text-sm font-medium text-gray-600 mb-3">Gender Distribution</h3>
               <div class="space-y-2">
@@ -219,7 +200,7 @@ interface KPICard {
         </div>
 
         <!-- System Usage -->
-        <div class="bg-white rounded-2xl p-6 shadow-xl border border-white/20">
+        <div class="bg-white rounded-2xl p-6 shadow-xl border border-gray-100 overflow-hidden">
           <h2 class="text-xl font-bold text-gray-900 mb-6">System Usage</h2>
           <div class="space-y-6">
             <div>
@@ -243,7 +224,7 @@ interface KPICard {
         </div>
 
         <!-- Quick Stats -->
-        <div class="bg-white rounded-2xl p-6 shadow-xl border border-white/20">
+        <div class="bg-white rounded-2xl p-6 shadow-xl border border-gray-100 overflow-hidden">
           <h2 class="text-xl font-bold text-gray-900 mb-6">Quick Statistics</h2>
           <div class="space-y-4">
             <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
@@ -269,7 +250,7 @@ interface KPICard {
             </div>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   `,
   styles: [`

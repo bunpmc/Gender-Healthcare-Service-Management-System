@@ -1,47 +1,29 @@
 <!-- Enhanced Staff Management with Modern Healthcare Design -->
-<div
-  class="flex-1 space-y-4 lg:space-y-6 animate-fadeIn max-w-full overflow-hidden p-4 lg:p-6"
->
+<div class="flex-1 space-y-6 animate-fadeIn max-w-full overflow-hidden p-4 lg:p-6">
   <!-- Page Header -->
-  <div
-    class="bg-white rounded-xl shadow-lg border border-purple-100 p-4 lg:p-6"
-  >
-    <div
-      class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
-    >
+  <div class="bg-white rounded-2xl shadow-xl border border-purple-100 p-6">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
       <div class="flex-1">
-        <h1
-          class="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent"
-        >
+        <h1 class="text-3xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
           Staff Management
         </h1>
-        <p class="text-gray-600 mt-2 text-sm lg:text-base">
+        <p class="text-gray-600 mt-2 text-base">
           Manage healthcare staff members and their information
         </p>
       </div>
-      <div class="flex items-center space-x-2 lg:space-x-4">
-        <div
-          class="bg-gradient-to-r from-purple-500 to-indigo-500 text-white px-3 lg:px-4 py-2 rounded-lg"
-        >
-          <span class="text-xs lg:text-sm font-medium"
-            >Total: {{ staffMembers.length }}</span
-          >
+      <div class="flex items-center space-x-4">
+        <div class="bg-gradient-to-r from-purple-500 to-indigo-500 text-white px-4 py-2 rounded-lg">
+          <span class="text-sm font-medium">Total: {{ staffMembers.length }}</span>
         </div>
-        <div
-          class="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-3 lg:px-4 py-2 rounded-lg"
-        >
-          <span class="text-xs lg:text-sm font-medium"
-            >Active: {{ getActiveStaffCount() }}</span
-          >
+        <div class="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 py-2 rounded-lg">
+          <span class="text-sm font-medium">Active: {{ getActiveStaffCount() }}</span>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Search and Filters Card -->
-  <div
-    class="bg-white rounded-xl shadow-lg border border-purple-100 p-4 lg:p-6"
-  >
+  <div class="bg-white rounded-2xl shadow-xl border border-purple-100 p-6">
     <div class="space-y-4">
       <!-- Search Input -->
       <div class="w-full">
@@ -51,132 +33,61 @@
             #searchInput
             (input)="onSearchChange(searchInput.value)"
             placeholder="Search by name, email, or role..."
-            class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors text-sm lg:text-base"
+            class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors text-base"
           />
-          <svg
-            class="absolute left-3 top-3.5 h-5 w-5 text-gray-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-            ></path>
+          <svg class="absolute left-3 top-3.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
           </svg>
         </div>
       </div>
 
       <!-- Filters and Actions -->
-      <div
-        class="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between"
-      >
+      <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
         <!-- Filters -->
-        <div class="flex flex-wrap gap-2 lg:gap-3">
-          <select
-            (change)="onRoleFilterChange($event)"
-            class="px-3 lg:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm lg:text-base min-w-[120px]"
-          >
+        <div class="flex flex-wrap gap-3">
+          <select (change)="onRoleFilterChange($event)" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-base min-w-[120px]">
             <option value="">All Roles</option>
-            <option *ngFor="let role of roles" [value]="role.value">
-              {{ role.label }}
-            </option>
+            <option *ngFor="let role of roles" [value]="role.value">{{ role.label }}</option>
           </select>
-
-          <select
-            (change)="onStatusFilterChange($event)"
-            class="px-3 lg:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm lg:text-base min-w-[120px]"
-          >
+          <select (change)="onStatusFilterChange($event)" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-base min-w-[120px]">
             <option value="">All Status</option>
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
             <option value="on_leave">On Leave</option>
           </select>
-
-          <select
-            (change)="onAvailabilityFilterChange($event)"
-            class="px-3 lg:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm lg:text-base min-w-[120px]"
-          >
+          <select (change)="onAvailabilityFilterChange($event)" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-base min-w-[120px]">
             <option value="">All Availability</option>
             <option value="true">Available</option>
             <option value="false">Unavailable</option>
           </select>
-
-          <button
-            (click)="clearFilters()"
-            class="px-3 lg:px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200 font-medium text-sm lg:text-base"
-          >
+          <button (click)="clearFilters()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium text-base">
             Clear Filters
           </button>
         </div>
-
         <!-- Action Buttons -->
-        <div class="flex flex-wrap gap-2 lg:gap-3">
-          <button
-            (click)="onCreateStaff()"
-            class="px-3 lg:px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all duration-200 font-medium text-sm lg:text-base"
-          >
-            <span class="flex items-center space-x-1 lg:space-x-2">
-              <svg
-                class="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12 4v16m8-8H4"
-                ></path>
+        <div class="flex flex-wrap gap-3">
+          <button (click)="onCreateStaff()" class="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all font-medium text-base">
+            <span class="flex items-center space-x-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
               </svg>
               <span class="hidden sm:inline">Add Staff</span>
               <span class="sm:hidden">Add</span>
             </span>
           </button>
-
-          <button
-            (click)="testEdgeFunction()"
-            class="px-3 lg:px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors duration-200 font-medium text-sm lg:text-base"
-          >
-            <span class="flex items-center space-x-1 lg:space-x-2">
-              <svg
-                class="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                ></path>
+          <button (click)="testEdgeFunction()" class="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors font-medium text-base">
+            <span class="flex items-center space-x-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
               </svg>
               <span class="hidden sm:inline">Test Edge Function</span>
               <span class="sm:hidden">Test</span>
             </span>
           </button>
-
-          <button
-            (click)="exportStaff()"
-            class="px-3 lg:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 font-medium text-sm lg:text-base"
-          >
-            <span class="flex items-center space-x-1 lg:space-x-2">
-              <svg
-                class="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                ></path>
+          <button (click)="exportStaff()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium text-base">
+            <span class="flex items-center space-x-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
               </svg>
               <span class="hidden sm:inline">Export</span>
               <span class="sm:hidden">Export</span>
@@ -188,25 +99,15 @@
   </div>
 
   <!-- Staff Table Card -->
-  <div
-    class="bg-white rounded-xl shadow-lg border border-purple-100 overflow-hidden"
-  >
-    <div class="p-4 lg:p-6 border-b border-gray-200">
-      <div
-        class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2"
-      >
+  <div class="bg-white rounded-2xl shadow-xl border border-purple-100 overflow-hidden">
+    <div class="p-6 border-b border-gray-200">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
         <div>
-          <h2 class="text-lg lg:text-xl font-semibold text-gray-800">
-            Staff Members
-          </h2>
-          <p class="text-gray-600 mt-1 text-sm lg:text-base">
-            {{ filteredStaff.length }} staff members found
-          </p>
+          <h2 class="text-xl font-semibold text-gray-800">Staff Members</h2>
+          <p class="text-gray-600 mt-1 text-base">{{ filteredStaff.length }} staff members found</p>
         </div>
         <div class="flex items-center space-x-2">
-          <span class="text-xs lg:text-sm text-gray-500"
-            >Page {{ page }} of {{ getTotalPages() }}</span
-          >
+          <span class="text-sm text-gray-500">Page {{ page }} of {{ getTotalPages() }}</span>
         </div>
       </div>
     </div>
@@ -216,163 +117,61 @@
       <table class="w-full">
         <thead class="bg-gray-50">
           <tr>
-            <th
-              class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              Staff
-            </th>
-            <th
-              class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              Role
-            </th>
-            <th
-              class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              Experience
-            </th>
-            <th
-              class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              Status
-            </th>
-            <th
-              class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              Availability
-            </th>
-            <th
-              class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              Actions
-            </th>
+            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Staff</th>
+            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Experience</th>
+            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Availability</th>
+            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
-          <tr
-            *ngFor="let staff of getPaginatedStaff()"
-            class="hover:bg-gray-50 transition-colors"
-          >
+          <tr *ngFor="let staff of getPaginatedStaff()" class="hover:bg-gray-50 transition-colors">
             <td class="px-6 py-4 whitespace-nowrap">
               <div class="flex items-center">
                 <div class="flex-shrink-0 h-10 w-10">
-                  <img
-                    *ngIf="staff.image_link"
-                    [src]="staff.image_link"
-                    [alt]="staff.full_name"
-                    class="h-10 w-10 rounded-full object-cover"
-                  />
-                  <div
-                    *ngIf="!staff.image_link"
-                    class="h-10 w-10 rounded-full bg-gradient-to-r from-purple-400 to-indigo-400 flex items-center justify-center"
-                  >
-                    <span class="text-white font-medium text-sm">{{
-                      getInitials(staff.full_name)
-                    }}</span>
+                  <img *ngIf="staff.image_link" [src]="staff.image_link" [alt]="staff.full_name" class="h-10 w-10 rounded-full object-cover" />
+                  <div *ngIf="!staff.image_link" class="h-10 w-10 rounded-full bg-gradient-to-r from-purple-400 to-indigo-400 flex items-center justify-center">
+                    <span class="text-white font-medium text-sm">{{ getInitials(staff.full_name) }}</span>
                   </div>
                 </div>
                 <div class="ml-4">
-                  <div class="text-sm font-medium text-gray-900">
-                    {{ staff.full_name }}
-                  </div>
-                  <div class="text-sm text-gray-500">
-                    {{ staff.working_email }}
-                  </div>
+                  <div class="text-sm font-medium text-gray-900">{{ staff.full_name }}</div>
+                  <div class="text-sm text-gray-500">{{ staff.working_email }}</div>
                 </div>
               </div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <span
-                class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium"
-              >
-                {{ getRoleName(staff.role) }}
-              </span>
+              <span class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">{{ getRoleName(staff.role) }}</span>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-              {{ staff.years_experience || 0 }} years
-            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ staff.years_experience || 0 }} years</td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <span
-                class="px-3 py-1 rounded-full text-sm font-medium"
-                [class]="getStatusBadgeClass(staff.staff_status)"
-              >
+              <span class="px-3 py-1 rounded-full text-sm font-medium" [class]="getStatusBadgeClass(staff.staff_status)">
                 {{ staff.staff_status | titlecase }}
               </span>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
               <div class="flex items-center">
-                <div
-                  class="w-3 h-3 rounded-full mr-2"
-                  [class]="staff.is_available ? 'bg-green-500' : 'bg-red-500'"
-                ></div>
-                <span class="text-sm text-gray-900">{{
-                  staff.is_available ? "Available" : "Unavailable"
-                }}</span>
+                <div class="w-3 h-3 rounded-full mr-2" [class]="staff.is_available ? 'bg-green-500' : 'bg-red-500'"></div>
+                <span class="text-sm text-gray-900">{{ staff.is_available ? "Available" : "Unavailable" }}</span>
               </div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
               <div class="flex items-center space-x-2">
-                <button
-                  (click)="onViewStaff(staff)"
-                  class="text-indigo-600 hover:text-indigo-900 transition-colors p-1 rounded"
-                  title="View Details"
-                >
-                  <svg
-                    class="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                    ></path>
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                    ></path>
+                <button (click)="onViewStaff(staff)" class="text-indigo-600 hover:text-indigo-900 transition-colors p-1 rounded" title="View Details">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                   </svg>
                 </button>
-                <button
-                  (click)="onEditStaff(staff)"
-                  class="text-purple-600 hover:text-purple-900 transition-colors p-1 rounded"
-                  title="Edit Staff"
-                >
-                  <svg
-                    class="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                    ></path>
+                <button (click)="onEditStaff(staff)" class="text-purple-600 hover:text-purple-900 transition-colors p-1 rounded" title="Edit Staff">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                   </svg>
                 </button>
-                <button
-                  (click)="onDeleteStaff(staff)"
-                  class="text-red-600 hover:text-red-900 transition-colors p-1 rounded"
-                  title="Delete Staff"
-                >
-                  <svg
-                    class="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                    ></path>
+                <button (click)="onDeleteStaff(staff)" class="text-red-600 hover:text-red-900 transition-colors p-1 rounded" title="Delete Staff">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                   </svg>
                 </button>
               </div>
@@ -385,125 +184,45 @@
     <!-- Mobile Card View -->
     <div *ngIf="!isLoading" class="lg:hidden">
       <div class="divide-y divide-gray-200">
-        <div
-          *ngFor="let staff of getPaginatedStaff()"
-          class="p-4 hover:bg-gray-50 transition-colors"
-        >
+        <div *ngFor="let staff of getPaginatedStaff()" class="p-4 hover:bg-gray-50 transition-colors">
           <div class="flex items-start space-x-3">
             <div class="flex-shrink-0">
-              <img
-                *ngIf="staff.image_link"
-                [src]="staff.image_link"
-                [alt]="staff.full_name"
-                class="h-12 w-12 rounded-full object-cover"
-              />
-              <div
-                *ngIf="!staff.image_link"
-                class="h-12 w-12 rounded-full bg-gradient-to-r from-purple-400 to-indigo-400 flex items-center justify-center"
-              >
-                <span class="text-white font-medium text-sm">{{
-                  getInitials(staff.full_name)
-                }}</span>
+              <img *ngIf="staff.image_link" [src]="staff.image_link" [alt]="staff.full_name" class="h-12 w-12 rounded-full object-cover" />
+              <div *ngIf="!staff.image_link" class="h-12 w-12 rounded-full bg-gradient-to-r from-purple-400 to-indigo-400 flex items-center justify-center">
+                <span class="text-white font-medium text-sm">{{ getInitials(staff.full_name) }}</span>
               </div>
             </div>
             <div class="flex-1 min-w-0">
               <div class="flex items-start justify-between">
                 <div class="flex-1">
-                  <p class="text-sm font-medium text-gray-900 truncate">
-                    {{ staff.full_name }}
-                  </p>
-                  <p class="text-sm text-gray-500 truncate">
-                    {{ staff.working_email }}
-                  </p>
+                  <p class="text-sm font-medium text-gray-900 truncate">{{ staff.full_name }}</p>
+                  <p class="text-sm text-gray-500 truncate">{{ staff.working_email }}</p>
                   <div class="mt-2 flex flex-wrap gap-2">
-                    <span
-                      class="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium"
-                    >
-                      {{ getRoleName(staff.role) }}
-                    </span>
-                    <span
-                      class="px-2 py-1 rounded-full text-xs font-medium"
-                      [class]="getStatusBadgeClass(staff.staff_status)"
-                    >
+                    <span class="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium">{{ getRoleName(staff.role) }}</span>
+                    <span class="px-2 py-1 rounded-full text-xs font-medium" [class]="getStatusBadgeClass(staff.staff_status)">
                       {{ staff.staff_status | titlecase }}
                     </span>
-                    <span
-                      class="px-2 py-1 rounded-full text-xs font-medium"
-                      [class]="
-                        staff.is_available
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-red-100 text-red-800'
-                      "
-                    >
+                    <span class="px-2 py-1 rounded-full text-xs font-medium" [class]="staff.is_available ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
                       {{ staff.is_available ? "Available" : "Unavailable" }}
                     </span>
                   </div>
-                  <p class="text-xs text-gray-500 mt-1">
-                    {{ staff.years_experience || 0 }} years experience
-                  </p>
+                  <p class="text-xs text-gray-500 mt-1">{{ staff.years_experience || 0 }} years experience</p>
                 </div>
                 <div class="flex items-center space-x-1 ml-2">
-                  <button
-                    (click)="onViewStaff(staff)"
-                    class="text-indigo-600 hover:text-indigo-900 transition-colors p-2 rounded"
-                    title="View Details"
-                  >
-                    <svg
-                      class="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                      ></path>
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                      ></path>
+                  <button (click)="onViewStaff(staff)" class="text-indigo-600 hover:text-indigo-900 transition-colors p-2 rounded" title="View Details">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                     </svg>
                   </button>
-                  <button
-                    (click)="onEditStaff(staff)"
-                    class="text-purple-600 hover:text-purple-900 transition-colors p-2 rounded"
-                    title="Edit Staff"
-                  >
-                    <svg
-                      class="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                      ></path>
+                  <button (click)="onEditStaff(staff)" class="text-purple-600 hover:text-purple-900 transition-colors p-2 rounded" title="Edit Staff">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                     </svg>
                   </button>
-                  <button
-                    (click)="onDeleteStaff(staff)"
-                    class="text-red-600 hover:text-red-900 transition-colors p-2 rounded"
-                    title="Delete Staff"
-                  >
-                    <svg
-                      class="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                      ></path>
+                  <button (click)="onDeleteStaff(staff)" class="text-red-600 hover:text-red-900 transition-colors p-2 rounded" title="Delete Staff">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                     </svg>
                   </button>
                 </div>
@@ -515,84 +234,36 @@
     </div>
 
     <!-- Enhanced Pagination -->
-    <div class="bg-white px-4 lg:px-6 py-4 border-t border-gray-200">
+    <div class="bg-white px-6 py-4 border-t border-gray-200">
       <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div class="text-sm text-gray-700 order-2 sm:order-1">
-          Showing {{ getStartIndex() + 1 }} to {{ getEndIndex() }} of
-          {{ filteredStaff.length }} results
+        <div class="text-base text-gray-700 order-2 sm:order-1">
+          Showing {{ getStartIndex() + 1 }} to {{ getEndIndex() }} of {{ filteredStaff.length }} results
         </div>
-        <div
-          class="flex items-center space-x-1 lg:space-x-2 order-1 sm:order-2"
-        >
-          <button
-            (click)="previousPage()"
-            [disabled]="page === 1"
-            class="px-2 lg:px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            <svg
-              class="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M15 19l-7-7 7-7"
-              ></path>
+        <div class="flex items-center space-x-2 order-1 sm:order-2">
+          <button (click)="previousPage()" [disabled]="page === 1" class="px-3 py-2 border border-gray-300 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
             </svg>
           </button>
-
           <!-- Page Numbers -->
           <div class="hidden sm:flex items-center space-x-1">
-            <button
-              *ngFor="let pageNum of getPageNumbers()"
-              (click)="goToPage(pageNum)"
-              [class]="
-                pageNum === page
-                  ? 'bg-purple-600 text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-50'
-              "
-              class="px-3 py-2 border border-gray-300 rounded-md text-sm font-medium transition-colors"
-            >
+            <button *ngFor="let pageNum of getPageNumbers()" (click)="goToPage(pageNum)"
+              [class]="pageNum === page ? 'bg-purple-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'"
+              class="px-3 py-2 border border-gray-300 rounded-md text-base font-medium transition-colors">
               {{ pageNum }}
             </button>
           </div>
-
           <!-- Mobile Page Info -->
-          <span
-            class="sm:hidden px-3 py-2 text-sm text-gray-700 bg-gray-50 rounded-md"
-          >
+          <span class="sm:hidden px-3 py-2 text-base text-gray-700 bg-gray-50 rounded-md">
             {{ page }} / {{ getTotalPages() }}
           </span>
-
-          <button
-            (click)="nextPage()"
-            [disabled]="page >= getTotalPages()"
-            class="px-2 lg:px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            <svg
-              class="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M9 5l7 7-7 7"
-              ></path>
+          <button (click)="nextPage()" [disabled]="page >= getTotalPages()" class="px-3 py-2 border border-gray-300 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
             </svg>
           </button>
-
           <!-- Page Size Selector -->
-          <select
-            (change)="onPageSizeChange($event)"
-            [value]="pageSize"
-            class="ml-2 lg:ml-4 px-2 lg:px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-          >
+          <select (change)="onPageSizeChange($event)" [value]="pageSize" class="ml-4 px-3 py-2 border border-gray-300 rounded-md text-base focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
             <option value="5">5</option>
             <option value="10">10</option>
             <option value="20">20</option>
@@ -606,606 +277,63 @@
   <!-- Enhanced Loading State -->
   <div *ngIf="isLoading" class="flex items-center justify-center py-16">
     <div class="flex items-center space-x-3">
-      <div
-        class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"
-      ></div>
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
       <span class="text-gray-600 font-medium">Loading staff members...</span>
     </div>
   </div>
 
   <!-- Empty State -->
-  <div
-    *ngIf="!isLoading && filteredStaff.length === 0"
-    class="text-center py-16"
-  >
+  <div *ngIf="!isLoading && filteredStaff.length === 0" class="text-center py-16">
     <div class="mx-auto h-24 w-24 text-gray-400 mb-4">
-      <svg
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-        class="w-full h-full"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="1"
-          d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-        ></path>
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="w-full h-full">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
       </svg>
     </div>
-    <h3 class="text-lg font-medium text-gray-900 mb-2">
-      No staff members found
-    </h3>
+    <h3 class="text-lg font-medium text-gray-900 mb-2">No staff members found</h3>
     <p class="text-gray-500 mb-6">
-      <span
-        *ngIf="
-          searchTerm || selectedRole || selectedStatus || selectedAvailability
-        "
-      >
+      <span *ngIf="searchTerm || selectedRole || selectedStatus || selectedAvailability">
         Try adjusting your search criteria or filters.
       </span>
-      <span
-        *ngIf="
-          !searchTerm &&
-          !selectedRole &&
-          !selectedStatus &&
-          !selectedAvailability
-        "
-      >
+      <span *ngIf="!searchTerm && !selectedRole && !selectedStatus && !selectedAvailability">
         Get started by adding your first staff member.
       </span>
     </p>
     <div class="flex flex-col sm:flex-row gap-3 justify-center">
-      <button
-        *ngIf="
-          searchTerm || selectedRole || selectedStatus || selectedAvailability
-        "
-        (click)="clearFilters()"
-        class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200 font-medium"
-      >
+      <button *ngIf="searchTerm || selectedRole || selectedStatus || selectedAvailability"
+        (click)="clearFilters()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium">
         Clear Filters
       </button>
-      <button
-        *ngIf="
-          !searchTerm &&
-          !selectedRole &&
-          !selectedStatus &&
-          !selectedAvailability
-        "
-        (click)="onCreateStaff()"
-        class="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all duration-200 font-medium"
-      >
+      <button *ngIf="!searchTerm && !selectedRole && !selectedStatus && !selectedAvailability"
+        (click)="onCreateStaff()" class="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all font-medium">
         <span class="flex items-center space-x-2">
-          <svg
-            class="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 4v16m8-8H4"
-            ></path>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
           </svg>
           <span>Add First Staff Member</span>
         </span>
       </button>
     </div>
   </div>
-</div>
 
-<!-- Enhanced View Staff Modal -->
-<div
-  *ngIf="selectedStaff && showViewModal"
-  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
->
+  <!-- Enhanced View Staff Modal -->
   <div
-    class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-slideIn"
+    *ngIf="selectedStaff && showViewModal"
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
   >
-    <!-- Modal Header -->
     <div
-      class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-6 rounded-t-2xl"
+      class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-slideIn"
     >
-      <div class="flex items-center justify-between">
-        <div class="flex items-center space-x-4">
-          <div
-            class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center"
-          >
-            <svg
-              class="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-              ></path>
-            </svg>
-          </div>
-          <div>
-            <h2 class="text-2xl font-bold">Staff Details</h2>
-            <p class="text-purple-100">{{ selectedStaff.full_name }}</p>
-          </div>
-        </div>
-        <button
-          (click)="closeViewModal()"
-          class="text-white hover:text-purple-200 transition-colors"
-        >
-          <svg
-            class="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M6 18L18 6M6 6l12 12"
-            ></path>
-          </svg>
-        </button>
-      </div>
-    </div>
-
-    <!-- Modal Content -->
-    <div class="p-6">
-      <!-- Profile Image Section -->
-      <div *ngIf="selectedStaff.image_link" class="flex justify-center mb-6">
-        <img
-          [src]="selectedStaff.image_link"
-          alt="Staff Image"
-          class="w-32 h-32 object-cover rounded-full border-4 border-purple-200 shadow-lg"
-        />
-      </div>
-
-      <!-- Staff Information Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- Basic Information -->
-        <div class="space-y-4">
-          <h3
-            class="text-lg font-semibold text-gray-800 border-b border-purple-200 pb-2"
-          >
-            Basic Information
-          </h3>
-
-          <div class="space-y-3">
-            <div
-              class="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
-            >
-              <span class="font-medium text-gray-600">Staff ID</span>
-              <span class="text-gray-800 font-mono text-sm">{{
-                selectedStaff.staff_id
-              }}</span>
-            </div>
-
-            <div
-              class="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
-            >
-              <span class="font-medium text-gray-600">Full Name</span>
-              <span class="text-gray-800 font-semibold">{{
-                selectedStaff.full_name
-              }}</span>
-            </div>
-
-            <div
-              class="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
-            >
-              <span class="font-medium text-gray-600">Email</span>
-              <span class="text-gray-800">{{
-                selectedStaff.working_email
-              }}</span>
-            </div>
-
-            <div
-              class="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
-            >
-              <span class="font-medium text-gray-600">Role</span>
-              <span
-                class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium"
-              >
-                {{ getRoleName(selectedStaff.role) }}
-              </span>
-            </div>
-
-            <div
-              class="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
-            >
-              <span class="font-medium text-gray-600">Gender</span>
-              <span class="text-gray-800">{{
-                (selectedStaff.gender | titlecase) || "N/A"
-              }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Professional Information -->
-        <div class="space-y-4">
-          <h3
-            class="text-lg font-semibold text-gray-800 border-b border-purple-200 pb-2"
-          >
-            Professional Details
-          </h3>
-
-          <div class="space-y-3">
-            <div
-              class="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
-            >
-              <span class="font-medium text-gray-600">Experience</span>
-              <span class="text-gray-800 font-semibold"
-                >{{ selectedStaff.years_experience || "N/A" }} years</span
-              >
-            </div>
-
-            <div
-              class="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
-            >
-              <span class="font-medium text-gray-600">Hired Date</span>
-              <span class="text-gray-800">{{
-                formatDate(selectedStaff.hired_at)
-              }}</span>
-            </div>
-
-            <div
-              class="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
-            >
-              <span class="font-medium text-gray-600">Availability</span>
-              <span class="flex items-center">
-                <div
-                  class="w-3 h-3 rounded-full mr-2"
-                  [class]="
-                    selectedStaff.is_available ? 'bg-green-500' : 'bg-red-500'
-                  "
-                ></div>
-                <span class="text-gray-800">{{
-                  selectedStaff.is_available ? "Available" : "Unavailable"
-                }}</span>
-              </span>
-            </div>
-
-            <div
-              class="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
-            >
-              <span class="font-medium text-gray-600">Status</span>
-              <span
-                class="px-3 py-1 rounded-full text-sm font-medium"
-                [class]="getStatusBadgeClass(selectedStaff.staff_status)"
-              >
-                {{ selectedStaff.staff_status | titlecase }}
-              </span>
-            </div>
-
-            <div class="p-3 bg-gray-50 rounded-lg">
-              <span class="font-medium text-gray-600 block mb-2"
-                >Languages</span
-              >
-              <div class="flex flex-wrap gap-2">
-                <span
-                  *ngFor="let language of selectedStaff.languages"
-                  class="px-2 py-1 bg-indigo-100 text-indigo-800 rounded text-sm"
-                >
-                  {{ language }}
-                </span>
-                <span
-                  *ngIf="!selectedStaff.languages?.length"
-                  class="text-gray-500 text-sm"
-                  >No languages specified</span
-                >
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Timestamps -->
-      <div class="mt-6 pt-6 border-t border-gray-200">
-        <div
-          class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-500"
-        >
-          <div>
-            <span class="font-medium">Created:</span>
-            {{ formatDate(selectedStaff.created_at) }}
-          </div>
-          <div>
-            <span class="font-medium">Last Updated:</span>
-            {{ formatDate(selectedStaff.updated_at) }}
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Modal Footer -->
-    <div class="p-6 border-t border-gray-200 bg-gray-50 rounded-b-2xl">
-      <div class="flex justify-end space-x-3">
-        <button
-          (click)="closeViewModal()"
-          class="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors duration-200 font-medium"
-        >
-          Close
-        </button>
-        <button
-          (click)="onEditStaff(selectedStaff)"
-          class="px-6 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all duration-200 font-medium"
-        >
-          Edit Staff
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Enhanced Edit Staff Modal -->
-<div
-  *ngIf="selectedStaff && showEditModal"
-  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
->
-  <div
-    class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-slideIn"
-  >
-    <!-- Modal Header -->
-    <div
-      class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-6 rounded-t-2xl"
-    >
-      <div class="flex items-center justify-between">
-        <div class="flex items-center space-x-4">
-          <div
-            class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center"
-          >
-            <svg
-              class="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-              ></path>
-            </svg>
-          </div>
-          <div>
-            <h2 class="text-2xl font-bold">Edit Staff Member</h2>
-            <p class="text-purple-100">Update staff information</p>
-          </div>
-        </div>
-        <button
-          (click)="closeEditModal()"
-          class="text-white hover:text-purple-200 transition-colors"
-        >
-          <svg
-            class="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M6 18L18 6M6 6l12 12"
-            ></path>
-          </svg>
-        </button>
-      </div>
-    </div>
-
-    <!-- Form Content -->
-    <form (ngSubmit)="onSubmitEdit()" class="p-6">
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- Basic Information -->
-        <div class="space-y-4">
-          <h3
-            class="text-lg font-semibold text-gray-800 border-b border-purple-200 pb-2"
-          >
-            Basic Information
-          </h3>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2"
-              >Full Name *</label
-            >
-            <input
-              type="text"
-              [(ngModel)]="editForm.full_name"
-              name="full_name"
-              required
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
-            />
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2"
-              >Email Address *</label
-            >
-            <input
-              type="email"
-              [(ngModel)]="editForm.working_email"
-              name="working_email"
-              required
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
-            />
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2"
-              >Role</label
-            >
-            <div class="px-4 py-3 bg-gray-100 rounded-lg">
-              <span
-                class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium"
-              >
-                {{ getRoleName(editForm.role) }}
-              </span>
-              <p class="text-xs text-gray-500 mt-1">Role cannot be changed</p>
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2"
-              >Gender</label
-            >
-            <select
-              [(ngModel)]="editForm.gender"
-              name="gender"
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
-            >
-              <option value="">Select Gender</option>
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Professional Information -->
-        <div class="space-y-4">
-          <h3
-            class="text-lg font-semibold text-gray-800 border-b border-purple-200 pb-2"
-          >
-            Professional Details
-          </h3>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2"
-              >Years of Experience</label
-            >
-            <div class="px-4 py-3 bg-gray-100 rounded-lg">
-              <span class="text-gray-800 font-medium"
-                >{{ editForm.years_experience || "N/A" }} years</span
-              >
-              <p class="text-xs text-gray-500 mt-1">
-                Experience cannot be modified
-              </p>
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2"
-              >Hired Date</label
-            >
-            <div class="px-4 py-3 bg-gray-100 rounded-lg">
-              <span class="text-gray-800 font-medium">{{
-                formatDate(editForm.hired_at)
-              }}</span>
-              <p class="text-xs text-gray-500 mt-1">
-                Hire date cannot be modified
-              </p>
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2"
-              >Availability Status</label
-            >
-            <div
-              class="flex items-center space-x-3 p-3 border border-gray-300 rounded-lg"
-            >
-              <input
-                type="checkbox"
-                [(ngModel)]="editForm.is_available"
-                name="is_available"
-                class="h-5 w-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
-              />
-              <span class="text-sm text-gray-700 font-medium">
-                {{
-                  editForm.is_available
-                    ? "Available for assignments"
-                    : "Currently unavailable"
-                }}
-              </span>
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2"
-              >Staff Status *</label
-            >
-            <select
-              [(ngModel)]="editForm.staff_status"
-              name="staff_status"
-              required
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
-            >
-              <option value="" disabled>Select Status</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-              <option value="on_leave">On Leave</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <!-- Additional Information -->
-      <div class="mt-6 space-y-4">
-        <h3
-          class="text-lg font-semibold text-gray-800 border-b border-purple-200 pb-2"
-        >
-          Additional Information
-        </h3>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2"
-              >Languages</label
-            >
-            <input
-              type="text"
-              [(ngModel)]="languagesInput"
-              name="languages"
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
-              placeholder="Enter languages, separated by commas"
-            />
-            <p class="text-xs text-gray-500 mt-1">
-              Example: English, Spanish, French
-            </p>
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2"
-              >Profile Image URL</label
-            >
-            <input
-              type="url"
-              [(ngModel)]="editForm.image_link"
-              name="image_link"
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
-              placeholder="https://example.com/image.jpg"
-            />
-          </div>
-        </div>
-      </div>
-
-      <!-- Form Actions -->
+      <!-- Modal Header -->
       <div
-        class="mt-8 pt-6 border-t border-gray-200 bg-gray-50 -mx-6 px-6 py-4 rounded-b-2xl"
+        class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-6 rounded-t-2xl"
       >
-        <div class="flex justify-end space-x-3">
-          <button
-            type="button"
-            (click)="closeEditModal()"
-            class="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors duration-200 font-medium"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            [disabled]="
-              !editForm.full_name ||
-              !editForm.working_email ||
-              !editForm.staff_status
-            "
-            class="px-6 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <span class="flex items-center space-x-2">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-4">
+            <div
+              class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center"
+            >
               <svg
-                class="w-4 h-4"
+                class="w-6 h-6"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -1214,34 +342,18 @@
                   stroke-linecap="round"
                   stroke-linejoin="round"
                   stroke-width="2"
-                  d="M5 13l4 4L19 7"
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                 ></path>
               </svg>
-              <span>Save Changes</span>
-            </span>
-          </button>
-        </div>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- Create Staff Modal -->
-<div
-  *ngIf="showCreateModal"
-  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
->
-  <div
-    class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-slideIn"
-  >
-    <!-- Modal Header -->
-    <div
-      class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-6 rounded-t-2xl"
-    >
-      <div class="flex items-center justify-between">
-        <div class="flex items-center space-x-4">
-          <div
-            class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center"
+            </div>
+            <div>
+              <h2 class="text-2xl font-bold">Staff Details</h2>
+              <p class="text-purple-100">{{ selectedStaff.full_name }}</p>
+            </div>
+          </div>
+          <button
+            (click)="closeViewModal()"
+            class="text-white hover:text-purple-200 transition-colors"
           >
             <svg
               class="w-6 h-6"
@@ -1253,293 +365,505 @@
                 stroke-linecap="round"
                 stroke-linejoin="round"
                 stroke-width="2"
-                d="M12 4v16m8-8H4"
+                d="M6 18L18 6M6 6l12 12"
               ></path>
             </svg>
-          </div>
-          <div>
-            <h2 class="text-2xl font-bold">Add New Staff Member</h2>
-            <p class="text-purple-100">Create a new staff account</p>
-          </div>
-        </div>
-        <button
-          (click)="closeCreateModal()"
-          class="text-white hover:text-purple-200 transition-colors"
-        >
-          <svg
-            class="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M6 18L18 6M6 6l12 12"
-            ></path>
-          </svg>
-        </button>
-      </div>
-    </div>
-
-    <!-- Success/Error Messages -->
-    <div *ngIf="submitSuccess" class="p-4 bg-green-50 border-l-4 border-green-400">
-      <div class="flex">
-        <div class="flex-shrink-0">
-          <svg class="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-          </svg>
-        </div>
-        <div class="ml-3">
-          <p class="text-sm text-green-700">{{ submitSuccess }}</p>
+          </button>
         </div>
       </div>
-    </div>
 
-    <div *ngIf="submitError" class="p-4 bg-red-50 border-l-4 border-red-400">
-      <div class="flex">
-        <div class="flex-shrink-0">
-          <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
-          </svg>
-        </div>
-        <div class="ml-3">
-          <p class="text-sm text-red-700">{{ submitError }}</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Form Content -->
-    <form (ngSubmit)="onSubmitCreate()" class="p-6">
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- Basic Information -->
-        <div class="space-y-4">
-          <h3
-            class="text-lg font-semibold text-gray-800 border-b border-purple-200 pb-2"
-          >
-            Basic Information
-          </h3>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2"
-              >Full Name *</label
-            >
-            <input
-              type="text"
-              [(ngModel)]="createForm.full_name"
-              name="full_name"
-              required
-              [class]="hasError('full_name') ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-purple-500 focus:border-purple-500'"
-              class="w-full px-4 py-3 border rounded-lg transition-colors"
-              placeholder="Enter full name"
-            />
-            <p *ngIf="hasError('full_name')" class="mt-1 text-sm text-red-600">
-              {{ getError('full_name') }}
-            </p>
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2"
-              >Email Address *</label
-            >
-            <input
-              type="email"
-              [(ngModel)]="createForm.working_email"
-              name="working_email"
-              required
-              [class]="hasError('working_email') ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-purple-500 focus:border-purple-500'"
-              class="w-full px-4 py-3 border rounded-lg transition-colors"
-              placeholder="Enter email address"
-            />
-            <p *ngIf="hasError('working_email')" class="mt-1 text-sm text-red-600">
-              {{ getError('working_email') }}
-            </p>
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2"
-              >Gender</label
-            >
-            <select
-              [(ngModel)]="createForm.gender"
-              name="gender"
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
-            >
-              <option value="">Select Gender</option>
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-              <option value="other">Other</option>
-            </select>
-            <p *ngIf="hasError('gender')" class="mt-1 text-sm text-red-600">
-              {{ getError('gender') }}
-            </p>
-          </div>
+      <!-- Modal Content -->
+      <div class="p-6">
+        <!-- Profile Image Section -->
+        <div *ngIf="selectedStaff.image_link" class="flex justify-center mb-6">
+          <img
+            [src]="selectedStaff.image_link"
+            alt="Staff Image"
+            class="w-32 h-32 object-cover rounded-full border-4 border-purple-200 shadow-lg"
+          />
         </div>
 
-        <!-- Professional Information -->
-        <div class="space-y-4">
-          <h3
-            class="text-lg font-semibold text-gray-800 border-b border-purple-200 pb-2"
-          >
-            Professional Details
-          </h3>
+        <!-- Staff Information Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Basic Information -->
+          <div class="space-y-4">
+            <h3
+              class="text-lg font-semibold text-gray-800 border-b border-purple-200 pb-2"
+            >
+              Basic Information
+            </h3>
 
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2"
-              >Role *</label
-            >
-            <select
-              [(ngModel)]="createForm.role"
-              name="role"
-              required
-              [class]="hasError('role') ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-purple-500 focus:border-purple-500'"
-              class="w-full px-4 py-3 border rounded-lg transition-colors"
-            >
-              <option value="" disabled>Select Role</option>
-              <option *ngFor="let role of roles" [value]="role.value">
-                {{ role.label }}
-              </option>
-            </select>
-            <p *ngIf="hasError('role')" class="mt-1 text-sm text-red-600">
-              {{ getError('role') }}
-            </p>
-          </div>
+            <div class="space-y-3">
+              <div
+                class="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
+              >
+                <span class="font-medium text-gray-600">Staff ID</span>
+                <span class="text-gray-800 font-mono text-sm">{{
+                  selectedStaff.staff_id
+                }}</span>
+              </div>
 
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2"
-              >Years of Experience</label
-            >
-            <input
-              type="number"
-              [(ngModel)]="createForm.years_experience"
-              name="years_experience"
-              min="0"
-              max="50"
-              [class]="hasError('years_experience') ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-purple-500 focus:border-purple-500'"
-              class="w-full px-4 py-3 border rounded-lg transition-colors"
-              placeholder="0"
-            />
-            <p *ngIf="hasError('years_experience')" class="mt-1 text-sm text-red-600">
-              {{ getError('years_experience') }}
-            </p>
-          </div>
+              <div
+                class="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
+              >
+                <span class="font-medium text-gray-600">Full Name</span>
+                <span class="text-gray-800 font-semibold">{{
+                  selectedStaff.full_name
+                }}</span>
+              </div>
 
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2"
-              >Hired Date</label
-            >
-            <input
-              type="date"
-              [(ngModel)]="createForm.hired_at"
-              name="hired_at"
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
-            />
-            <p class="text-xs text-gray-500 mt-1">
-              Leave empty to use current date
-            </p>
-          </div>
+              <div
+                class="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
+              >
+                <span class="font-medium text-gray-600">Email</span>
+                <span class="text-gray-800">{{
+                  selectedStaff.working_email
+                }}</span>
+              </div>
 
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2"
-              >Staff Status</label
-            >
-            <select
-              [(ngModel)]="createForm.staff_status"
-              name="staff_status"
-              [class]="hasError('staff_status') ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-purple-500 focus:border-purple-500'"
-              class="w-full px-4 py-3 border rounded-lg transition-colors"
-            >
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-              <option value="on_leave">On Leave</option>
-            </select>
-            <p *ngIf="hasError('staff_status')" class="mt-1 text-sm text-red-600">
-              {{ getError('staff_status') }}
-            </p>
-          </div>
+              <div
+                class="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
+              >
+                <span class="font-medium text-gray-600">Role</span>
+                <span
+                  class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium"
+                >
+                  {{ getRoleName(selectedStaff.role) }}
+                </span>
+              </div>
 
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2"
-              >Availability Status</label
-            >
-            <div
-              class="flex items-center space-x-3 p-3 border border-gray-300 rounded-lg"
-            >
-              <input
-                type="checkbox"
-                [(ngModel)]="createForm.is_available"
-                name="is_available"
-                class="h-5 w-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
-              />
-              <span class="text-sm text-gray-700 font-medium">
-                {{
-                  createForm.is_available
-                    ? "Available for assignments"
-                    : "Currently unavailable"
-                }}
-              </span>
+              <div
+                class="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
+              >
+                <span class="font-medium text-gray-600">Gender</span>
+                <span class="text-gray-800">{{
+                  (selectedStaff.gender | titlecase) || "N/A"
+                }}</span>
+              </div>
             </div>
           </div>
 
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2"
-              >Languages</label
+          <!-- Professional Information -->
+          <div class="space-y-4">
+            <h3
+              class="text-lg font-semibold text-gray-800 border-b border-purple-200 pb-2"
             >
-            <input
-              type="text"
-              [(ngModel)]="createLanguagesInput"
-              name="languages"
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
-              placeholder="Enter languages, separated by commas"
-            />
-            <p class="text-xs text-gray-500 mt-1">
-              Example: English, Spanish, French
-            </p>
-          </div>
+              Professional Details
+            </h3>
 
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2"
-              >Profile Image URL</label
-            >
-            <input
-              type="url"
-              [(ngModel)]="createForm.image_link"
-              name="image_link"
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
-              placeholder="https://example.com/image.jpg"
-            />
+            <div class="space-y-3">
+              <div
+                class="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
+              >
+                <span class="font-medium text-gray-600">Experience</span>
+                <span class="text-gray-800 font-semibold"
+                  >{{ selectedStaff.years_experience || "N/A" }} years</span
+                >
+              </div>
+
+              <div
+                class="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
+              >
+                <span class="font-medium text-gray-600">Hired Date</span>
+                <span class="text-gray-800">{{
+                  formatDate(selectedStaff.hired_at)
+                }}</span>
+              </div>
+
+              <div
+                class="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
+              >
+                <span class="font-medium text-gray-600">Availability</span>
+                <span class="flex items-center">
+                  <div
+                    class="w-3 h-3 rounded-full mr-2"
+                    [class]="
+                      selectedStaff.is_available ? 'bg-green-500' : 'bg-red-500'
+                    "
+                  ></div>
+                  <span class="text-gray-800">{{
+                    selectedStaff.is_available ? "Available" : "Unavailable"
+                  }}</span>
+                </span>
+              </div>
+
+              <div
+                class="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
+              >
+                <span class="font-medium text-gray-600">Status</span>
+                <span
+                  class="px-3 py-1 rounded-full text-sm font-medium"
+                  [class]="getStatusBadgeClass(selectedStaff.staff_status)"
+                >
+                  {{ selectedStaff.staff_status | titlecase }}
+                </span>
+              </div>
+
+              <div class="p-3 bg-gray-50 rounded-lg">
+                <span class="font-medium text-gray-600 block mb-2"
+                  >Languages</span
+                >
+                <div class="flex flex-wrap gap-2">
+                  <span
+                    *ngFor="let language of selectedStaff.languages"
+                    class="px-2 py-1 bg-indigo-100 text-indigo-800 rounded text-sm"
+                  >
+                    {{ language }}
+                  </span>
+                  <span
+                    *ngIf="!selectedStaff.languages?.length"
+                    class="text-gray-500 text-sm"
+                    >No languages specified</span
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Timestamps -->
+        <div class="mt-6 pt-6 border-t border-gray-200">
+          <div
+            class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-500"
+          >
+            <div>
+              <span class="font-medium">Created:</span>
+              {{ formatDate(selectedStaff.created_at) }}
+            </div>
+            <div>
+              <span class="font-medium">Last Updated:</span>
+              {{ formatDate(selectedStaff.updated_at) }}
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Form Actions -->
-      <div
-        class="mt-8 pt-6 border-t border-gray-200 bg-gray-50 -mx-6 px-6 py-4 rounded-b-2xl"
-      >
+      <!-- Modal Footer -->
+      <div class="p-6 border-t border-gray-200 bg-gray-50 rounded-b-2xl">
         <div class="flex justify-end space-x-3">
           <button
-            type="button"
-            (click)="closeCreateModal()"
+            (click)="closeViewModal()"
             class="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors duration-200 font-medium"
-            [disabled]="isSubmitting"
           >
-            Cancel
+            Close
           </button>
           <button
-            type="submit"
-            [disabled]="
-              !createForm.full_name ||
-              !createForm.working_email ||
-              !createForm.role ||
-              isSubmitting
-            "
-            class="px-6 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            (click)="onEditStaff(selectedStaff)"
+            class="px-6 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all duration-200 font-medium"
           >
-            <span class="flex items-center space-x-2">
+            Edit Staff
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Enhanced Edit Staff Modal -->
+  <div
+    *ngIf="selectedStaff && showEditModal"
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+  >
+    <div
+      class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-slideIn"
+    >
+      <!-- Modal Header -->
+      <div
+        class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-6 rounded-t-2xl"
+      >
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-4">
+            <div
+              class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center"
+            >
               <svg
-                *ngIf="!isSubmitting"
-                class="w-4 h-4"
+                class="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                ></path>
+              </svg>
+            </div>
+            <div>
+              <h2 class="text-2xl font-bold">Edit Staff Member</h2>
+              <p class="text-purple-100">Update staff information</p>
+            </div>
+          </div>
+          <button
+            (click)="closeEditModal()"
+            class="text-white hover:text-purple-200 transition-colors"
+          >
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              ></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Form Content -->
+      <form (ngSubmit)="onSubmitEdit()" class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Basic Information -->
+          <div class="space-y-4">
+            <h3
+              class="text-lg font-semibold text-gray-800 border-b border-purple-200 pb-2"
+            >
+              Basic Information
+            </h3>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Full Name *</label
+              >
+              <input
+                type="text"
+                [(ngModel)]="editForm.full_name"
+                name="full_name"
+                required
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Email Address *</label
+              >
+              <input
+                type="email"
+                [(ngModel)]="editForm.working_email"
+                name="working_email"
+                required
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Role</label
+              >
+              <div class="px-4 py-3 bg-gray-100 rounded-lg">
+                <span
+                  class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium"
+                >
+                  {{ getRoleName(editForm.role) }}
+                </span>
+                <p class="text-xs text-gray-500 mt-1">Role cannot be changed</p>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Gender</label
+              >
+              <select
+                [(ngModel)]="editForm.gender"
+                name="gender"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+              >
+                <option value="">Select Gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Professional Information -->
+          <div class="space-y-4">
+            <h3
+              class="text-lg font-semibold text-gray-800 border-b border-purple-200 pb-2"
+            >
+              Professional Details
+            </h3>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Years of Experience</label
+              >
+              <div class="px-4 py-3 bg-gray-100 rounded-lg">
+                <span class="text-gray-800 font-medium"
+                  >{{ editForm.years_experience || "N/A" }} years</span
+                >
+                <p class="text-xs text-gray-500 mt-1">
+                  Experience cannot be modified
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Hired Date</label
+              >
+              <div class="px-4 py-3 bg-gray-100 rounded-lg">
+                <span class="text-gray-800 font-medium">{{
+                  formatDate(editForm.hired_at)
+                }}</span>
+                <p class="text-xs text-gray-500 mt-1">
+                  Hire date cannot be modified
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Availability Status</label
+              >
+              <div
+                class="flex items-center space-x-3 p-3 border border-gray-300 rounded-lg"
+              >
+                <input
+                  type="checkbox"
+                  [(ngModel)]="editForm.is_available"
+                  name="is_available"
+                  class="h-5 w-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                />
+                <span class="text-sm text-gray-700 font-medium">
+                  {{
+                    editForm.is_available
+                      ? "Available for assignments"
+                      : "Currently unavailable"
+                  }}
+                </span>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Staff Status *</label
+              >
+              <select
+                [(ngModel)]="editForm.staff_status"
+                name="staff_status"
+                required
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+              >
+                <option value="" disabled>Select Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="on_leave">On Leave</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Additional Information -->
+        <div class="mt-6 space-y-4">
+          <h3
+            class="text-lg font-semibold text-gray-800 border-b border-purple-200 pb-2"
+          >
+            Additional Information
+          </h3>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Languages</label
+              >
+              <input
+                type="text"
+                [(ngModel)]="languagesInput"
+                name="languages"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+                placeholder="Enter languages, separated by commas"
+              />
+              <p class="text-xs text-gray-500 mt-1">
+                Example: English, Spanish, French
+              </p>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Profile Image URL</label
+              >
+              <input
+                type="url"
+                [(ngModel)]="editForm.image_link"
+                name="image_link"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+                placeholder="https://example.com/image.jpg"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div
+          class="mt-8 pt-6 border-t border-gray-200 bg-gray-50 -mx-6 px-6 py-4 rounded-b-2xl"
+        >
+          <div class="flex justify-end space-x-3">
+            <button
+              type="button"
+              (click)="closeEditModal()"
+              class="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors duration-200 font-medium"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              [disabled]="
+                !editForm.full_name ||
+                !editForm.working_email ||
+                !editForm.staff_status
+              "
+              class="px-6 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <span class="flex items-center space-x-2">
+                <svg
+                  class="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M5 13l4 4L19 7"
+                  ></path>
+                </svg>
+                <span>Save Changes</span>
+              </span>
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Create Staff Modal -->
+  <div
+    *ngIf="showCreateModal"
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+  >
+    <div
+      class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-slideIn"
+    >
+      <!-- Modal Header -->
+      <div
+        class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-6 rounded-t-2xl"
+      >
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-4">
+            <div
+              class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center"
+            >
+              <svg
+                class="w-6 h-6"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -1551,17 +875,312 @@
                   d="M12 4v16m8-8H4"
                 ></path>
               </svg>
-              <div
-                *ngIf="isSubmitting"
-                class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"
-              ></div>
-              <span>{{ isSubmitting ? 'Creating...' : 'Create Staff' }}</span>
-            </span>
+            </div>
+            <div>
+              <h2 class="text-2xl font-bold">Add New Staff Member</h2>
+              <p class="text-purple-100">Create a new staff account</p>
+            </div>
+          </div>
+          <button
+            (click)="closeCreateModal()"
+            class="text-white hover:text-purple-200 transition-colors"
+          >
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              ></path>
+            </svg>
           </button>
         </div>
       </div>
-    </form>
+
+      <!-- Success/Error Messages -->
+      <div *ngIf="submitSuccess" class="p-4 bg-green-50 border-l-4 border-green-400">
+        <div class="flex">
+          <div class="flex-shrink-0">
+            <svg class="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+          </div>
+          <div class="ml-3">
+            <p class="text-sm text-green-700">{{ submitSuccess }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="submitError" class="p-4 bg-red-50 border-l-4 border-red-400">
+        <div class="flex">
+          <div class="flex-shrink-0">
+            <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+            </svg>
+          </div>
+          <div class="ml-3">
+            <p class="text-sm text-red-700">{{ submitError }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Content -->
+      <form (ngSubmit)="onSubmitCreate()" class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Basic Information -->
+          <div class="space-y-4">
+            <h3
+              class="text-lg font-semibold text-gray-800 border-b border-purple-200 pb-2"
+            >
+              Basic Information
+            </h3>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Full Name *</label
+              >
+              <input
+                type="text"
+                [(ngModel)]="createForm.full_name"
+                name="full_name"
+                required
+                [class]="hasError('full_name') ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-purple-500 focus:border-purple-500'"
+                class="w-full px-4 py-3 border rounded-lg transition-colors"
+                placeholder="Enter full name"
+              />
+              <p *ngIf="hasError('full_name')" class="mt-1 text-sm text-red-600">
+                {{ getError('full_name') }}
+              </p>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Email Address *</label
+              >
+              <input
+                type="email"
+                [(ngModel)]="createForm.working_email"
+                name="working_email"
+                required
+                [class]="hasError('working_email') ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-purple-500 focus:border-purple-500'"
+                class="w-full px-4 py-3 border rounded-lg transition-colors"
+                placeholder="Enter email address"
+              />
+              <p *ngIf="hasError('working_email')" class="mt-1 text-sm text-red-600">
+                {{ getError('working_email') }}
+              </p>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Gender</label
+              >
+              <select
+                [(ngModel)]="createForm.gender"
+                name="gender"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+              >
+                <option value="">Select Gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+              <p *ngIf="hasError('gender')" class="mt-1 text-sm text-red-600">
+                {{ getError('gender') }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Professional Information -->
+          <div class="space-y-4">
+            <h3
+              class="text-lg font-semibold text-gray-800 border-b border-purple-200 pb-2"
+            >
+              Professional Details
+            </h3>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Role *</label
+              >
+              <select
+                [(ngModel)]="createForm.role"
+                name="role"
+                required
+                [class]="hasError('role') ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-purple-500 focus:border-purple-500'"
+                class="w-full px-4 py-3 border rounded-lg transition-colors"
+              >
+                <option value="" disabled>Select Role</option>
+                <option *ngFor="let role of roles" [value]="role.value">
+                  {{ role.label }}
+                </option>
+              </select>
+              <p *ngIf="hasError('role')" class="mt-1 text-sm text-red-600">
+                {{ getError('role') }}
+              </p>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Years of Experience</label
+              >
+              <input
+                type="number"
+                [(ngModel)]="createForm.years_experience"
+                name="years_experience"
+                min="0"
+                max="50"
+                [class]="hasError('years_experience') ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-purple-500 focus:border-purple-500'"
+                class="w-full px-4 py-3 border rounded-lg transition-colors"
+                placeholder="0"
+              />
+              <p *ngIf="hasError('years_experience')" class="mt-1 text-sm text-red-600">
+                {{ getError('years_experience') }}
+              </p>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Hired Date</label
+              >
+              <input
+                type="date"
+                [(ngModel)]="createForm.hired_at"
+                name="hired_at"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+              />
+              <p class="text-xs text-gray-500 mt-1">
+                Leave empty to use current date
+              </p>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Staff Status</label
+              >
+              <select
+                [(ngModel)]="createForm.staff_status"
+                name="staff_status"
+                [class]="hasError('staff_status') ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-purple-500 focus:border-purple-500'"
+                class="w-full px-4 py-3 border rounded-lg transition-colors"
+              >
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="on_leave">On Leave</option>
+              </select>
+              <p *ngIf="hasError('staff_status')" class="mt-1 text-sm text-red-600">
+                {{ getError('staff_status') }}
+              </p>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Availability Status</label
+              >
+              <div
+                class="flex items-center space-x-3 p-3 border border-gray-300 rounded-lg"
+              >
+                <input
+                  type="checkbox"
+                  [(ngModel)]="createForm.is_available"
+                  name="is_available"
+                  class="h-5 w-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                />
+                <span class="text-sm text-gray-700 font-medium">
+                  {{
+                    createForm.is_available
+                      ? "Available for assignments"
+                      : "Currently unavailable"
+                  }}
+                </span>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Languages</label
+              >
+              <input
+                type="text"
+                [(ngModel)]="createLanguagesInput"
+                name="languages"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+                placeholder="Enter languages, separated by commas"
+              />
+              <p class="text-xs text-gray-500 mt-1">
+                Example: English, Spanish, French
+              </p>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Profile Image URL</label
+              >
+              <input
+                type="url"
+                [(ngModel)]="createForm.image_link"
+                name="image_link"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+                placeholder="https://example.com/image.jpg"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div
+          class="mt-8 pt-6 border-t border-gray-200 bg-gray-50 -mx-6 px-6 py-4 rounded-b-2xl"
+        >
+          <div class="flex justify-end space-x-3">
+            <button
+              type="button"
+              (click)="closeCreateModal()"
+              class="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors duration-200 font-medium"
+              [disabled]="isSubmitting"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              [disabled]="
+                !createForm.full_name ||
+                !createForm.working_email ||
+                !createForm.role ||
+                isSubmitting
+              "
+              class="px-6 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <span class="flex items-center space-x-2">
+                <svg
+                  *ngIf="!isSubmitting"
+                  class="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 4v16m8-8H4"
+                  ></path>
+                </svg>
+                <div
+                  *ngIf="isSubmitting"
+                  class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"
+                ></div>
+                <span>{{ isSubmitting ? 'Creating...' : 'Create Staff' }}</span>
+              </span>
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
   </div>
-</div>
 
 

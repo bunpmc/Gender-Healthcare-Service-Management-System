@@ -4,10 +4,9 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 serve(async (req)=>{
   const supabase = createClient(Deno.env.get("SUPABASE_URL"), Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"));
   const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString(); //to ms
-  // Update old transactions to 'cancel'
   const { error, count } = await supabase.from("transactions").update({
     status: "cancel"
-  }).eq("status", "pending") // only cancel pending ones
+  }).eq("status", "pending") 
   .lt("created_at", tenMinutesAgo) // older than 10 mins
   .select("id", {
     count: "exact"

@@ -1,5 +1,30 @@
 import { serve } from 'https://deno.land/std@0.223.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+function createErrorResponse(error, status = 400, details = null) {
+  const response = {
+    error,
+    details
+  }
+  if(details) => response.details = details
+  return new Response (JSON.stringify(response), {
+    status,
+    headers: {
+    'Content-Type': 'application/json',
+    'Access-Control-Headers':'*'
+    }
+  })
+}
+
+function createSuccessResponse(status=200, data) {
+  const new Response (JSON.stringify(response), {
+    status,
+    headers: {
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*"
+    }
+  })
+}
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -13,8 +38,9 @@ serve(async (req)=>{
     });
   }
   try {
-    const { email, otp_code, new_password } = await req.json();
-    if (!email || !otp_code || !new_password) {
+    const { email, otp, newPassword, timestamp } = await req.json();
+  
+    if (!email || !otp || !newPassword || !timestamp || typeof timestamp !== 'number') {
       return new Response(JSON.stringify({
         error: 'Missing required fields'
       }), {
@@ -25,28 +51,11 @@ serve(async (req)=>{
         status: 400
       });
     }
-//     function isStrongPassword(password: string): boolean {
-//   const minLength = 8;
-//   const hasUpperCase = /[A-Z]/.test(password);
-//   const hasLowerCase = /[a-z]/.test(password);
-//   const hasNumber = /[0-9]/.test(password);
-//   const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-//   return password.length >= minLength && hasUpperCase && hasLowerCase && hasNumber && hasSpecialChar;
-// }
-
-// if (!isStrongPassword(new_password)) {
-//   return new Response(JSON.stringify({
-//     error: 'Password is too weak. It must be at least 8 characters long and include uppercase, lowercase, number, and special character.'
-//   }), {
-//     headers: {
-//       ...corsHeaders,
-//       'Content-Type': 'application/json'
-//     },
-//     status: 400
-//   });
-// }
     const { data: otp, error: otpError } = await supabase.from('otps').select('*').eq('email', email).eq('otp_code', otp_code).eq('is_used', false).gte('expires_at', new Date().toISOString()).maybeSingle();
     if (otpError || !otp) {
+    const now = Date.now();
+    const expiresInMinutes = 10; // 10 phút
+    if ((now - timestamp) / 1000 / 60 > expiresInMinutes) {
       return new Response(JSON.stringify({
         error: 'Invalid or expired OTP'
       }), {

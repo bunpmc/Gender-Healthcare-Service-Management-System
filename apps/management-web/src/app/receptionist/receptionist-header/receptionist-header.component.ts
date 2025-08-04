@@ -8,7 +8,7 @@ import { Router } from '@angular/router';
   imports: [CommonModule],
   template: `
     <!-- Clean Reception Portal Header -->
-    <header class="bg-gradient-to-r from-white via-blue-50 to-indigo-50 shadow-xl border border-white/20 backdrop-blur-sm p-6 m-6 rounded-2xl">
+    <header class="bg-gradient-to-r from-white via-blue-50 to-indigo-50 shadow-xl border border-white/20 backdrop-blur-sm p-4 lg:p-6 m-2 lg:m-4 rounded-2xl">
       <div class="flex justify-between items-center">
 
         <!-- Portal Title & Receptionist Name -->
@@ -19,8 +19,8 @@ import { Router } from '@angular/router';
             </svg>
           </div>
           <div>
-            <h1 class="text-xl font-bold text-gray-900">Reception Portal</h1>
-            <p class="text-sm text-indigo-600 font-medium">{{ receptionistName }}</p>
+            <h1 class="text-lg lg:text-xl font-bold text-gray-900">Reception Portal</h1>
+            <p class="text-xs lg:text-sm text-indigo-600 font-medium hidden sm:block">{{ receptionistName }}</p>
           </div>
         </div>
 
@@ -29,23 +29,23 @@ import { Router } from '@angular/router';
           <div class="relative">
             <button
               (click)="toggleUserMenu()"
-              class="flex items-center space-x-3 px-3 py-2 bg-white/80 backdrop-blur-sm rounded-xl border border-white/40 hover:bg-white/90 transition-all duration-300 hover:scale-105 hover:shadow-lg"
+              class="flex items-center space-x-2 lg:space-x-3 px-2 lg:px-3 py-2 bg-white/80 backdrop-blur-sm rounded-xl border border-white/40 hover:bg-white/90 transition-all duration-300 hover:scale-105 hover:shadow-lg"
             >
-              <div class="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-700 rounded-lg flex items-center justify-center">
-                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div class="w-8 lg:w-10 h-8 lg:h-10 bg-gradient-to-br from-indigo-600 to-purple-700 rounded-lg flex items-center justify-center">
+                <svg class="w-4 lg:w-5 h-4 lg:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                 </svg>
               </div>
-              <span class="text-base font-medium text-gray-700">Reception</span>
+              <span class="text-sm lg:text-base font-medium text-gray-700 hidden sm:block">Reception</span>
               <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
               </svg>
             </button>
 
             <!-- User Dropdown Menu -->
-            <div *ngIf="showUserMenu" class="absolute right-0 mt-3 w-56 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 py-2 z-50">
+            <div *ngIf="showUserMenu" class="absolute right-0 mt-3 w-48 lg:w-56 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 py-2 z-50">
               <div class="px-4 py-3 border-b border-gray-100">
-                <p class="text-base font-semibold text-gray-900">{{ receptionistName }}</p>
+                <p class="text-sm lg:text-base font-semibold text-gray-900">{{ receptionistName }}</p>
                 <p class="text-xs text-gray-500">Receptionist</p>
               </div>
               <div class="py-2">
@@ -93,12 +93,39 @@ import { Router } from '@angular/router';
 
     /* Mobile responsiveness */
     @media (max-width: 768px) {
-      .absolute.right-0 {
-        right: 1rem !important;
-        left: auto !important;
-        width: 280px !important;
-        max-width: calc(100vw - 2rem) !important;
+      header {
+        margin: 0.5rem;
+        padding: 1rem;
       }
+      
+      .absolute.right-0 {
+        right: 0.5rem !important;
+        left: auto !important;
+        width: 200px !important;
+        max-width: calc(100vw - 1rem) !important;
+      }
+    }
+
+    @media (max-width: 640px) {
+      header {
+        margin: 0.25rem;
+        padding: 0.75rem;
+      }
+    }
+
+    /* Prevent overflow */
+    .relative {
+      position: relative;
+    }
+
+    .absolute {
+      position: absolute;
+    }
+
+    /* Ensure dropdown doesn't cause horizontal scroll */
+    .absolute.right-0 {
+      right: 0;
+      max-width: 280px;
     }
   `]
 })
@@ -106,7 +133,7 @@ export class ReceptionistHeaderComponent implements OnInit {
   receptionistName: string = '';
   showUserMenu: boolean = false;
 
-  constructor(private router: Router) {}
+  constructor(private router: Router) { }
 
   ngOnInit(): void {
     this.loadReceptionistInfo();
@@ -115,7 +142,7 @@ export class ReceptionistHeaderComponent implements OnInit {
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: Event): void {
     const target = event.target as HTMLElement;
-    
+
     // Close dropdowns when clicking outside
     if (!target.closest('.relative') && !target.closest('button')) {
       this.showUserMenu = false;
@@ -135,7 +162,7 @@ export class ReceptionistHeaderComponent implements OnInit {
     // Clear authentication data
     localStorage.removeItem('receptionistName');
     localStorage.removeItem('authToken');
-    
+
     // Navigate to login page
     this.router.navigate(['/auth/login']);
   }

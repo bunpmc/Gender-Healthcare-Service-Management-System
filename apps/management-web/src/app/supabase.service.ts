@@ -3295,6 +3295,20 @@ export class SupabaseService {
         };
       }
 
+      // Determine schedule based on appointment time
+      let schedule: 'Morning' | 'Afternoon' | 'Evening' = 'Morning';
+      if (appointmentData.appointment_time) {
+        const time = appointmentData.appointment_time.split(':')[0];
+        const hour = parseInt(time);
+        if (hour >= 6 && hour < 12) {
+          schedule = 'Morning';
+        } else if (hour >= 12 && hour < 18) {
+          schedule = 'Afternoon';
+        } else {
+          schedule = 'Evening';
+        }
+      }
+
       // Create appointment with confirmed status (receptionist creates confirmed appointments)
       const insertData = {
         patient_id: appointmentData.patient_id,
@@ -3305,7 +3319,7 @@ export class SupabaseService {
         email: appointmentData.email,
         visit_type: appointmentData.visit_type,
         appointment_status: 'in_progress', // Receptionist creates in_progress appointments
-        schedule: 'scheduled' as ScheduleEnum,
+        schedule: schedule,
         appointment_date: appointmentData.appointment_date,
         appointment_time: appointmentData.appointment_time,
         message: appointmentData.message,
@@ -3443,6 +3457,20 @@ export class SupabaseService {
         };
       }
 
+      // Determine schedule based on appointment time
+      let schedule: 'Morning' | 'Afternoon' | 'Evening' = 'Morning';
+      if (appointmentData.appointment_time) {
+        const time = appointmentData.appointment_time.split(':')[0];
+        const hour = parseInt(time);
+        if (hour >= 6 && hour < 12) {
+          schedule = 'Morning';
+        } else if (hour >= 12 && hour < 18) {
+          schedule = 'Afternoon';
+        } else {
+          schedule = 'Evening';
+        }
+      }
+
       // Create guest appointment with confirmed status
       const insertData = {
         guest_id: guestId,
@@ -3453,7 +3481,7 @@ export class SupabaseService {
         email: appointmentData.email,
         visit_type: appointmentData.visit_type,
         appointment_status: 'in_progress', // Receptionist creates in_progress appointments
-        schedule: 'scheduled' as ScheduleEnum,
+        schedule: schedule,
         appointment_date: appointmentData.appointment_date,
         appointment_time: appointmentData.appointment_time,
         message: appointmentData.message,

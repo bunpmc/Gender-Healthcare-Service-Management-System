@@ -8,20 +8,26 @@ import { ReceptionistAuthGuard } from './receptionist/receptionist-auth.guard';
 export const routes: Routes = [
   // Redirect to login page directly (streamlined user experience)
   { path: '', redirectTo: '/login', pathMatch: 'full' },
-  { 
-    path: 'login', 
-    loadComponent: () => import('./shared/login/staff-login.component').then(m => m.StaffLoginComponent) 
+  {
+    path: 'login',
+    loadComponent: () => import('./shared/login/staff-login.component').then(m => m.StaffLoginComponent)
+  },
+
+  // Auth routes
+  {
+    path: 'auth/login',
+    loadComponent: () => import('./auth/login/login.component').then(m => m.LoginComponent)
   },
 
   // Optional: Keep landing page accessible via direct URL if needed
-  { 
-    path: 'portal', 
-    loadComponent: () => import('./staff-portal-landing/staff-portal-landing.component').then(m => m.StaffPortalLandingComponent) 
+  {
+    path: 'portal',
+    loadComponent: () => import('./staff-portal-landing/staff-portal-landing.component').then(m => m.StaffPortalLandingComponent)
   },
 
   // Debug tools - lazy loaded (remove in production)
-  { 
-    path: 'debug', 
+  {
+    path: 'debug',
     loadComponent: () => import('./debug-supabase.component').then(m => m.DebugSupabaseComponent),
     data: { preload: false } // Don't preload debug tools
   },

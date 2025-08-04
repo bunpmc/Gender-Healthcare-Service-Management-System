@@ -458,6 +458,9 @@ export class AppointmentManagementComponent implements OnInit {
     try {
       let result: any;
 
+      // Use a default receptionist ID for testing (no auth required)
+      const receptionistId = 'default-receptionist-id';
+
       if (this.newAppointment.appointment_type === 'patient') {
         // Create appointment for existing patient
         const patient = this.patients.find(p => p.id === this.newAppointment.patient_id);
@@ -467,7 +470,7 @@ export class AppointmentManagementComponent implements OnInit {
         }
 
         result = await this.supabaseService.createPatientAppointment(
-          'receptionist-id', // TODO: Get actual receptionist ID from auth
+          receptionistId,
           {
             patient_id: this.newAppointment.patient_id,
             doctor_id: this.newAppointment.doctor_id,
@@ -488,7 +491,7 @@ export class AppointmentManagementComponent implements OnInit {
         }
 
         result = await this.supabaseService.createGuestAppointment(
-          'receptionist-id', // TODO: Get actual receptionist ID from auth
+          receptionistId,
           {
             guest_name: this.newAppointment.guest_name,
             phone: this.newAppointment.phone,
@@ -508,6 +511,7 @@ export class AppointmentManagementComponent implements OnInit {
       if (result.success) {
         this.showSuccess(`${this.newAppointment.appointment_type === 'patient' ? 'Patient' : 'Guest'} appointment created successfully`);
         await this.loadAppointments(); // Reload to get fresh data
+        await this.calculateStats(); // Recalculate stats immediately
         this.closeCreateModal();
       } else {
         this.showError(result.error || 'Failed to create appointment');

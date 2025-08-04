@@ -122,7 +122,7 @@ serve(async (req)=>{
         return createErrorResponse("Failed to upload image", 500, uploadError.message);
       }
       const { data: publicData } = supabase.storage.from("blog-uploads").getPublicUrl(filename);
-      image_link = publicData?.publicUrl ?? null;
+      image_link = filename;
       console.log("New Image Link:", image_link); // Debug: Log new image link
     }
     // Parse and validate blog_tags

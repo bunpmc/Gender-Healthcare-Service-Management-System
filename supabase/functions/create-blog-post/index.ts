@@ -34,7 +34,6 @@ serve(async (req)=>{
     const excerpt = formData.get("excerpt")?.toString();
     const blog_tags = formData.get("blog_tags")?.toString();
     const blog_status = formData.get("blog_status")?.toString() || "draft";
-    // Validate required fields
     if (!doctor_id || !blog_title || !blog_content) {
       return new Response(JSON.stringify({
         error: "Missing required fields."
@@ -42,14 +41,11 @@ serve(async (req)=>{
         status: 400
       });
     }
-    // Validate blog_tags
     const tagsArray = blog_tags ? blog_tags.split(",").map((tag)=>tag.trim()) : [];
-    // Auto-generate published_at if status is published
     let published_at = null;
     if (blog_status === "published") {
       published_at = new Date().toISOString();
     }
-    // Check doctor exists
     const { data: doctor, error: doctorError } = await supabase.from("staff_members").select("staff_id").eq("staff_id", doctor_id).single();
     if (doctorError || !doctor) {
       return new Response(JSON.stringify({
@@ -58,11 +54,8 @@ serve(async (req)=>{
         status: 404
       });
     }
-    // Handle image (optional)
     let image_link = null;
     const imageFile = formData.get("image");
-    console.log("ImageFile: ", imageFile);
-    // Insert blog post first to get blog_id
     const { data: blogData, error: insertError } = await supabase.from("blog_posts").insert([
       {
         doctor_id,
@@ -111,9 +104,7 @@ serve(async (req)=>{
           status: 500
         });
       }
-      const { data: publicData } = supabase.storage.from("blog-uploads").getPublicUrl(filename);
-      image_link = publicData?.publicUrl ?? null;
-      // Update blog post with image_link using correct column name
+      image_link = filename;
       const { error: updateError } = await supabase.from("blog_posts").update({
         image_link
       }).eq("blog_id", blog_id);
@@ -126,10 +117,7 @@ serve(async (req)=>{
         });
       }
     } else {
-      // Use default fallback image
-      const { data: defaultImage } = supabase.storage.from("blog-uploads").getPublicUrl("blog_bg.webp");
-      image_link = defaultImage?.publicUrl ?? null;
-      // Update blog post with default image_link using correct column name
+      image_link = "blog_bg.webp";
       const { error: updateError } = await supabase.from("blog_posts").update({
         image_link
       }).eq("blog_id", blog_id);

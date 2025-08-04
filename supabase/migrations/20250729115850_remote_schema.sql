@@ -544,7 +544,15 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."create_blog_post"("p_doctor_id" "uuid", "p_blog_title" "text", "p_blog_content" "text", "p_excerpt" "text", "p_image_link" "text", "p_blog_tags" json, "p_published_at" timestamp with time zone, "p_blog_status" "public"."blog_status") OWNER TO "postgres";
+ALTER FUNCTION "public"."create_blog_post"(
+    "p_doctor_id" "uuid", 
+    "p_blog_title" "text", 
+    "p_blog_content" "text", 
+    "p_excerpt" "text", 
+    "p_image_link" "text", 
+    "p_blog_tags" json, 
+    "p_published_at" timestamp with time zone, 
+    "p_blog_status" "public"."blog_status") OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."create_doctor_detail"("p_doctor_id" "uuid", "p_department" "public"."department_enum", "p_speciality" "public"."speciality_enum", "p_about_me" json, "p_license_no" character varying, "p_bio" "text", "p_slogan" "text", "p_educations" json, "p_certifications" json) RETURNS "void"
@@ -2354,17 +2362,7 @@ CREATE TABLE IF NOT EXISTS "public"."transactions" (
 );
 
 
-ALTER TABLE "public"."transactions" OWNER TO "postgres";
 
-ALTER TABLE transactions
-ADD COLUMN receipt_id uuid;
-
-ALTER TABLE transactions
-ADD CONSTRAINT fk_transactions_receipt
-FOREIGN KEY (receipt_id) REFERENCES receipts(receipt_id);
-
-ALTER TABLE transactions
-DROP COLUMN patient_id;
 
 ALTER TABLE ONLY "public"."otps" ALTER COLUMN "id" SET DEFAULT "nextval"('"public"."otps_id_seq"'::"regclass");
 
@@ -2712,9 +2710,6 @@ ALTER TABLE "public"."otps" ENABLE ROW LEVEL SECURITY;
 
 
 ALTER PUBLICATION "supabase_realtime" OWNER TO "postgres";
-
-
-
 
 
 

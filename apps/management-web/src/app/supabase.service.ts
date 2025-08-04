@@ -4234,8 +4234,9 @@ export class SupabaseService {
         query = query.lte('slots.slot_date', dateTo);
       }
 
-      const { data, error } = await query.order('slots.slot_date', {
+      const { data, error } = await query.order('slot_date', {
         ascending: true,
+        referencedTable: 'slots'
       });
 
       if (error) {
@@ -4276,6 +4277,8 @@ export class SupabaseService {
   // Get appointments for a specific slot
   async getSlotAppointments(slotId: string): Promise<any[]> {
     try {
+      this.logger.info('🔍 Getting appointments for slot:', slotId);
+
       // Get patient appointments for this slot
       const { data: patientAppointments, error: patientError } = await supabase
         .from('appointments')
@@ -4291,7 +4294,10 @@ export class SupabaseService {
         )
         .eq('slot_id', slotId);
 
-      if (patientError) throw patientError;
+      if (patientError) {
+        this.logger.error('❌ Error fetching patient appointments for slot:', patientError);
+        throw patientError;
+      }
 
       // Get guest appointments for this slot
       const { data: guestAppointments, error: guestError } = await supabase
@@ -4308,7 +4314,16 @@ export class SupabaseService {
         )
         .eq('slot_id', slotId);
 
-      if (guestError) throw guestError;
+      if (guestError) {
+        this.logger.error('❌ Error fetching guest appointments for slot:', guestError);
+        throw guestError;
+      }
+
+      this.logger.info('✅ Found appointments for slot:', {
+        slotId,
+        patientAppointments: patientAppointments?.length || 0,
+        guestAppointments: guestAppointments?.length || 0
+      });
 
       // Transform and combine appointments
       const transformedPatientAppointments = (patientAppointments || []).map((appt: any) => ({
@@ -4638,45 +4653,6 @@ export class SupabaseService {
         return;
       }
 
-      // Create sample patients first
-      const samplePatients = [
-        {
-          full_name: 'Alice Johnson',
-          phone: '0901234567',
-          email: 'alice.johnson@example.com',
-          date_of_birth: '1990-05-15',
-          gender: 'female'
-        },
-        {
-          full_name: 'Bob Smith',
-          phone: '0902345678',
-          email: 'bob.smith@example.com',
-          date_of_birth: '1985-08-22',
-          gender: 'male'
-        },
-        {
-          full_name: 'Carol Wilson',
-          phone: '0903456789',
-          email: 'carol.wilson@example.com',
-          date_of_birth: '1992-12-03',
-          gender: 'female'
-        }
-      ];
-
-      const { data: createdPatients, error: patientsError } = await supabase
-        .from('patients')
-        .insert(samplePatients)
-        .select();
-
-      if (patientsError) {
-        this.logger.error('❌ Error creating sample patients:', patientsError);
-        return;
-      }
-
-      // Create sample appointments
-      const today = new Date().toISOString().split('T')[0];
-      const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-
       // Get a category for appointments
       const { data: categories, error: categoryError } = await supabase
         .from('service_categories')
@@ -4685,61 +4661,63 @@ export class SupabaseService {
 
       const categoryId = categories && categories.length > 0 ? categories[0].category_id : null;
 
-      const sampleAppointments = [];
+      // Create sample guest appointments (no foreign key constraints)
+      const today = new Date().toISOString().split('T')[0];
+      const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
-      // Today's appointments
+      const sampleGuestAppointments = [];
+
+      // Create guest appointments for today
       for (let i = 0; i < Math.min(2, doctorSlots.length); i++) {
         const slot = doctorSlots[i];
-        if (createdPatients && createdPatients[i]) {
-          sampleAppointments.push({
-            patient_id: createdPatients[i].id,
-            doctor_id: doctorId,
-            slot_id: slot.doctor_slot_id,
-            category_id: categoryId,
-            phone: createdPatients[i].phone,
-            email: createdPatients[i].email,
-            visit_type: 'consultation',
-            appointment_status: 'confirmed',
-            schedule: 'Morning',
-            appointment_date: today,
-            appointment_time: (slot.slots as any)?.slot_time || '09:00:00',
-            message: 'Regular checkup appointment'
-          });
-        }
+        sampleGuestAppointments.push({
+          guest_appointment_id: crypto.randomUUID(),
+          doctor_id: doctorId,
+          slot_id: (slot.slots as any)?.slot_id || slot.doctor_slot_id,
+          category_id: categoryId,
+          full_name: `Demo Patient ${i + 1}`,
+          phone: `090123456${i}`,
+          email: `demo.patient${i + 1}@example.com`,
+          visit_type: 'consultation',
+          appointment_status: 'confirmed',
+          schedule: 'Morning',
+          appointment_date: today,
+          appointment_time: (slot.slots as any)?.slot_time || '09:00:00',
+          message: `Demo appointment ${i + 1} for today`
+        });
       }
 
-      // Pending appointments for tomorrow
+      // Create guest appointments for tomorrow
       for (let i = 2; i < Math.min(4, doctorSlots.length); i++) {
         const slot = doctorSlots[i];
-        if (createdPatients && createdPatients[i % createdPatients.length]) {
-          sampleAppointments.push({
-            patient_id: createdPatients[i % createdPatients.length].id,
-            doctor_id: doctorId,
-            slot_id: slot.doctor_slot_id,
-            category_id: categoryId,
-            phone: createdPatients[i % createdPatients.length].phone,
-            email: createdPatients[i % createdPatients.length].email,
-            visit_type: 'follow-up',
-            appointment_status: 'pending',
-            schedule: 'Afternoon',
-            appointment_date: tomorrow,
-            appointment_time: (slot.slots as any)?.slot_time || '14:00:00',
-            message: 'Follow-up consultation'
-          });
-        }
+        sampleGuestAppointments.push({
+          guest_appointment_id: crypto.randomUUID(),
+          doctor_id: doctorId,
+          slot_id: (slot.slots as any)?.slot_id || slot.doctor_slot_id,
+          category_id: categoryId,
+          full_name: `Demo Patient ${i + 1}`,
+          phone: `090123456${i}`,
+          email: `demo.patient${i + 1}@example.com`,
+          visit_type: 'follow-up',
+          appointment_status: 'pending',
+          schedule: 'Afternoon',
+          appointment_date: tomorrow,
+          appointment_time: (slot.slots as any)?.slot_time || '14:00:00',
+          message: `Demo appointment ${i + 1} for tomorrow`
+        });
       }
 
-      if (sampleAppointments.length > 0) {
+      if (sampleGuestAppointments.length > 0) {
         const { error: appointmentsError } = await supabase
-          .from('appointments')
-          .insert(sampleAppointments);
+          .from('guest_appointments')
+          .insert(sampleGuestAppointments);
 
         if (appointmentsError) {
-          this.logger.error('❌ Error creating sample appointments:', appointmentsError);
+          this.logger.error('❌ Error creating sample guest appointments:', appointmentsError);
           return;
         }
 
-        this.logger.info('✅ Sample appointments created successfully:', sampleAppointments.length);
+        this.logger.info('✅ Sample guest appointments created successfully:', sampleGuestAppointments.length);
       }
     } catch (error: any) {
       this.logger.error('❌ Error creating sample appointments:', error);
@@ -4855,7 +4833,7 @@ export class SupabaseService {
     }
   }
 
-  // Demo function to setup complete doctor portal data
+  // Demo function to setup complete doctor portal data using existing data
   async setupDoctorPortalDemo(doctorId: string): Promise<{
     success: boolean;
     message: string;
@@ -4864,7 +4842,7 @@ export class SupabaseService {
     try {
       this.logger.info('🎯 Setting up doctor portal demo for:', doctorId);
 
-      // Ensure all required data exists
+      // Use existing data approach
       await this.ensureDoctorHasData(doctorId);
 
       // Get current stats to verify setup
@@ -4884,19 +4862,19 @@ export class SupabaseService {
 
       return {
         success: true,
-        message: 'Doctor portal demo data setup completed successfully',
+        message: 'Demo data setup completed successfully',
         data: setupResult
       };
     } catch (error: any) {
       this.logger.error('❌ Error setting up doctor portal demo:', error);
       return {
         success: false,
-        message: `Failed to setup demo data: ${error.message}`
+        message: 'Unexpected error: ' + error.message
       };
     }
   }
 
-  // Function to reset and recreate doctor demo data
+  // Reset demo data using simple approach
   async resetDoctorDemoData(doctorId: string): Promise<{
     success: boolean;
     message: string;
@@ -4904,24 +4882,47 @@ export class SupabaseService {
     try {
       this.logger.info('🔄 Resetting doctor demo data for:', doctorId);
 
-      // Remove existing data
-      await supabase.from('appointments').delete().eq('doctor_id', doctorId);
-      await supabase.from('doctor_slot_assignments').delete().eq('doctor_id', doctorId);
+      // Simple reset: clear existing guest appointments for this doctor
+      const { error: guestAppointmentsError } = await supabase
+        .from('guest_appointments')
+        .delete()
+        .eq('doctor_id', doctorId);
 
-      // Recreate demo data
-      await this.ensureDoctorHasData(doctorId);
+      if (guestAppointmentsError) {
+        this.logger.error('❌ Error deleting guest appointments:', guestAppointmentsError);
+      }
 
-      this.logger.info('✅ Doctor demo data reset completed');
+      // Also clear regular appointments for this doctor (if any)
+      const { error: appointmentsError } = await supabase
+        .from('appointments')
+        .delete()
+        .eq('doctor_id', doctorId);
+
+      if (appointmentsError) {
+        this.logger.error('❌ Error deleting appointments:', appointmentsError);
+      }
+
+      // Clear slot assignments
+      const { error: slotsError } = await supabase
+        .from('doctor_slot_assignments')
+        .delete()
+        .eq('doctor_id', doctorId);
+
+      if (slotsError) {
+        this.logger.error('❌ Error deleting slot assignments:', slotsError);
+      }
+
+      this.logger.info('✅ Demo data reset completed');
 
       return {
         success: true,
-        message: 'Doctor demo data has been reset and recreated successfully'
+        message: 'Demo data reset completed successfully'
       };
     } catch (error: any) {
-      this.logger.error('❌ Error resetting doctor demo data:', error);
+      this.logger.error('❌ Error resetting demo data:', error);
       return {
         success: false,
-        message: `Failed to reset demo data: ${error.message}`
+        message: 'Unexpected error: ' + error.message
       };
     }
   }

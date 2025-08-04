@@ -228,6 +228,11 @@ export class ConsultantMeetingsComponent implements OnInit {
     const filters = this.filterForm.value;
     let filtered = [...this.slots];
 
+    // Only show slots that have appointments (exclude 0/0 slots)
+    filtered = filtered.filter(slot =>
+      slot.appointments_count > 0
+    );
+
     // Apply status filter
     if (filters.status !== 'all') {
       filtered = filtered.filter(slot => {
@@ -287,8 +292,10 @@ export class ConsultantMeetingsComponent implements OnInit {
       const date = new Date(startDate);
       date.setDate(startDate.getDate() + i);
 
+      // Only include slots that have appointments assigned
       const daySlots = this.slots.filter(slot =>
-        slot.slot_details.slot_date === this.formatDate(date)
+        slot.slot_details.slot_date === this.formatDate(date) &&
+        slot.appointments_count > 0
       );
 
       days.push({
@@ -402,6 +409,38 @@ export class ConsultantMeetingsComponent implements OnInit {
     await this.loadStatistics();
     if (this.currentView === 'calendar') {
       this.generateCalendar();
+    }
+  }
+
+  // Debug function to check database state
+  async debugDatabaseState() {
+    if (!this.doctorId) {
+      console.log('⚠️ No doctor ID available for debug');
+      return;
+    }
+
+    try {
+      console.log('🔍 === DEBUGGING DATABASE STATE ===');
+      console.log('Doctor ID:', this.doctorId);
+
+      // Check appointments directly
+      const appointmentStats = await this.supabaseService.getDoctorDashboardStats(this.doctorId);
+      console.log('📊 Appointment Stats:', appointmentStats);
+
+      // Check slots directly  
+      const slotStats = await this.supabaseService.getDoctorSlotStatistics(this.doctorId);
+      console.log('📅 Slot Stats:', slotStats);
+
+      // Check raw slots
+      const slots = await this.supabaseService.getDoctorSlots(this.doctorId);
+      console.log('🗂️ Raw Slots:', slots);
+
+      console.log('🔍 === END DEBUG ===');
+
+      // Force refresh UI
+      await this.refreshData();
+    } catch (error: any) {
+      console.error('❌ Debug error:', error);
     }
   }
 

@@ -123,7 +123,7 @@ serve(async (req)=>{
     }
     const image_url = defaultAvatar.publicUrl;
     // const password = generateRandomPassword();
-    const password = "1234";
+    const password = "1234"
     const { data: user, error: userError } = await supabase.auth.admin.createUser({
       email: working_email,
       password,
@@ -174,14 +174,36 @@ serve(async (req)=>{
       await smtpClient.send({
         from: `Gender Care <${Deno.env.get("SMTP_USER")}>`,
         to: working_email,
-        subject: "Your Account Information",
-        content: `Hello ${full_name},\n\nYour staff account has been created successfully.\n\nLogin email: ${working_email}\nTemporary password: ${password}\n\nPlease log in and change your password as soon as possible.\n\nThanks,\nGender Care Team`
+        subject: "Welcome to Gender Care - Your Account Details",
+        content: `Hello ${full_name},
+        \n\nWe are thrilled to welcome you to the Gender Care team! Your staff account has been successfully created, and you can now access our system to begin your journey with us.
+        \n\nBelow are your account details:
+        \n\nEmail: ${working_email}
+        \nTemporary Password: ${password}
+        \n\nFor security, please log in and change your password as soon as possible. Do not share your credentials with anyone.
+        \n\nIf you have any questions or need assistance, feel free to contact our support team at support@gendercare.com.
+        \n\nThanks,
+        \nGender Care Team`,
+        html: `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>body{font-family:Arial,sans-serif;background-color:#f4f4f4;margin:0;padding:0}
+        .container{max-width:600px;margin:20px auto;background-color:#ffffff;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.1)}
+        .header{background-color:#007bff;color:#ffffff;padding:20px;text-align:center;border-top-left-radius:8px;border-top-right-radius:8px}
+        .content{padding:20px}.content h2{color:#333333;margin-top:0}
+        .content p{color:#555555;line-height:1.6}
+        .credentials{background-color:#f9f9f9;padding:15px;border-radius:5px;margin:20px 0}
+        .credentials p{margin:5px 0;font-size:16px}
+        .credentials strong{color:#007bff}
+        .password-text{font-family:monospace;color:#007bff;font-size:16px}
+        .footer{text-align:center;padding:10px;color:#999999;font-size:12px}
+        </style>
+        </head>
+        <body>
+        <div class="container"><div class="header"><h1>Welcome to Gender Care</h1></div><div class="content"><h2>Hello ${full_name},</h2><p>We are thrilled to welcome you to the Gender Care team! Your staff account has been successfully created, and you can now access our system to begin your journey with us.</p><p>Below are your account details:</p><div class="credentials"><p><strong>Email:</strong> ${working_email}</p><p><strong>Temporary Password:</strong> <span class="password-text">${password}</span></p></div><p>For security, please log in and change your password as soon as possible. Do not share your credentials with anyone.</p><p>If you have any questions or need assistance, feel free to contact our support team at <a href="mailto:support@gendercare.com">support@gendercare.com</a>.</p></div><div class="footer"><p>&copy; ${new Date().getFullYear()} Gender Care. All rights reserved.</p><p>Contact us at <a href="mailto:support@gendercare.com">support@gendercare.com</a></p></div></div></body></html>`
       });
     } catch (emailError) {
       await supabase.auth.admin.deleteUser(staffId);
       await supabase.from("staff_members").delete().eq("staff_id", staffId);
       return new Response(JSON.stringify({
-        error: "Failed to send password email",
+        error: "Failed to send welcome email",
         details: emailError.message
       }), {
         headers: {

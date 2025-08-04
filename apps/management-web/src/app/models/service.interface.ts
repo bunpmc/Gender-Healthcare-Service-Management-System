@@ -17,4 +17,6 @@ export interface Service {
   category_name?: string; // Added from JOIN query for display purposes
   created_at?: string | undefined;
   updated_at?: string | undefined;
+  // Computed properties for UI
+  imageUrl?: string | undefined; // Constructed from image_link and Supabase storage
 }

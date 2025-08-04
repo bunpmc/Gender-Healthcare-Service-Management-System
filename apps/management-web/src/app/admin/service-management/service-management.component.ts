@@ -6,6 +6,7 @@ import { ServiceTableComponent } from './service-table/service-table.component';
 import { Service } from '../../models/service.interface';
 import { CategoryService } from '../../Services/category.service';
 import { ServiceManagementService } from '../../Services/service-management.service';
+import { MedicalServicesDataService } from '../../Services/medical-services-data.service';
 import { Category } from '../../models/category.interface';
 import { MedicalService } from '../../models/database.interface';
 
@@ -108,7 +109,8 @@ export class ServiceManagementComponent implements OnInit {
 
   constructor(
     private serviceManagementService: ServiceManagementService,
-    private categoryService: CategoryService
+    private categoryService: CategoryService,
+    private medicalServicesDataService: MedicalServicesDataService
   ) { }
 
   async ngOnInit() {
@@ -118,23 +120,43 @@ export class ServiceManagementComponent implements OnInit {
   async loadData() {
     this.isLoading = true;
     try {
-      // Use forkJoin to combine observables and convert to promise
-      const [services, categories] = await Promise.all([
-        this.serviceManagementService.getMedicalServices().toPromise(),
-        this.categoryService.getServiceCategories().toPromise()
+      // Use new MedicalServicesDataService to fetch services with proper image URLs
+      const [servicesResult, categoriesResult] = await Promise.all([
+        this.medicalServicesDataService.fetchServices({ includeInactive: true }),
+        this.medicalServicesDataService.fetchCategories()
       ]);
-      // Convert MedicalService to Service format
-      const mappedServices: Service[] = (services || []).map((service: MedicalService) => ({
-        ...service,
-        service_description: service.service_description || { what: '', why: '', who: '', how: '' }
-      }));
-      this.services = mappedServices;
-      this.categories = categories || [];
+
+      if (servicesResult.success && servicesResult.data) {
+        this.services = servicesResult.data;
+        console.log('✅ Services loaded successfully:', this.services.length, 'services');
+        // Debug log for image URLs
+        this.services.forEach(service => {
+          if (service.imageUrl) {
+            console.log(`Service "${service.service_name}" has image URL:`, service.imageUrl);
+          }
+        });
+      } else {
+        console.error('❌ Error loading services:', servicesResult.error);
+        this.showErrorNotification('Failed to load services');
+      }
+
+      if (categoriesResult.success && categoriesResult.data) {
+        this.categories = categoriesResult.data.map((cat: any) => ({
+          category_id: cat.category_id,
+          category_name: cat.category_name,
+          description: cat.category_description
+        }));
+        console.log('✅ Categories loaded successfully:', this.categories.length, 'categories');
+      } else {
+        console.error('❌ Error loading categories:', categoriesResult.error);
+        this.showErrorNotification('Failed to load categories');
+      }
+
       this.filteredServices = [...this.services];
-      console.log('✅ Services and categories loaded successfully');
+
     } catch (error) {
       console.error('❌ Error fetching data:', error);
-      // You can implement a toast notification here
+      this.showErrorNotification('Failed to load data');
     } finally {
       this.isLoading = false;
     }

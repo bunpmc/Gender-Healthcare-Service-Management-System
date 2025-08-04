@@ -217,4 +217,86 @@ export class StaffDataService {
             };
         }
     }
+
+    /**
+     * Update staff member directly in staff_members table
+     * Excludes image_link from updates for security
+     */
+    async updateStaff(staffId: string, staffData: Partial<Staff>): Promise<{ success: boolean; data?: Staff; error?: string }> {
+        try {
+            // Remove image_link from update data for security
+            const { image_link, staff_id, avatar_url, imageUrl, experience_display, id, name, email, status, startDate, ...updateData } = staffData;
+
+            // Add updated timestamp
+            const finalUpdateData = {
+                ...updateData,
+                updated_at: new Date().toISOString()
+            };
+
+            const { data: updatedData, error } = await supabase
+                .from('staff_members')
+                .update(finalUpdateData)
+                .eq('staff_id', staffId)
+                .select()
+                .single();
+
+            if (error) {
+                console.error('Error updating staff:', error);
+                return { success: false, error: error.message };
+            }
+
+            // Process the updated data similar to fetchStaffById
+            let avatarUrl = null;
+
+            // Construct avatar URL from storage if image_link exists
+            if (updatedData.image_link) {
+                const { data: publicData } = supabase.storage
+                    .from('staff-uploads')
+                    .getPublicUrl(updatedData.image_link);
+                avatarUrl = publicData.publicUrl;
+            }
+
+            const processedStaff: Staff = {
+                // Main properties
+                staff_id: updatedData.staff_id,
+                full_name: updatedData.full_name,
+                working_email: updatedData.working_email,
+                role: updatedData.role,
+                hired_at: updatedData.hired_at,
+                is_available: updatedData.is_available,
+                staff_status: updatedData.staff_status,
+                years_experience: updatedData.years_experience,
+                gender: updatedData.gender,
+                languages: updatedData.languages || [],
+                image_link: updatedData.image_link,
+                created_at: updatedData.created_at,
+                updated_at: updatedData.updated_at,
+
+                // Avatar properties
+                avatar_url: avatarUrl || undefined,
+                imageUrl: avatarUrl || undefined,
+
+                // Enhanced display properties
+                experience_display: updatedData.years_experience
+                    ? `${updatedData.years_experience} ${updatedData.years_experience === 1 ? 'year' : 'years'}`
+                    : '0 years',
+
+                // Legacy compatibility properties
+                id: updatedData.staff_id,
+                name: updatedData.full_name,
+                email: updatedData.working_email,
+                status: updatedData.staff_status === 'active' ? 'active' : 'inactive',
+                startDate: updatedData.hired_at
+            };
+
+            return { success: true, data: processedStaff };
+
+        } catch (error) {
+            console.error('Error in updateStaff:', error);
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Unknown error occurred'
+            };
+        }
+    }
 }

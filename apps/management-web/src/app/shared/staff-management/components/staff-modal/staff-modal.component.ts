@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Staff } from '../../../../models/staff.interface';
@@ -246,9 +246,14 @@ import { StaffManagementUtilsService } from '../../services/staff-management-uti
                                     <input 
                                         type="text" 
                                         formControlName="image_link"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                        [readonly]="config.mode === 'edit'"
+                                        [class]="config.mode === 'edit' 
+                                            ? 'w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed text-gray-500'
+                                            : 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent'"
                                         placeholder="Enter image path or URL">
-                                    <p class="text-xs text-gray-500 mt-1">Path to profile image in storage</p>
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        {{ config.mode === 'edit' ? 'Image link cannot be changed during edit' : 'Path to profile image in storage' }}
+                                    </p>
                                 </div>
 
                                 <div>
@@ -315,7 +320,7 @@ import { StaffManagementUtilsService } from '../../services/staff-management-uti
         }
     `]
 })
-export class StaffModalComponent implements OnInit, OnDestroy {
+export class StaffModalComponent implements OnInit, OnDestroy, OnChanges {
     @Input() isOpen: boolean = false;
     @Input() staff: Staff | null = null;
     @Input() config: ModalConfig = {
@@ -338,6 +343,18 @@ export class StaffModalComponent implements OnInit, OnDestroy {
     ngOnInit() {
         this.initializeForm();
         if (this.staff && this.config.mode !== 'view') {
+            this.populateForm();
+        }
+    }
+
+    ngOnChanges(changes: SimpleChanges) {
+        // When config mode changes to edit, populate the form
+        if (changes['config'] && this.staffForm && this.config.mode === 'edit' && this.staff) {
+            this.populateForm();
+        }
+
+        // When staff data changes, populate the form if in edit mode
+        if (changes['staff'] && this.staffForm && this.config.mode !== 'view' && this.staff) {
             this.populateForm();
         }
     }

@@ -150,4 +150,13 @@ export class ServiceTableComponent extends BaseComponent {
     if (!text) return 'N/A';
     return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
   }
+
+  onImageError(event: any): void {
+    // Set a default placeholder when image fails to load
+    const img = event.target as HTMLImageElement;
+    img.style.display = 'none';
+
+    // You could also set a default image URL here if needed
+    // img.src = '/assets/default-service-image.png';
+  }
 }

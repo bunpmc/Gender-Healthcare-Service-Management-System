@@ -145,26 +145,12 @@ export class AdminStaffManagementComponent implements OnInit {
     try {
       this.logger.info('Updating staff:', staffData);
 
-      // Prepare updated staff data
-      const updateData = {
-        full_name: staffData.full_name,
-        working_email: staffData.working_email,
-        role: staffData.role as 'doctor' | 'receptionist',
-        years_experience: staffData.years_experience || 0,
-        hired_at: staffData.hired_at,
-        is_available: staffData.is_available ?? true,
-        staff_status: (staffData.staff_status as 'active' | 'inactive' | 'on_leave') ?? 'active',
-        gender: staffData.gender as 'male' | 'female' | 'other',
-        languages: staffData.languages || [],
-        image_link: staffData.image_link
-      };
-
-      // Use Supabase service to update staff
-      const result = await this.supabaseService.updateStaffMember(staffData.staff_id, updateData);
+      // Use StaffDataService to update staff (excludes image_link for security)
+      const result = await this.staffDataService.updateStaff(staffData.staff_id, staffData);
 
       if (result.success) {
         this.logger.info('Staff updated successfully:', result.data);
-        alert(`Staff member "${updateData.full_name}" updated successfully!`);
+        alert(`Staff member "${staffData.full_name}" updated successfully!`);
         await this.loadStaff(); // Reload to show updated data
       } else {
         this.logger.error('Error updating staff:', result.error);

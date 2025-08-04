@@ -88,6 +88,11 @@ export class ServiceManagementComponent implements OnInit {
       category_name: false
     };
 
+  // Image upload properties
+  selectedImageFile: File | null = null;
+  imagePreviewUrl: string | null = null;
+  isUploadingImage = false;
+
   // Filtering and sorting
   currentFilters: {
     searchTerm: string;
@@ -316,13 +321,21 @@ export class ServiceManagementComponent implements OnInit {
         this.isLoading = true;
 
         if (service.is_active) {
-          // Soft delete - just deactivate the service
-          await this.serviceManagementService.toggleMedicalServiceStatus(service.service_id).toPromise();
-          this.showSuccessNotification('Service deactivated successfully!');
+          // Soft delete - just deactivate the service by updating is_active to false
+          const result = await this.medicalServicesDataService.updateService(service.service_id, { is_active: false });
+          if (result.success) {
+            this.showSuccessNotification('Service deactivated successfully!');
+          } else {
+            throw new Error(result.error || 'Failed to deactivate service');
+          }
         } else {
           // Hard delete - permanently remove the service
-          await this.serviceManagementService.deleteMedicalService(service.service_id).toPromise();
-          this.showSuccessNotification('Service permanently deleted!');
+          const result = await this.medicalServicesDataService.deleteService(service.service_id);
+          if (result.success) {
+            this.showSuccessNotification('Service permanently deleted!');
+          } else {
+            throw new Error(result.error || 'Failed to delete service');
+          }
         }
 
         await this.loadData();
@@ -338,9 +351,18 @@ export class ServiceManagementComponent implements OnInit {
   async onToggleServiceStatus(event: { service: Service; isActive: boolean }) {
     try {
       this.isLoading = true;
-      await this.serviceManagementService.toggleMedicalServiceStatus(event.service.service_id).toPromise();
-      await this.loadData();
-      this.showSuccessNotification(`Service ${event.isActive ? 'activated' : 'deactivated'} successfully!`);
+
+      // Use new MedicalServicesDataService to update the status
+      const result = await this.medicalServicesDataService.updateService(event.service.service_id, {
+        is_active: event.isActive
+      });
+
+      if (result.success) {
+        await this.loadData();
+        this.showSuccessNotification(`Service ${event.isActive ? 'activated' : 'deactivated'} successfully!`);
+      } else {
+        throw new Error(result.error || 'Failed to update service status');
+      }
     } catch (error) {
       console.error('❌ Error toggling service status:', error);
       this.showErrorNotification('Failed to update service status. Please try again.');
@@ -386,6 +408,7 @@ export class ServiceManagementComponent implements OnInit {
 
   closeAddServiceModal() {
     this.showAddModal = false;
+    this.clearImageSelection();
     this.errors = {
       service_name: false,
       category_id: false,
@@ -408,6 +431,17 @@ export class ServiceManagementComponent implements OnInit {
 
     try {
       this.isLoading = true;
+
+      // Upload image first if a file is selected
+      let uploadedImagePath = null;
+      if (this.selectedImageFile) {
+        uploadedImagePath = await this.uploadImageIfSelected();
+        if (!uploadedImagePath) {
+          // Upload failed, method already shows error message
+          return;
+        }
+      }
+
       const serviceToAdd = {
         ...this.newService,
         service_description: this.descriptionKeys.reduce((acc, key) => {
@@ -419,19 +453,25 @@ export class ServiceManagementComponent implements OnInit {
       // Remove service_id for creation and convert null to undefined
       const { service_id, ...serviceData } = serviceToAdd;
 
-      // Convert null values to undefined for compatibility
+      // Convert null values to undefined for compatibility and set image_link if uploaded
       const processedServiceData = {
         ...serviceData,
         service_cost: serviceData.service_cost === null ? undefined : serviceData.service_cost,
         duration_minutes: serviceData.duration_minutes === null ? undefined : serviceData.duration_minutes,
-        image_link: serviceData.image_link === null ? undefined : serviceData.image_link,
+        image_link: uploadedImagePath || (serviceData.image_link === null ? undefined : serviceData.image_link),
         excerpt: serviceData.excerpt === null ? undefined : serviceData.excerpt
       };
 
-      await this.serviceManagementService.addMedicalService(processedServiceData).toPromise();
-      await this.loadData();
-      this.closeAddServiceModal();
-      this.showSuccessNotification('Service added successfully!');
+      // Use new MedicalServicesDataService
+      const result = await this.medicalServicesDataService.createService(processedServiceData);
+
+      if (result.success) {
+        await this.loadData();
+        this.closeAddServiceModal();
+        this.showSuccessNotification('Service added successfully!');
+      } else {
+        throw new Error(result.error || 'Failed to create service');
+      }
     } catch (error) {
       console.error('❌ Error adding service:', error);
       this.showErrorNotification('Failed to add service. Please try again.');
@@ -459,6 +499,7 @@ export class ServiceManagementComponent implements OnInit {
 
   closeEditServiceModal() {
     this.showEditModal = false;
+    this.clearImageSelection();
     this.errors = {
       service_name: false,
       category_id: false,
@@ -481,6 +522,17 @@ export class ServiceManagementComponent implements OnInit {
 
     try {
       this.isLoading = true;
+
+      // Upload new image if a file is selected
+      let uploadedImagePath = null;
+      if (this.selectedImageFile) {
+        uploadedImagePath = await this.uploadImageIfSelected();
+        if (!uploadedImagePath) {
+          // Upload failed, method already shows error message
+          return;
+        }
+      }
+
       const serviceToUpdate: Service = {
         ...this.selectedService,
         service_description: this.descriptionKeys.reduce((acc, key) => {
@@ -489,19 +541,25 @@ export class ServiceManagementComponent implements OnInit {
         }, {} as { [key in DescriptionKey]: string | null })
       };
 
-      // Convert to MedicalService format with proper null/undefined handling
-      const medicalServiceUpdate: MedicalService = {
+      // Convert null values to undefined for compatibility and set image_link if uploaded
+      const processedServiceData = {
         ...serviceToUpdate,
         service_cost: serviceToUpdate.service_cost === null ? undefined : serviceToUpdate.service_cost,
         duration_minutes: serviceToUpdate.duration_minutes === null ? undefined : serviceToUpdate.duration_minutes,
-        image_link: serviceToUpdate.image_link === null ? undefined : serviceToUpdate.image_link,
+        image_link: uploadedImagePath || (serviceToUpdate.image_link === null ? undefined : serviceToUpdate.image_link),
         excerpt: serviceToUpdate.excerpt === null ? undefined : serviceToUpdate.excerpt
       };
 
-      await this.serviceManagementService.updateMedicalService(medicalServiceUpdate).toPromise();
-      await this.loadData();
-      this.closeEditServiceModal();
-      this.showSuccessNotification('Service updated successfully!');
+      // Use new MedicalServicesDataService
+      const result = await this.medicalServicesDataService.updateService(this.selectedService.service_id, processedServiceData);
+
+      if (result.success) {
+        await this.loadData();
+        this.closeEditServiceModal();
+        this.showSuccessNotification('Service updated successfully!');
+      } else {
+        throw new Error(result.error || 'Failed to update service');
+      }
     } catch (error) {
       console.error('❌ Error updating service:', error);
       this.showErrorNotification('Failed to update service. Please try again.');
@@ -556,15 +614,76 @@ export class ServiceManagementComponent implements OnInit {
     try {
       this.isLoading = true;
       const { category_id, ...categoryData } = this.newCategory;
-      await this.categoryService.createServiceCategory(categoryData).toPromise();
-      await this.loadData();
-      this.closeAddCategoryModal();
-      this.showSuccessNotification('Category added successfully!');
+
+      // Use new MedicalServicesDataService to create category
+      const result = await this.medicalServicesDataService.createCategory(categoryData);
+
+      if (result.success) {
+        await this.loadData();
+        this.closeAddCategoryModal();
+        this.showSuccessNotification('Category added successfully!');
+      } else {
+        throw new Error(result.error || 'Failed to create category');
+      }
     } catch (error) {
       console.error('❌ Error adding category:', error);
       this.showErrorNotification('Failed to add category. Please try again.');
     } finally {
       this.isLoading = false;
+    }
+  }
+
+  // Image upload methods
+  onImageFileSelected(event: any, context: 'new' | 'edit') {
+    const file = event.target.files[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        this.showErrorNotification('Please select a valid image file.');
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        this.showErrorNotification('Image file size must be less than 5MB.');
+        return;
+      }
+
+      this.selectedImageFile = file;
+
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.imagePreviewUrl = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  clearImageSelection() {
+    this.selectedImageFile = null;
+    this.imagePreviewUrl = null;
+  }
+
+  async uploadImageIfSelected(): Promise<string | null> {
+    if (!this.selectedImageFile) return null;
+
+    try {
+      this.isUploadingImage = true;
+      const result = await this.medicalServicesDataService.uploadServiceImage(this.selectedImageFile);
+
+      if (result.success && result.data) {
+        console.log('✅ Image uploaded successfully:', result.data);
+        return result.data;
+      } else {
+        throw new Error(result.error || 'Failed to upload image');
+      }
+    } catch (error) {
+      console.error('❌ Error uploading image:', error);
+      this.showErrorNotification('Failed to upload image. Please try again.');
+      return null;
+    } finally {
+      this.isUploadingImage = false;
     }
   }
 

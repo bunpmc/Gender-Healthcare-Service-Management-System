@@ -344,4 +344,88 @@ export class MedicalServicesDataService {
             };
         }
     }
+
+    /**
+     * Create new service category
+     */
+    async createCategory(categoryData: { category_name: string; description?: string }): Promise<{ success: boolean; data?: any; error?: string }> {
+        try {
+            const { data: newCategoryData, error } = await supabase
+                .from('service_categories')
+                .insert([{
+                    category_name: categoryData.category_name,
+                    category_description: categoryData.description || null
+                }])
+                .select()
+                .single();
+
+            if (error) {
+                console.error('Error creating category:', error);
+                return { success: false, error: error.message };
+            }
+
+            return { success: true, data: newCategoryData };
+
+        } catch (error) {
+            console.error('Error in createCategory:', error);
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Unknown error occurred'
+            };
+        }
+    }
+
+    /**
+     * Upload image to service-uploads bucket
+     */
+    async uploadServiceImage(file: File): Promise<{ success: boolean; data?: string; error?: string }> {
+        try {
+            // Generate unique filename
+            const fileExt = file.name.split('.').pop();
+            const fileName = `service_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+
+            const { data, error } = await supabase.storage
+                .from('service-uploads')
+                .upload(fileName, file);
+
+            if (error) {
+                console.error('Error uploading file:', error);
+                return { success: false, error: error.message };
+            }
+
+            return { success: true, data: data.path };
+
+        } catch (error) {
+            console.error('Error in uploadServiceImage:', error);
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Unknown error occurred'
+            };
+        }
+    }
+
+    /**
+     * Delete image from service-uploads bucket
+     */
+    async deleteServiceImage(imagePath: string): Promise<{ success: boolean; error?: string }> {
+        try {
+            const { error } = await supabase.storage
+                .from('service-uploads')
+                .remove([imagePath]);
+
+            if (error) {
+                console.error('Error deleting file:', error);
+                return { success: false, error: error.message };
+            }
+
+            return { success: true };
+
+        } catch (error) {
+            console.error('Error in deleteServiceImage:', error);
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Unknown error occurred'
+            };
+        }
+    }
 }

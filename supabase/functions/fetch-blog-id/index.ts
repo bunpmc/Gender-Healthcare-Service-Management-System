@@ -4,7 +4,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 // Utility: Error response with optional detail
 function createErrorResponse(error, status = 400, details) {
   const response = {
-    error
+    error,
+    details
   };
   if (details) response.details = details;
   return new Response(JSON.stringify(response), {
@@ -15,7 +16,6 @@ function createErrorResponse(error, status = 400, details) {
     }
   });
 }
-// Utility: Success response with data
 function createSuccessResponse(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -25,10 +25,8 @@ function createSuccessResponse(data, status = 200) {
     }
   });
 }
-// Main handler
-serve(async (req)=>{
+serve(async (req) => {
   try {
-    // Handle CORS preflight
     if (req.method === "OPTIONS") {
       return new Response("ok", {
         headers: {
@@ -62,7 +60,7 @@ serve(async (req)=>{
     if (!data || Array.isArray(data) && data.length === 0) {
       return createErrorResponse("Blog not found", 404);
     }
-    const blog = Array.isArray(data) ? data[0] : data;
+    const blog = Array.isArray(data) ? data[0] : data; //handle both jsonb and table return from rpc
     let imageUrl = null;
     if (blog.image_link) {
       const { data: publicData, error: storageError } = await supabase.storage.from("blog-uploads").getPublicUrl(blog.image_link);
@@ -72,6 +70,19 @@ serve(async (req)=>{
         imageUrl = publicData.publicUrl;
       }
     }
+
+    //Doctor image
+    const doctorImageLink = blog.doctor_details.image_link;
+    let doctorImageUrl = null;
+    if (doctorImageLink) {
+      const { data: doctorData, error: doctorError } = await supabase.storage.from("staff-uploads").getPublicUrl(doctorImageLink);
+      if (doctorError) {
+        console.error("Storage error:", doctorError.message);
+      } else {
+        doctorImageUrl = doctorData.publicUrl;
+      }
+    }
+
     return createSuccessResponse({
       blog_id: blog.blog_id,
       blog_title: blog.blog_title,
@@ -82,9 +93,15 @@ serve(async (req)=>{
       blog_status: blog.blog_status,
       created_at: blog.created_at,
       updated_at: blog.updated_at,
-      doctor_details: blog.doctor_details
+      doctor_details: {
+        staff_id: blog.doctor_details.staff_id,
+        full_name: blog.doctor_details.full_name,
+        image_link: doctorImageUrl
+      }
     });
   } catch (error) {
     return createErrorResponse(error.message, 500, error.message);
   }
 });
+
+// curl -X GET "http://127.0.0.1:54321/functions/v1/fetch-blog-id?blog_id=0ab98a9a-3e59-48b8-9cac-371e7d072022" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0" -H "Content-Type: application/json"

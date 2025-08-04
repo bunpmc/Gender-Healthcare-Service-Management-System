@@ -69,31 +69,33 @@
 
         <!-- Title -->
         <h1
-          class="text-3xl md:text-5xl font-extrabold text-[#4E6688] leading-tight mb-1 pb-2 border-b border-[#f0f2f7]"
+          class="text-3xl md:text-5xl font-extrabold text-[#4E6688] leading-tight mb-6"
         >
           {{ blog.blog_title }}
         </h1>
 
         <!-- Meta: Author, Date, Tag, Updated -->
         <div
-          class="flex flex-wrap items-center gap-x-4 gap-y-2 text-[15px] text-[#758bad] font-medium mb-8 mt-3 border-b border-[#f3f3fa] pb-3"
+          class="flex flex-wrap items-center gap-x-4 gap-y-2 text-[15px] text-[#758bad] font-medium mb-8 mt-3 border-b border-[#f3f3fa] pb-4"
         >
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-3">
             <img
               [src]="
                 blog.doctor_details.image_link || '/assets/default-doctor.png'
               "
               alt="Author photo"
-              class="w-8 h-8 rounded-full object-cover border border-[#e6eaf3] bg-white"
+              class="w-12 h-12 rounded-full object-cover border-2 border-[#98d2c0] bg-white shadow-sm"
               loading="lazy"
-              style="box-shadow: 0 0 0 3px #fff"
             />
-            <a
-              class="font-semibold text-[#4E6688]"
-              [routerLink]="['/doctor', blog.doctor_details.staff_id]"
-            >
-              {{ blog.doctor_details.full_name }}
-            </a>
+            <div class="flex flex-col">
+              <a
+                class="font-bold text-[#4E6688] text-lg hover:text-[#98d2c0] transition-colors"
+                [routerLink]="['/doctor', blog.doctor_details.staff_id]"
+              >
+                {{ blog.doctor_details.full_name }}
+              </a>
+              <span class="text-sm text-[#758bad]">Medical Expert</span>
+            </div>
           </div>
           <span class="text-[#b1bad6] text-base">|</span>
           <span>

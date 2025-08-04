@@ -2,11 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AppointmentService } from '../../services/appointment.service';
 import { AuthService } from '../../services/auth.service';
+import { DoctorNamePipe } from '../../utils/name.util';
 
 @Component({
   selector: 'app-appointment-history',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, DoctorNamePipe],
   template: `
     <div class="appointment-history-container">
       <div class="header mb-6">
@@ -69,7 +70,7 @@ import { AuthService } from '../../services/auth.service';
                   
                   <div>
                     <h3 class="font-semibold text-gray-800">
-                      Dr. {{ appointment.doctors?.full_name || 'Unknown Doctor' }}
+                      {{ appointment.doctors?.full_name | doctorName }}
                     </h3>
                     <p class="text-sm text-gray-600">
                       {{ appointment.doctors?.specialization || 'General Practice' }}
@@ -179,7 +180,7 @@ export class AppointmentHistoryComponent implements OnInit {
   constructor(
     private appointmentService: AppointmentService,
     private authService: AuthService
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.loadAppointmentHistory();
@@ -187,7 +188,7 @@ export class AppointmentHistoryComponent implements OnInit {
 
   loadAppointmentHistory() {
     this.loading = true;
-    
+
     this.appointmentService.getUserAppointmentHistory().subscribe({
       next: (appointments) => {
         this.appointments = appointments;
@@ -233,7 +234,7 @@ export class AppointmentHistoryComponent implements OnInit {
 
   formatDate(dateString: string): string {
     if (!dateString) return '';
-    
+
     try {
       const date = new Date(dateString);
       return date.toLocaleDateString('en-US', {
@@ -256,7 +257,7 @@ export class AppointmentHistoryComponent implements OnInit {
   cancelAppointment(appointment: any) {
     if (confirm('Are you sure you want to cancel this appointment?')) {
       this.appointmentService.updateAppointmentStatus(
-        appointment.appointment_id, 
+        appointment.appointment_id,
         'cancelled'
       ).subscribe({
         next: (updatedAppointment) => {

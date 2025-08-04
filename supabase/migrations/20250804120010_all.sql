@@ -342,7 +342,8 @@ ALTER FUNCTION "public"."book_appointment_slot"("p_slot_id" "uuid") OWNER TO "po
 
 CREATE OR REPLACE FUNCTION "public"."calculate_daily_revenue"("target_date" "date") RETURNS numeric
     LANGUAGE "plpgsql"
-    AS $$DECLARE
+    AS $$
+DECLARE
   total NUMERIC;
 BEGIN
   SELECT COALESCE(SUM(amount), 0) INTO total
@@ -351,6 +352,7 @@ BEGIN
 
   RETURN total;
 END;
+$$;
 
 
 ALTER FUNCTION "public"."calculate_daily_revenue"("target_date" "date") OWNER TO "postgres";
@@ -415,7 +417,8 @@ ALTER FUNCTION "public"."change_status_appointment"("appointment_id_input" "uuid
 
 CREATE OR REPLACE FUNCTION "public"."count_appointments_by_day"("target_date" "date") RETURNS integer
     LANGUAGE "plpgsql"
-    AS $$DECLARE
+    AS $$
+DECLARE
   appt_count INT;
 BEGIN
   SELECT COUNT(*) INTO appt_count
@@ -424,6 +427,7 @@ BEGIN
 
   RETURN appt_count;
 END;
+$$;
 
 
 ALTER FUNCTION "public"."count_appointments_by_day"("target_date" "date") OWNER TO "postgres";
@@ -449,7 +453,8 @@ ALTER FUNCTION "public"."count_appointments_by_status"("target_status" "public".
 
 CREATE OR REPLACE FUNCTION "public"."count_patients_by_month"("target_year" integer, "target_month" integer) RETURNS integer
     LANGUAGE "plpgsql"
-    AS $$DECLARE
+    AS $$
+DECLARE
   patient_count INT;
 BEGIN
   SELECT COUNT(*) INTO patient_count
@@ -459,6 +464,7 @@ BEGIN
 
   RETURN patient_count;
 END;
+$$;
 
 
 ALTER FUNCTION "public"."count_patients_by_month"("target_year" integer, "target_month" integer) OWNER TO "postgres";
@@ -1945,7 +1951,8 @@ ALTER FUNCTION "public"."toggle_medical_services_status"("p_service_id" "uuid") 
 
 CREATE OR REPLACE FUNCTION "public"."track_period_and_fertility"("p_patient_id" "text", "p_start_date" "date", "p_end_date" "date" DEFAULT NULL::"date", "p_symptoms" "text"[] DEFAULT '{}'::"text"[], "p_flow_intensity" "text" DEFAULT 'medium'::"text", "p_period_description" "text" DEFAULT NULL::"text") RETURNS "jsonb"
     LANGUAGE "plpgsql" SECURITY DEFINER
-    AS $$DECLARE
+    AS $$
+DECLARE
     v_period_id BIGINT;
     v_cycle_length INTEGER;
     v_previous_start_date DATE;

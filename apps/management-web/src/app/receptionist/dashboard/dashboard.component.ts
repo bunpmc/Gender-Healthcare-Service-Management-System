@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { SupabaseService } from '../../supabase.service';
 import { Patient } from '../../models/patient.interface';
 import { Staff } from '../../models/staff.interface';
+import { FormatNamePipe } from '../../utils/name.util';
 
 interface DashboardStats {
   todayAppointments: number;
@@ -30,7 +31,7 @@ interface RecentAppointment {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormatNamePipe],
   template: `
     <div class="space-y-6">
       <!-- Modern Header -->
@@ -359,7 +360,7 @@ interface RecentAppointment {
                         {{ appointment.visit_type | titlecase }}
                       </p>
                       <p class="text-xs text-gray-500">
-                        Dr. {{ appointment.doctor_name }}
+                        {{ appointment.doctor_name | formatName:'doctor' }}
                       </p>
                     </div>
                   </div>
@@ -449,7 +450,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private supabaseService: SupabaseService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadDashboardData();

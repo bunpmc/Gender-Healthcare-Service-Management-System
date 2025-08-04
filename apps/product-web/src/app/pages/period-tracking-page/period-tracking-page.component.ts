@@ -1,4 +1,4 @@
-// ================== IMPORTS ==================
+
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -24,8 +24,9 @@ import {
 import { HeaderComponent } from '../../components/header/header.component';
 import { FooterComponent } from '../../components/footer/footer.component';
 import { PeriodCalendarComponent } from '../../components/period-calendar/period-calendar.component';
+import { HealthSuggestionsComponent } from '../../components/health-suggestions/health-suggestions.component';
 
-// ================== COMPONENT DECORATOR ==================
+
 @Component({
   selector: 'app-period-tracking',
   standalone: true,
@@ -36,16 +37,17 @@ import { PeriodCalendarComponent } from '../../components/period-calendar/period
     HeaderComponent,
     FooterComponent,
     PeriodCalendarComponent,
+    HealthSuggestionsComponent,
   ],
   templateUrl: './period-tracking-page.component.html',
   styleUrl: './period-tracking-page.component.css',
 })
 export class PeriodTrackingComponent implements OnInit {
-  // =========== DEPENDENCY INJECTION ===========
+
   private periodService: PeriodTrackingService = inject(PeriodTrackingService);
   private translate = inject(TranslateService);
 
-  // =========== STATE SIGNALS ===========
+
   isLoading = signal(false);
   error = signal<string | null>(null);
   showLogModal = signal(false);
@@ -56,18 +58,18 @@ export class PeriodTrackingComponent implements OnInit {
   showSuccessModal = signal(false);
   successPredictions = signal<any>(null);
 
-  // =========== TAB STATE ===========
+
   activeTab = signal<'overview' | 'calendar' | 'insights' | 'history'>(
     'overview'
   );
 
-  // =========== DATA SIGNALS ===========
+
   periodHistory = signal<PeriodEntry[]>([]);
   periodStats = signal<PeriodStats | null>(null);
   calendarDays = signal<CalendarDay[]>([]);
   currentMonth = signal(new Date());
 
-  // =========== FORM DATA ===========
+
   logForm: PeriodTrackingRequest = createEmptyPeriodForm();
   originalForm: PeriodTrackingRequest = createEmptyPeriodForm();
   formValidation = signal<PeriodFormValidation>({ isValid: true, errors: {} });

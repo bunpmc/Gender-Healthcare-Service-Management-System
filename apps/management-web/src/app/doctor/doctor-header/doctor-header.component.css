@@ -1,6 +1,6 @@
-/* Modern Doctor Portal Header Styles */
+/* Modern Doctor Portal Header - Optimized */
 
-/* Header Element - Ensure proper stacking context */
+/* Header Element */
 header {
   position: relative;
   z-index: 1000;
@@ -8,7 +8,10 @@ header {
 
 /* Header Container */
 .header-container {
-  @apply relative p-6 m-6 rounded-3xl;
+  position: relative;
+  padding: 1.5rem;
+  margin: 1.5rem;
+  border-radius: 1.5rem;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   animation: slideInFromTop 0.8s ease-out;
@@ -30,45 +33,32 @@ header {
 
 /* Action Buttons */
 .action-btn {
-  @apply flex items-center space-x-2 px-4 py-2 rounded-xl font-medium text-sm transition-all duration-300 transform hover:scale-105 hover:shadow-lg;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.75rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+  transition: all 0.3s ease;
+  transform: scale(1);
 }
 
 .action-btn:hover {
+  transform: scale(1.05);
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
 }
 
-/* Notification Button */
-.notification-btn {
-  position: relative;
-  overflow: hidden;
-}
-
-.notification-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-  transition: left 0.5s;
-}
-
-.notification-btn:hover::before {
-  left: 100%;
-}
-
-/* Profile Button */
+/* Enhanced button effects */
+.notification-btn,
 .profile-btn {
   position: relative;
   overflow: hidden;
   cursor: pointer;
   user-select: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
 }
 
+.notification-btn::before,
 .profile-btn::before {
   content: '';
   position: absolute;
@@ -80,6 +70,7 @@ header {
   transition: left 0.5s;
 }
 
+.notification-btn:hover::before,
 .profile-btn:hover::before {
   left: 100%;
 }

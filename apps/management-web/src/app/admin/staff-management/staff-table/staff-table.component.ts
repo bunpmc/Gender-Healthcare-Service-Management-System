@@ -17,6 +17,7 @@ export class StaffTableComponent {
   @Input() pageSize: number = 10;
   @Output() viewStaff = new EventEmitter<Staff>();
   @Output() editStaff = new EventEmitter<Staff>();
+  @Output() deleteStaff = new EventEmitter<Staff>();
   @Output() pageChange = new EventEmitter<{ page: number; pageSize: number }>();
 
   get paginatedStaff(): Staff[] {
@@ -40,6 +41,10 @@ export class StaffTableComponent {
 
   onEditStaff(staff: Staff) {
     this.editStaff.emit(staff);
+  }
+
+  onDeleteStaff(staff: Staff) {
+    this.deleteStaff.emit(staff);
   }
 
   onPageChange(newPage: number) {

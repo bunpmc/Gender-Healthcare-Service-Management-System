@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
+import { LoggerService } from '../../core/services/logger.service';
 
 interface NavigationItem {
   name: string;
@@ -463,17 +464,25 @@ export class ReceptionistSidebarComponent implements OnInit {
              </svg>`,
       route: '/receptionist/dashboard/patient-management',
       description: 'CRU patient records'
+    },
+    {
+      name: 'Staff Management',
+      icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+             </svg>`,
+      route: '/receptionist/dashboard/staff-management',
+      description: 'View staff contacts'
     }
   ];
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private logger: LoggerService) {}
 
   ngOnInit(): void {
-    console.log('📋 Receptionist sidebar initialized');
+    this.logger.info('📋 Receptionist sidebar initialized');
   }
 
   quickAction(action: string): void {
-    console.log('⚡ Quick action triggered:', action);
+    this.logger.debug('⚡ Quick action triggered:', action);
 
     switch (action) {
       case 'new-appointment':
@@ -492,7 +501,7 @@ export class ReceptionistSidebarComponent implements OnInit {
         });
         break;
       default:
-        console.warn('Unknown quick action:', action);
+        this.logger.warn('Unknown quick action:', action);
     }
   }
 }

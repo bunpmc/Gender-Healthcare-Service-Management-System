@@ -17,15 +17,21 @@ export class GoogleComponent {
       this.isLoading = true;
 
       // Get the current origin dynamically
-      const currentOrigin = environment.getCurrentOrigin();
+      const currentOrigin = window.location.origin;
       const redirectUrl = `${currentOrigin}${environment.authCallbackUrl}`;
 
+      console.log('Current origin:', currentOrigin);
       console.log('Using redirect URL:', redirectUrl);
+      console.log('Environment production:', environment.production);
 
       const { error } = await this.supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: redirectUrl,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
         },
       });
 

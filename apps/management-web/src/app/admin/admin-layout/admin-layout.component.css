@@ -1,0 +1,43 @@
+/* Admin Layout Styles */
+.flex-1 {
+    transition: all 0.3s ease-in-out;
+}
+
+:host {
+    display: block;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .flex-row {
+        flex-direction: column;
+    }
+
+    .w-64 {
+        width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .mx-6 {
+        margin-left: 1rem;
+        margin-right: 1rem;
+    }
+
+    .gap-6 {
+        gap: 1rem;
+    }
+}

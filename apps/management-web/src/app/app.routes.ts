@@ -1,33 +1,6 @@
 import { Routes } from '@angular/router';
 
-// Landing page - optional access via /portal route
-import { StaffPortalLandingComponent } from './staff-portal-landing/staff-portal-landing.component';
-
-// Admin components
-import { PatientManagementComponent } from './admin/patient-management/patient-management.component';
-import { DashboardComponent } from './admin/dashboard/dashboard.component';
-import { StaffManagementComponent } from './admin/staff-management/staff-management.component';
-import { AppointmentManagementComponent } from './admin/appointment-management/appointment-management.component';
-import { ServiceManagementComponent } from './admin/service-management/service-management.component';
-import { AnalyticManagementComponent } from './admin/analytic-management/analytic-management.component';
-
-import { DebugSupabaseComponent } from './debug-supabase.component';
-
-// Admin Layout Components
-import { AdminLayoutComponent } from './admin/admin-layout/admin-layout.component';
-import { DashboardContentComponent } from './admin/dashboard-content/dashboard-content.component';
-import { AnalyticsContentComponent } from './admin/analytics-content/analytics-content.component';
-
-// Doctor components
-import { DoctorDashboardComponent } from './doctor/doctor-dashboard/doctor-dashboard.component';
-import { doctorDashboardRoutes } from './doctor/doctor-dashboard/doctor-dashboard.routes';
-
-// Receptionist components
-import { ReceptionistDashboardComponent } from './receptionist/receptionist-dashboard/receptionist-dashboard.component';
-import { receptionistDashboardRoutes } from './receptionist/receptionist-dashboard/receptionist-dashboard.routes';
-
-// Auth components and guards
-import { StaffLoginComponent } from './shared/login/staff-login.component';
+// Auth guards
 import { AdminAuthGuard } from './admin/admin-auth.guard';
 import { DoctorAuthGuard } from './doctor/doctor-auth.guard';
 import { ReceptionistAuthGuard } from './receptionist/receptionist-auth.guard';
@@ -35,44 +8,49 @@ import { ReceptionistAuthGuard } from './receptionist/receptionist-auth.guard';
 export const routes: Routes = [
   // Redirect to login page directly (streamlined user experience)
   { path: '', redirectTo: '/login', pathMatch: 'full' },
-  { path: 'login', component: StaffLoginComponent },
+  { 
+    path: 'login', 
+    loadComponent: () => import('./shared/login/staff-login.component').then(m => m.StaffLoginComponent) 
+  },
 
   // Optional: Keep landing page accessible via direct URL if needed
-  { path: 'portal', component: StaffPortalLandingComponent },
+  { 
+    path: 'portal', 
+    loadComponent: () => import('./staff-portal-landing/staff-portal-landing.component').then(m => m.StaffPortalLandingComponent) 
+  },
 
-  // Debug tools
-  { path: 'debug', component: DebugSupabaseComponent },
+  // Debug tools - lazy loaded (remove in production)
+  { 
+    path: 'debug', 
+    loadComponent: () => import('./debug-supabase.component').then(m => m.DebugSupabaseComponent),
+    data: { preload: false } // Don't preload debug tools
+  },
 
-  // Admin routes (management system) - protected by auth guard with layout
+  // Admin routes (management system) - lazy loaded with layout, preload for better UX
   {
     path: 'admin',
-    component: AdminLayoutComponent,
+    loadComponent: () => import('./admin/admin-layout/admin-layout.component').then(m => m.AdminLayoutComponent),
     canActivate: [AdminAuthGuard],
-    children: [
-      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-      { path: 'dashboard', component: DashboardContentComponent },
-      { path: 'analytic', component: AnalyticsContentComponent },
-      { path: 'patient', component: PatientManagementComponent },
-      { path: 'staff', component: StaffManagementComponent },
-      { path: 'appointment', component: AppointmentManagementComponent },
-      { path: 'services', component: ServiceManagementComponent }
-    ]
+    loadChildren: () => import('./admin/admin.routes').then(m => m.adminRoutes),
+    data: { preload: true } // Mark for selective preloading
   },
 
-  // Doctor routes (doctor portal) - protected by auth guard
+  // Doctor routes (doctor portal) - lazy loaded, preload dashboard
   {
     path: 'doctor/dashboard',
-    component: DoctorDashboardComponent,
+    loadComponent: () => import('./doctor/doctor-dashboard/doctor-dashboard.component').then(m => m.DoctorDashboardComponent),
     canActivate: [DoctorAuthGuard],
-    children: doctorDashboardRoutes
+    loadChildren: () => import('./doctor/doctor-dashboard/doctor-dashboard.routes').then(m => m.doctorDashboardRoutes),
+    data: { preload: true } // Mark for selective preloading
   },
 
-  // Receptionist routes (receptionist portal) - protected by auth guard
+  // Receptionist routes (receptionist portal) - lazy loaded, preload dashboard
   {
     path: 'receptionist/dashboard',
-    component: ReceptionistDashboardComponent,
+    loadComponent: () => import('./receptionist/receptionist-dashboard/receptionist-dashboard.component').then(m => m.ReceptionistDashboardComponent),
     canActivate: [ReceptionistAuthGuard],
-    children: receptionistDashboardRoutes
+    loadChildren: () => import('./receptionist/receptionist-dashboard/receptionist-dashboard.routes').then(m => m.receptionistDashboardRoutes),
+    data: { preload: true } // Mark for selective preloading
   },
 
   // Redirects for compatibility - all roles use unified login

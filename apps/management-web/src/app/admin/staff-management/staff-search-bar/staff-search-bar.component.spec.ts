@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { StaffSearchBarComponent } from '../../../staff-management/staff-search-bar/staff-search-bar.component';
+import { StaffSearchBarComponent } from './staff-search-bar.component';
 
 describe('StaffSearchBarComponent', () => {
   let component: StaffSearchBarComponent;
@@ -10,7 +10,7 @@ describe('StaffSearchBarComponent', () => {
     await TestBed.configureTestingModule({
       imports: [StaffSearchBarComponent]
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(StaffSearchBarComponent);
     component = fixture.componentInstance;

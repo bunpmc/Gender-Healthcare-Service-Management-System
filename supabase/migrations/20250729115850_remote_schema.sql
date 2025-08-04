@@ -544,7 +544,15 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."create_blog_post"("p_doctor_id" "uuid", "p_blog_title" "text", "p_blog_content" "text", "p_excerpt" "text", "p_image_link" "text", "p_blog_tags" json, "p_published_at" timestamp with time zone, "p_blog_status" "public"."blog_status") OWNER TO "postgres";
+ALTER FUNCTION "public"."create_blog_post"(
+    "p_doctor_id" "uuid", 
+    "p_blog_title" "text", 
+    "p_blog_content" "text", 
+    "p_excerpt" "text", 
+    "p_image_link" "text", 
+    "p_blog_tags" json, 
+    "p_published_at" timestamp with time zone, 
+    "p_blog_status" "public"."blog_status") OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."create_doctor_detail"("p_doctor_id" "uuid", "p_department" "public"."department_enum", "p_speciality" "public"."speciality_enum", "p_about_me" json, "p_license_no" character varying, "p_bio" "text", "p_slogan" "text", "p_educations" json, "p_certifications" json) RETURNS "void"

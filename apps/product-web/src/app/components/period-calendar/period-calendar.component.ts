@@ -193,10 +193,11 @@ import {
         display: grid;
         grid-template-columns: repeat(7, 1fr);
         gap: 4px;
-        background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%);
+        background: white;
         padding: 12px;
         border-radius: 16px;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e5e7eb;
       }
 
       /* Day Headers */
@@ -204,10 +205,13 @@ import {
         text-align: center;
         font-size: 0.75rem;
         font-weight: 600;
-        color: #6b7280;
+        color: #374151;
         padding: 8px 4px;
         text-transform: uppercase;
         letter-spacing: 0.5px;
+        background: #f9fafb;
+        border-radius: 8px;
+        margin-bottom: 4px;
       }
 
       /* Calendar Day Cells */
@@ -327,28 +331,29 @@ import {
       }
 
       .other-month {
-        background: #f9fafb;
+        background: #fafafa;
         color: #9ca3af;
-        opacity: 0.5;
+        opacity: 0.4;
       }
 
       .normal-day {
         background: white;
         color: #374151;
-        border-color: #e5e7eb;
+        border-color: #f3f4f6;
       }
 
       .normal-day:hover {
-        background: #f9fafb;
-        border-color: #d1d5db;
+        background: #fafafa;
+        border-color: #e5e7eb;
       }
 
       /* Legend Styles */
       .legend-container {
-        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        background: white;
         border-radius: 12px;
         padding: 16px;
-        border: 1px solid #e2e8f0;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
       }
 
       .legend-title {
@@ -369,10 +374,10 @@ import {
         display: flex;
         align-items: center;
         gap: 8px;
-        padding: 6px;
+        padding: 8px;
         border-radius: 8px;
-        background: white;
-        border: 1px solid #e2e8f0;
+        background: #fafafa;
+        border: 1px solid #f3f4f6;
       }
 
       .legend-color {

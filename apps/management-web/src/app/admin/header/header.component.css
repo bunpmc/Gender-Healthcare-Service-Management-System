@@ -6,6 +6,33 @@ header {
   z-index: 1000;
 }
 
+/* Profile Dropdown - Ensure proper stacking */
+.profile-dropdown {
+  position: absolute !important;
+  top: calc(100% + 0.75rem) !important;
+  right: 0 !important;
+  z-index: 9999 !important;
+  pointer-events: auto !important;
+  min-width: 14rem;
+}
+
+/* Dropdown Button - Prevent z-index issues */
+.profile-btn {
+  position: relative;
+  z-index: 100;
+}
+
+/* Logout Button - Ensure clickable */
+.logout-btn {
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  z-index: 10000 !important;
+}
+
+.logout-btn:hover {
+  background-color: rgba(254, 226, 226, 0.5) !important;
+}
+
 /* Header Container */
 .header-container {
   @apply relative p-6 m-6 rounded-3xl;

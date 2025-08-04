@@ -98,7 +98,7 @@ export class StatsCardComponent implements OnInit {
   }
 
   private updateStatsCards(data: any): void {
-    // Cập nhật Today's Appointments
+    // Update Today's Appointments
     const appointmentChange = this.calculatePercentageChange(
       data.todayAppointments,
       data.yesterdayAppointments
@@ -112,7 +112,7 @@ export class StatsCardComponent implements OnInit {
       priority: data.todayAppointments > 10 ? 'high' : 'normal'
     };
 
-    // Cập nhật Total Patients (theo tháng hiện tại)
+    // Update Total Patients (for current month)
     this.statsCards[1] = {
       ...this.statsCards[1],
       value: this.formatNumber(data.totalPatients),
@@ -121,7 +121,7 @@ export class StatsCardComponent implements OnInit {
       priority: 'normal'
     };
 
-    // Cập nhật Revenue Today
+    // Update Revenue Today
     const revenueChange = this.calculatePercentageChange(
       data.todayRevenue,
       data.yesterdayRevenue
@@ -134,7 +134,7 @@ export class StatsCardComponent implements OnInit {
       priority: data.todayRevenue < data.yesterdayRevenue ? 'high' : 'normal'
     };
 
-    // Cập nhật Pending Tasks
+    // Update Pending Tasks
     const urgentThreshold = 5;
     const highThreshold = 3;
     let priority: 'normal' | 'high' | 'urgent' = 'normal';
@@ -193,7 +193,7 @@ export class StatsCardComponent implements OnInit {
     this.lastUpdated = new Date().toLocaleTimeString('vi-VN');
   }
 
-  // Phương thức để refresh data
+  // Method to refresh data
   refreshData(): void {
     this.statsCards.forEach((card, index) => {
       card.loading = true;
@@ -206,7 +206,7 @@ export class StatsCardComponent implements OnInit {
     this.loadStatsData();
   }
 
-  // Getter để check có pending tasks quan trọng không
+  // Getter to check if there are important pending tasks
   get hasUrgentTasks(): boolean {
     return this.statsCards[3]?.priority === 'urgent';
   }

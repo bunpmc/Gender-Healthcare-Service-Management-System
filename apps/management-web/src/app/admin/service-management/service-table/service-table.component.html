@@ -107,10 +107,10 @@
               </button>
             </td>
             <td class="px-4 py-4">
-              <div class="flex items-center space-x-1">
+              <div class="flex items-center space-x-2">
                 <button
                   (click)="onViewService(service)"
-                  class="text-indigo-600 hover:text-indigo-900 transition-colors p-1 rounded"
+                  class="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-600 transition-colors duration-200"
                   [attr.aria-label]="'View service ' + service.service_name"
                   title="View Details"
                 >
@@ -121,7 +121,7 @@
                 </button>
                 <button
                   (click)="onEditService(service)"
-                  class="text-purple-600 hover:text-purple-900 transition-colors p-1 rounded"
+                  class="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-600 transition-colors duration-200"
                   [attr.aria-label]="'Edit service ' + service.service_name"
                   title="Edit Service"
                 >
@@ -132,18 +132,18 @@
                 <button
                   *ngIf="service.is_active"
                   (click)="onDeleteService(service)"
-                  class="text-orange-600 hover:text-orange-900 transition-colors p-1 rounded"
+                  class="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 transition-colors duration-200"
                   [attr.aria-label]="'Deactivate service ' + service.service_name"
                   title="Deactivate Service"
                 >
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18 12M6 12l12.728 6.364"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                   </svg>
                 </button>
                 <button
                   *ngIf="!service.is_active"
                   (click)="onDeleteService(service)"
-                  class="text-red-600 hover:text-red-900 transition-colors p-1 rounded"
+                  class="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 transition-colors duration-200"
                   [attr.aria-label]="'Delete service ' + service.service_name"
                   title="Delete Service"
                 >
@@ -232,11 +232,11 @@
           <button
             *ngIf="service.is_active"
             (click)="onDeleteService(service)"
-            class="text-orange-600 hover:text-orange-900 transition-colors p-2 rounded"
+            class="text-red-600 hover:text-red-900 transition-colors p-2 rounded"
             title="Deactivate Service"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18 12M6 12l12.728 6.364"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
             </svg>
           </button>
           <button

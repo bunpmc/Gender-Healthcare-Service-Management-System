@@ -120,6 +120,8 @@ export class ServiceManagementComponent implements OnInit {
 
   async ngOnInit() {
     await this.loadData();
+    // Check if default image exists
+    await this.medicalServicesDataService.ensureDefaultImageExists();
   }
 
   async loadData() {
@@ -458,7 +460,7 @@ export class ServiceManagementComponent implements OnInit {
         ...serviceData,
         service_cost: serviceData.service_cost === null ? undefined : serviceData.service_cost,
         duration_minutes: serviceData.duration_minutes === null ? undefined : serviceData.duration_minutes,
-        image_link: uploadedImagePath || (serviceData.image_link === null ? undefined : serviceData.image_link),
+        image_link: uploadedImagePath || undefined, // Let service handle default image if no upload
         excerpt: serviceData.excerpt === null ? undefined : serviceData.excerpt
       };
 
@@ -688,35 +690,64 @@ export class ServiceManagementComponent implements OnInit {
   }
 
   // Notification methods
+  private notificationTimeout: any;
+
   showSuccessNotification(message: string) {
+    this.clearNotificationTimeout();
     this.notificationMessage = message;
     this.notificationType = 'success';
     this.showNotification = true;
-    setTimeout(() => {
-      this.showNotification = false;
+    this.notificationTimeout = setTimeout(() => {
+      this.hideNotification();
     }, 5000);
   }
 
   showErrorNotification(message: string) {
+    this.clearNotificationTimeout();
     this.notificationMessage = message;
     this.notificationType = 'error';
     this.showNotification = true;
-    setTimeout(() => {
-      this.showNotification = false;
+    this.notificationTimeout = setTimeout(() => {
+      this.hideNotification();
     }, 7000);
   }
 
   showWarningNotification(message: string) {
+    this.clearNotificationTimeout();
     this.notificationMessage = message;
     this.notificationType = 'warning';
     this.showNotification = true;
-    setTimeout(() => {
-      this.showNotification = false;
+    this.notificationTimeout = setTimeout(() => {
+      this.hideNotification();
     }, 6000);
   }
 
+  hideNotification() {
+    // Add slide-out animation
+    const notificationElement = document.querySelector('.notification-toast');
+    if (notificationElement) {
+      notificationElement.classList.add('animate-slide-out-right');
+      setTimeout(() => {
+        this.showNotification = false;
+        if (notificationElement) {
+          notificationElement.classList.remove('animate-slide-out-right');
+        }
+      }, 300); // Wait for animation to complete
+    } else {
+      this.showNotification = false;
+    }
+  }
+
   closeNotification() {
-    this.showNotification = false;
+    this.clearNotificationTimeout();
+    this.hideNotification();
+  }
+
+  private clearNotificationTimeout() {
+    if (this.notificationTimeout) {
+      clearTimeout(this.notificationTimeout);
+      this.notificationTimeout = null;
+    }
   }
 }
 

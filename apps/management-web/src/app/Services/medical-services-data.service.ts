@@ -237,6 +237,11 @@ export class MedicalServicesDataService {
             // Remove computed properties from create data
             const { imageUrl, category_name, ...createData } = serviceData;
 
+            // If no image_link provided, use default image
+            if (!createData.image_link) {
+                createData.image_link = 'default-service.png';
+            }
+
             const { data: newServiceData, error } = await supabase
                 .from('medical_services')
                 .insert([createData])
@@ -426,6 +431,50 @@ export class MedicalServicesDataService {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error occurred'
             };
+        }
+    }
+
+    /**
+     * Get default image URL for services
+     */
+    getDefaultServiceImageUrl(): string {
+        const { data } = supabase.storage
+            .from('service-uploads')
+            .getPublicUrl('default-service.png');
+
+        return data.publicUrl;
+    }
+
+    /**
+     * Check if default image exists, if not, create a placeholder
+     */
+    async ensureDefaultImageExists(): Promise<boolean> {
+        try {
+            // Check if default image exists
+            const { data, error } = await supabase.storage
+                .from('service-uploads')
+                .list('', {
+                    search: 'default-service.png'
+                });
+
+            if (error) {
+                console.error('Error checking default image:', error);
+                return false;
+            }
+
+            // If file exists, return true
+            if (data && data.length > 0) {
+                return true;
+            }
+
+            // If file doesn't exist, we'll log it but continue
+            // The admin should upload a default-service.png file to the bucket
+            console.warn('Default service image (default-service.png) not found in service-uploads bucket. Please upload a default image.');
+            return false;
+
+        } catch (error) {
+            console.error('Error ensuring default image exists:', error);
+            return false;
         }
     }
 }

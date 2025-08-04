@@ -26,12 +26,7 @@ function createSuccessResponse(data, status = 200) {
     }
   });
 }
-// Initialize Redis client
-// const redisConfig = {
-//   hostname: "redis-16115.c232.us-east-1-2.ec2.redns.redis-cloud.com",
-//   port: 16115,
-//   password: "TTscija9E5nQS9xCyypEjeA2xfhdibSE"
-// };
+
 const redisConfig = {
   hostname: Deno.env.get("REDIS_HOST"),
   port: Number(Deno.env.get("REDIS_PORT")),

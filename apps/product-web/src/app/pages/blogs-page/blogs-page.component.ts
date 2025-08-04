@@ -8,7 +8,7 @@ import { BlogService } from '../../services/blog.service';
 import { Blog, BlogDisplay } from '../../models/blog.model';
 import { BreadcrumbsComponent } from '../../components/breadcrumbs/breadcrumbs.component';
 import { BreadcrumbService } from '../../services/breadcrumb.service';
-
+import { createClient } from '@supabase/supabase-js';
 @Component({
   selector: 'app-blogs-page',
   standalone: true,
@@ -96,7 +96,8 @@ export class BlogsPageComponent implements OnInit {
       id: blog.blog_id,
       title: blog.blog_title,
       desc: blog.excerpt,
-      img: blog.image_link || '', // fallback image
+     // img: blog.image_link || '', // fallback image
+     img: this.getBlogImage(blog.image_link),
       author: blog.doctor_details.full_name,
       createdAt: blog.created_at,
       tags: tagsArray,
@@ -214,4 +215,15 @@ export class BlogsPageComponent implements OnInit {
   retryLoad() {
     this.loadBlogs();
   }
+  private getBlogImage(fileName: string | null | undefined): string {
+  const bucket = 'blog-uploads';
+  const supabasePublicUrl = 'https://xzxxodxplyetecrsbxmc.supabase.co/storage/v1/object/public/';
+
+  if (!fileName) {
+    return '/assets/default-blog.png';
+  }
+
+  const cleanFileName = fileName.startsWith('/') ? fileName.slice(1) : fileName;
+  return `${supabasePublicUrl}${bucket}/${cleanFileName}`;
+}
 }

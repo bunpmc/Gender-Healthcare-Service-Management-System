@@ -2,8 +2,10 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 // Helper functions for consistent responses
-function createErrorResponse(error:string, status = 400, details : string | null = null) {
- const response: Record<string, unknown> = { error };
+function createErrorResponse(error, status = 400, details = null) {
+  const response = {
+    error
+  };
   if (details) response.details = details;
   return new Response(JSON.stringify(response), {
     status,
@@ -13,7 +15,7 @@ function createErrorResponse(error:string, status = 400, details : string | null
     }
   });
 }
-function createSuccessResponse(message:string) {
+function createSuccessResponse(message) {
   return new Response(JSON.stringify({
     message
   }), {
@@ -104,7 +106,7 @@ serve(async (req)=>{
         return createErrorResponse("Failed to upload image", 500, uploadError.message);
       }
       const { data: publicData } = supabase.storage.from("staff-uploads").getPublicUrl(filename);
-      image_link = publicData?.publicUrl ?? null;
+      image_link = filename;
       console.log("New Image Link:", image_link); // Debug: Log new image link
     } else {
       return createErrorResponse("No image provided for update", 400);
@@ -123,7 +125,6 @@ serve(async (req)=>{
   } catch (err) {
     console.error("Unhandled error:", err);
     const errorMessage = err instanceof Error ? err.message : String(err);
-
     return createErrorResponse("Server error", 500, errorMessage);
   }
 });

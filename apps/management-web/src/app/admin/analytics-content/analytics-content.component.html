@@ -223,7 +223,7 @@
       </div>
 
       <!-- System Usage -->
-      <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+      <div *ngIf="hasSystemUsageData()" class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
         <div class="flex items-center space-x-3 mb-6">
           <div class="bg-green-600 rounded-lg p-2">
             <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -244,48 +244,32 @@
                 <span class="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
                 Active Users
               </span>
-              <span class="text-2xl font-bold text-green-600">{{ analyticsData?.systemStats?.activeUsers || 1234 }}</span>
+              <span class="text-2xl font-bold text-green-600">{{ analyticsData?.systemStats?.activeUsers }}</span>
             </div>
             <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-              <div class="bg-green-500 h-2 rounded-full transition-all duration-500" [style.width.%]="getUsagePercentage()"></div>
+              <div class="bg-green-500 h-2 rounded-full transition-all duration-500" [style.width.%]="getSystemUsagePercentage()"></div>
             </div>
-            <div class="flex justify-between text-sm text-gray-600 mt-2">
-              <span>0</span>
+            <div class="flex justify-end text-sm text-gray-600 mt-2">
               <span class="flex items-center">
-                Peak: 2,500
                 <span class="ml-2 text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded">
-                  {{ getUsagePercentage() }}%
+                  {{ getSystemUsagePercentage().toFixed(0) }}%
                 </span>
               </span>
             </div>
           </div>
           
-          <!-- Peak Usage Hours -->
-          <div class="bg-gray-50 rounded-xl p-4">
+          <!-- Peak Usage Hours - Only show if we have real data -->
+          <div *ngIf="hasPeakUsageData()" class="bg-gray-50 rounded-xl p-4">
             <h3 class="text-lg font-bold text-gray-800 mb-3 flex items-center">
               <span class="w-2 h-2 bg-orange-500 rounded-full mr-2"></span>
               Peak Usage Hours
             </h3>
             <div class="space-y-2">
-              <div class="flex items-center justify-between p-2 bg-white rounded-lg">
-                <span class="text-sm font-medium text-gray-700">9:00 AM - 11:00 AM</span>
+              <div *ngFor="let hour of getPeakUsageHours()" class="flex items-center justify-between p-2 bg-white rounded-lg">
+                <span class="text-sm font-medium text-gray-700">{{ hour.hour }}</span>
                 <div class="flex items-center space-x-2">
-                  <span class="text-sm font-bold text-orange-600">Peak</span>
-                  <span class="text-xs font-medium text-orange-600 bg-orange-50 px-2 py-1 rounded">85%</span>
-                </div>
-              </div>
-              <div class="flex items-center justify-between p-2 bg-white rounded-lg">
-                <span class="text-sm font-medium text-gray-700">2:00 PM - 4:00 PM</span>
-                <div class="flex items-center space-x-2">
-                  <span class="text-sm font-bold text-yellow-600">High</span>
-                  <span class="text-xs font-medium text-yellow-600 bg-yellow-50 px-2 py-1 rounded">72%</span>
-                </div>
-              </div>
-              <div class="flex items-center justify-between p-2 bg-white rounded-lg">
-                <span class="text-sm font-medium text-gray-700">6:00 PM - 8:00 PM</span>
-                <div class="flex items-center space-x-2">
-                  <span class="text-sm font-bold text-blue-600">Moderate</span>
-                  <span class="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded">45%</span>
+                  <span class="text-sm font-bold text-orange-600">{{ hour.users }} users</span>
+                  <span class="text-xs font-medium text-orange-600 bg-orange-50 px-2 py-1 rounded">{{ hour.percentage }}%</span>
                 </div>
               </div>
             </div>
@@ -294,7 +278,7 @@
       </div>
 
       <!-- Quick Statistics -->
-      <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+      <div *ngIf="hasQuickStatisticsData()" class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
         <div class="flex items-center space-x-3 mb-6">
           <div class="bg-purple-600 rounded-lg p-2">
             <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -310,7 +294,8 @@
         <div class="space-y-3">
           <!-- Quick Stats Cards -->
           <div class="bg-gray-50 rounded-xl p-4">
-            <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg mb-2">
+            <!-- Appointment Completion Rate -->
+            <div *ngIf="hasAppointmentCompletionData()" class="flex items-center justify-between p-3 bg-blue-50 rounded-lg mb-2">
               <div>
                 <p class="text-sm font-bold text-blue-900">Completion Rate</p>
                 <p class="text-xs text-blue-600">Appointments</p>
@@ -321,29 +306,43 @@
               </div>
             </div>
             
-            <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg mb-2">
+            <!-- Staff Utilization -->
+            <div *ngIf="hasStaffUtilizationData()" class="flex items-center justify-between p-3 bg-green-50 rounded-lg mb-2">
               <div>
                 <p class="text-sm font-bold text-green-900">Staff Utilization</p>
                 <p class="text-xs text-green-600">Average efficiency</p>
               </div>
               <div class="flex items-center space-x-2">
-                <div class="text-2xl font-bold text-green-600">{{ getStaffUtilization() }}</div>
+                <div class="text-2xl font-bold text-green-600">{{ getStaffUtilization().toFixed(0) }}</div>
                 <span class="text-xs font-medium text-green-600 bg-green-100 px-2 py-1 rounded">%</span>
               </div>
             </div>
             
-            <div class="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
+            <!-- Revenue Growth -->
+            <div *ngIf="hasRevenueGrowthData()" class="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
               <div>
                 <p class="text-sm font-bold text-purple-900">Revenue Growth</p>
                 <p class="text-xs text-purple-600">This month</p>
               </div>
               <div class="flex items-center space-x-2">
-                <div class="text-2xl font-bold text-purple-600">+{{ getRevenueGrowth() }}</div>
+                <div class="text-2xl font-bold text-purple-600">{{ getRevenueGrowth() > 0 ? '+' : '' }}{{ getRevenueGrowth() }}</div>
                 <span class="text-xs font-medium text-purple-600 bg-purple-100 px-2 py-1 rounded">%</span>
               </div>
             </div>
           </div>
         </div>
       </div>
+    </div>
+    
+    <!-- Show message when no detailed analytics data is available -->
+    <div *ngIf="!hasPatientDemographicData() && !hasSystemUsageData() && !hasQuickStatisticsData()" 
+         class="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 text-center">
+      <div class="text-gray-400 mb-4">
+        <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+        </svg>
+      </div>
+      <h3 class="text-lg font-medium text-gray-900 mb-2">No Additional Analytics Data Available</h3>
+      <p class="text-gray-600">More detailed analytics sections will appear here once additional data is collected from your system.</p>
     </div>
   </div>

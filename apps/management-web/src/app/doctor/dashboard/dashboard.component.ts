@@ -32,7 +32,7 @@ export class DashboardComponent implements OnInit {
   constructor(
     private supabaseService: SupabaseService,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.doctorId = localStorage.getItem('doctor_id') || localStorage.getItem('staff_id');
@@ -46,6 +46,12 @@ export class DashboardComponent implements OnInit {
   async loadDashboardData() {
     try {
       this.loading = true;
+
+      // Ensure doctor has sample data
+      if (this.doctorId) {
+        await this.supabaseService.ensureDoctorHasData(this.doctorId);
+      }
+
       this.stats = await this.supabaseService.getDoctorDashboardStats(this.doctorId!);
     } catch (error: any) {
       this.error = error.message || 'Failed to load dashboard data';
@@ -87,5 +93,26 @@ export class DashboardComponent implements OnInit {
       hour: '2-digit',
       minute: '2-digit'
     });
+  }
+
+  // Setup demo data for testing
+  async setupDemoData() {
+    if (!this.doctorId) return;
+
+    try {
+      this.loading = true;
+      const result = await this.supabaseService.setupDoctorPortalDemo(this.doctorId);
+
+      if (result.success) {
+        // Reload dashboard data
+        await this.loadDashboardData();
+      } else {
+        this.error = result.message;
+      }
+    } catch (error: any) {
+      this.error = 'Failed to setup demo data: ' + error.message;
+    } finally {
+      this.loading = false;
+    }
   }
 }

@@ -99,8 +99,19 @@
         <h2 class="text-lg font-semibold text-gray-900">Recent Consultant Meetings</h2>
       </div>
       <div class="p-6">
-        <div *ngIf="stats.recentAppointments.length === 0" class="text-center py-8 text-gray-500">
-          No recent consultant meetings found.
+        <div *ngIf="stats.recentAppointments.length === 0" class="text-center py-8">
+          <div class="text-gray-500 mb-4">No recent consultant meetings found.</div>
+          <!-- Demo Data Setup Button -->
+          <div *ngIf="stats.todayAppointments === 0 && stats.pendingAppointments === 0 && stats.totalPatients === 0">
+            <button
+              (click)="setupDemoData()"
+              class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 border border-transparent rounded-lg transition-colors">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+              </svg>
+              Setup Demo Data
+            </button>
+          </div>
         </div>
         <div *ngIf="stats.recentAppointments.length > 0" class="space-y-4">
           <div *ngFor="let appointment of stats.recentAppointments"

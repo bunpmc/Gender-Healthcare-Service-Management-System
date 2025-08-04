@@ -88,6 +88,10 @@ export class ConsultantMeetingsComponent implements OnInit {
       }
 
       console.log('📊 Loading slots and statistics...');
+
+      // Ensure doctor has sample data
+      await this.supabaseService.ensureDoctorHasData(this.doctorId);
+
       // Load initial data
       await this.loadSlots();
       await this.loadStatistics();
@@ -398,6 +402,64 @@ export class ConsultantMeetingsComponent implements OnInit {
     await this.loadStatistics();
     if (this.currentView === 'calendar') {
       this.generateCalendar();
+    }
+  }
+
+  // Setup demo data for testing
+  async setupDemoData() {
+    if (!this.doctorId) {
+      console.log('⚠️ No doctor ID available for demo setup');
+      return;
+    }
+
+    try {
+      this.loading = true;
+      console.log('🎯 Setting up demo data...');
+
+      const result = await this.supabaseService.setupDoctorPortalDemo(this.doctorId);
+
+      if (result.success) {
+        console.log('✅ Demo data setup completed:', result.data);
+        // Reload data to reflect changes
+        await this.refreshData();
+      } else {
+        console.error('❌ Demo data setup failed:', result.message);
+        this.error = result.message;
+      }
+    } catch (error: any) {
+      console.error('❌ Error setting up demo data:', error);
+      this.error = 'Failed to setup demo data: ' + error.message;
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  // Reset demo data
+  async resetDemoData() {
+    if (!this.doctorId) {
+      console.log('⚠️ No doctor ID available for demo reset');
+      return;
+    }
+
+    try {
+      this.loading = true;
+      console.log('🔄 Resetting demo data...');
+
+      const result = await this.supabaseService.resetDoctorDemoData(this.doctorId);
+
+      if (result.success) {
+        console.log('✅ Demo data reset completed');
+        // Reload data to reflect changes
+        await this.refreshData();
+      } else {
+        console.error('❌ Demo data reset failed:', result.message);
+        this.error = result.message;
+      }
+    } catch (error: any) {
+      console.error('❌ Error resetting demo data:', error);
+      this.error = 'Failed to reset demo data: ' + error.message;
+    } finally {
+      this.loading = false;
     }
   }
 }

@@ -1,4 +1,4 @@
-import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
+import { ApplicationConfig, provideZoneChangeDetection, ErrorHandler } from '@angular/core';
 import { provideRouter, withPreloading } from '@angular/router';
 import { routes } from './app.routes';
 import { SelectivePreloadingStrategy } from './selective-preloading-strategy.service';
@@ -7,6 +7,7 @@ import { provideHttpClient, withInterceptorsFromDi, HTTP_INTERCEPTORS } from '@a
 import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeng/themes/aura';
 import { AppHttpInterceptor } from './core/interceptors/app-http.interceptor';
+import { GlobalErrorHandler } from './utils/global-error-handler.util';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -23,6 +24,10 @@ export const appConfig: ApplicationConfig = {
       provide: HTTP_INTERCEPTORS,
       useClass: AppHttpInterceptor,
       multi: true
+    },
+    {
+      provide: ErrorHandler,
+      useClass: GlobalErrorHandler
     }
   ],
 };

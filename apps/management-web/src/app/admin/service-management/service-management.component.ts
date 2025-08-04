@@ -5,7 +5,6 @@ import { ServiceSearchBarComponent } from './service-search-bar/service-search-b
 import { ServiceTableComponent } from './service-table/service-table.component';
 import { Service } from '../../models/service.interface';
 import { CategoryService } from '../../Services/category.service';
-import { ServiceManagementService } from '../../Services/service-management.service';
 import { MedicalServicesDataService } from '../../Services/medical-services-data.service';
 import { Category } from '../../models/category.interface';
 import { MedicalService } from '../../models/database.interface';
@@ -113,7 +112,6 @@ export class ServiceManagementComponent implements OnInit {
   Math = Math;
 
   constructor(
-    private serviceManagementService: ServiceManagementService,
     private categoryService: CategoryService,
     private medicalServicesDataService: MedicalServicesDataService
   ) { }

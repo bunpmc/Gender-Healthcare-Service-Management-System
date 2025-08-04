@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { supabase } from '../supabase-client';
 import { Service } from '../models/service.interface';
+import { Logger } from '../utils/logger.util';
 
 export interface MedicalServiceFetchOptions {
     includeInactive?: boolean;
@@ -67,7 +68,7 @@ export class MedicalServicesDataService {
                         .from('service-uploads')
                         .getPublicUrl(service.image_link);
                     imageUrl = publicData.publicUrl;
-                    console.log(`Service image URL for ${service.service_name}:`, imageUrl); // Debug log
+                    Logger.log(`Service image URL for ${service.service_name}:`, imageUrl);
                 }
 
                 return {

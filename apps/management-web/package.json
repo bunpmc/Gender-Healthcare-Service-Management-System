@@ -4,16 +4,23 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
+    "start:prod": "ng serve --configuration production",
     "build": "ng build",
     "build:prod": "ng build --configuration production",
-    "build:optimize": "ng build --configuration production --optimization=true --aot=true",
+    "build:optimize": "ng build --configuration production --optimization=true --aot=true --build-optimizer=true",
+    "build:analyze": "ng build --configuration production --stats-json && npx webpack-bundle-analyzer dist/gender-healthcare-fe/stats.json",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "test:ci": "ng test --watch=false --browsers=ChromeHeadless",
+    "lint": "ng lint",
+    "lint:fix": "ng lint --fix",
     "analyze": "ng build --configuration analyze && npx webpack-bundle-analyzer dist/gender-healthcare-fe/stats.json",
     "css:analyze": "ng build --configuration production --extract-css && echo 'CSS bundle analysis complete'",
     "css:purge": "purgecss --config purgecss.config.js",
     "bundle:size": "bundlesize",
-    "bundle:optimize": "npm run build:optimize && npm run css:purge"
+    "bundle:optimize": "npm run build:optimize && npm run css:purge",
+    "clean": "rimraf dist/ node_modules/.cache/",
+    "precommit": "npm run lint:fix && npm run test:ci"
   },
   "private": true,
   "dependencies": {

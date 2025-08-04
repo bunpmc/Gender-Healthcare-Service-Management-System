@@ -1,25 +1,25 @@
 import {
+  withHttpTransferCache
+} from "./chunk-OFQHZJEU.js";
+import {
   DomRendererFactory2,
   EVENT_MANAGER_PLUGINS,
   EventManager,
   EventManagerPlugin,
   SharedStylesHost
-} from "./chunk-TJZESDX7.js";
+} from "./chunk-PZE2LM64.js";
 import {
   CommonModule,
   DomAdapter,
   getDOM,
   setRootDomAdapter
-} from "./chunk-TQCQYBFL.js";
-import {
-  withHttpTransferCache
-} from "./chunk-FIDZ4BFX.js";
+} from "./chunk-4MJN4DOJ.js";
 import {
   DOCUMENT,
   PLATFORM_BROWSER_ID,
   XhrFactory,
   parseCookieValue
-} from "./chunk-DH2PAQKB.js";
+} from "./chunk-4C7DQSTE.js";
 import {
   ApplicationModule,
   ApplicationRef,
@@ -1298,4 +1298,4 @@ export {
    * License: MIT
    *)
 */
-//# sourceMappingURL=chunk-OPG3R3KJ.js.map
+//# sourceMappingURL=chunk-5EGUH5KY.js.map

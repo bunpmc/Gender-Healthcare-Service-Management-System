@@ -1,8 +1,8 @@
 export interface Blog {
   blog_id: string;
-  blog_title: string; // Đổi từ 'title' thành 'blog_title'
+  blog_title: string;
   excerpt: string;
-  image_link?: string | null; // có thể null
+  image_link?: string | null;
   blog_tags: string[];
   blog_status: string;
   created_at: string;

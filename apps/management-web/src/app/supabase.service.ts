@@ -1,41 +1,55 @@
-import { Patient } from './models/patient.interface';
 import { Injectable } from '@angular/core';
 import { supabase } from './supabase-client';
 import { from, Observable } from 'rxjs';
 import { LoggerService } from './core/services/logger.service';
 import {
-  Staff,
+  Patient,
+  StaffMember,
   DoctorDetails,
-  Doctor,
-  Role,
-} from './models/staff.interface';
+  MedicalService,
+  MedicalServiceCategory as ServiceCategory,
+  Appointment,
+  Guest,
+  BlogPost,
+  PatientReport,
+  Receipt,
+  Slot,
+  DoctorSlotAssignment,
+  Transaction,
+  StaffSchedule,
+  PeriodTracking,
+  Log,
+  Ticket,
+  ProcessStatus,
+  StaffRole,
+  StaffStatus,
+  VisitTypeEnum,
+  ScheduleEnum,
+  GenderEnum
+} from './models/database.interface';
+
+// Legacy interface imports for backward compatibility
+import { Staff, Doctor, Role } from './models/staff.interface';
 import { Service } from './models/service.interface';
 import { Category } from './models/category.interface';
 import {
-  Appointment,
-  Guest,
+  Appointment as LegacyAppointment,
   GuestAppointment,
   CreateAppointmentRequest,
   UpdateAppointmentRequest,
   VisitType,
-  ProcessStatus,
-  ScheduleEnum,
 } from './models/appointment.interface';
 import {
-  BlogPost,
+  BlogPost as LegacyBlogPost,
   CreateBlogPostRequest,
   UpdateBlogPostRequest,
 } from './models/blog.interface';
 import { Notification } from './models/notification.interface';
 import {
-  PatientReport,
   UpdatePatientReportRequest,
   CreatePatientReportRequest,
 } from './models/patient-report.interface';
-import { Receipt } from './models/receipt.interface';
 import {
-  Slot,
-  DoctorSlotAssignment,
   DoctorSlotWithDetails,
 } from './models/slot.interface';
 
@@ -43,7 +57,7 @@ import {
   providedIn: 'root',
 })
 export class SupabaseService {
-  constructor(private logger: LoggerService) {}
+  constructor(private logger: LoggerService) { }
 
   // Count patients by month
   getPatientCountByMonth(year: number, month: number): Observable<number> {

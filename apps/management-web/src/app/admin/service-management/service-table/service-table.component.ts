@@ -2,6 +2,7 @@ import { Category } from './../../../models/category.interface';
 import { Service } from './../../../models/service.interface';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { BaseComponent } from '../../../shared/base.component';
 
 export type SortDirection = 'asc' | 'desc' | null;
 export type SortField = 'service_name' | 'category_name' | 'service_cost' | 'duration_minutes' | 'is_active';
@@ -13,7 +14,7 @@ export type SortField = 'service_name' | 'category_name' | 'service_cost' | 'dur
   templateUrl: './service-table.component.html',
   styleUrls: ['./service-table.component.css']
 })
-export class ServiceTableComponent {
+export class ServiceTableComponent extends BaseComponent {
   @Input() paginatedServices: Service[] = [];
   @Input() totalServices: number = 0;
   @Input() currentPage: number = 1;
@@ -125,7 +126,7 @@ export class ServiceTableComponent {
     return service.service_id;
   }
 
-  formatCurrency(amount: number | null): string {
+  formatCurrency(amount: number | null | undefined): string {
     if (amount === null || amount === undefined) return 'N/A';
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
@@ -135,13 +136,17 @@ export class ServiceTableComponent {
     }).format(amount);
   }
 
-  getStatusBadgeClass(isActive: boolean): string {
-    return isActive
+  getBooleanStatusBadgeClass(isActive?: boolean | undefined): string {
+    return isActive === true
       ? 'bg-green-100 text-green-800'
       : 'bg-red-100 text-red-800';
   }
 
-  truncateText(text: string | null, maxLength: number = 50): string {
+  formatBooleanStatus(isActive?: boolean | undefined): string {
+    return isActive === true ? 'Active' : 'Inactive';
+  }
+
+  truncateText(text: string | null | undefined, maxLength: number = 50): string {
     if (!text) return 'N/A';
     return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
   }

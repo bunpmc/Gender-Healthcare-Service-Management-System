@@ -7,6 +7,7 @@ import { Service } from '../../models/service.interface';
 import { CategoryService } from '../../Services/category.service';
 import { ServiceManagementService } from '../../Services/service-management.service';
 import { Category } from '../../models/category.interface';
+import { MedicalService } from '../../models/database.interface';
 
 @Component({
   selector: 'app-service-management',
@@ -74,17 +75,17 @@ export class ServiceManagementComponent implements OnInit {
     service_cost: boolean;
     duration_minutes: boolean;
   } = {
-    service_name: false,
-    category_id: false,
-    service_cost: false,
-    duration_minutes: false
-  };
+      service_name: false,
+      category_id: false,
+      service_cost: false,
+      duration_minutes: false
+    };
 
   categoryErrors: {
     category_name: boolean;
   } = {
-    category_name: false
-  };
+      category_name: false
+    };
 
   // Filtering and sorting
   currentFilters: {
@@ -92,10 +93,10 @@ export class ServiceManagementComponent implements OnInit {
     selectedCategory: string;
     selectedStatus: string;
   } = {
-    searchTerm: '',
-    selectedCategory: '',
-    selectedStatus: ''
-  };
+      searchTerm: '',
+      selectedCategory: '',
+      selectedStatus: ''
+    };
 
   // Notification state
   showNotification = false;
@@ -108,7 +109,7 @@ export class ServiceManagementComponent implements OnInit {
   constructor(
     private serviceManagementService: ServiceManagementService,
     private categoryService: CategoryService
-  ) {}
+  ) { }
 
   async ngOnInit() {
     await this.loadData();
@@ -117,12 +118,18 @@ export class ServiceManagementComponent implements OnInit {
   async loadData() {
     this.isLoading = true;
     try {
+      // Use forkJoin to combine observables and convert to promise
       const [services, categories] = await Promise.all([
-        this.serviceManagementService.getMedicalServices(),
-        this.categoryService.getServiceCategories()
+        this.serviceManagementService.getMedicalServices().toPromise(),
+        this.categoryService.getServiceCategories().toPromise()
       ]);
-      this.services = services;
-      this.categories = categories;
+      // Convert MedicalService to Service format
+      const mappedServices: Service[] = (services || []).map((service: MedicalService) => ({
+        ...service,
+        service_description: service.service_description || { what: '', why: '', who: '', how: '' }
+      }));
+      this.services = mappedServices;
+      this.categories = categories || [];
       this.filteredServices = [...this.services];
       console.log('✅ Services and categories loaded successfully');
     } catch (error) {
@@ -196,7 +203,7 @@ export class ServiceManagementComponent implements OnInit {
 
       const matchesCategory = !filters.selectedCategory || service.category_id === filters.selectedCategory;
 
-      const matchesStatus = !filters.selectedStatus || service.is_active.toString() === filters.selectedStatus;
+      const matchesStatus = !filters.selectedStatus || (service.is_active ?? false).toString() === filters.selectedStatus;
 
       return matchesSearch && matchesCategory && matchesStatus;
     });
@@ -288,11 +295,11 @@ export class ServiceManagementComponent implements OnInit {
 
         if (service.is_active) {
           // Soft delete - just deactivate the service
-          await this.serviceManagementService.toggleMedicalServiceStatus(service.service_id, false);
+          await this.serviceManagementService.toggleMedicalServiceStatus(service.service_id).toPromise();
           this.showSuccessNotification('Service deactivated successfully!');
         } else {
           // Hard delete - permanently remove the service
-          await this.serviceManagementService.deleteMedicalService(service.service_id);
+          await this.serviceManagementService.deleteMedicalService(service.service_id).toPromise();
           this.showSuccessNotification('Service permanently deleted!');
         }
 
@@ -309,7 +316,7 @@ export class ServiceManagementComponent implements OnInit {
   async onToggleServiceStatus(event: { service: Service; isActive: boolean }) {
     try {
       this.isLoading = true;
-      await this.serviceManagementService.toggleMedicalServiceStatus(event.service.service_id, event.isActive);
+      await this.serviceManagementService.toggleMedicalServiceStatus(event.service.service_id).toPromise();
       await this.loadData();
       this.showSuccessNotification(`Service ${event.isActive ? 'activated' : 'deactivated'} successfully!`);
     } catch (error) {
@@ -387,10 +394,19 @@ export class ServiceManagementComponent implements OnInit {
         }, {} as { [key in DescriptionKey]: string | null })
       };
 
-      // Remove service_id for creation
+      // Remove service_id for creation and convert null to undefined
       const { service_id, ...serviceData } = serviceToAdd;
 
-      await this.serviceManagementService.addMedicalService(serviceData);
+      // Convert null values to undefined for compatibility
+      const processedServiceData = {
+        ...serviceData,
+        service_cost: serviceData.service_cost === null ? undefined : serviceData.service_cost,
+        duration_minutes: serviceData.duration_minutes === null ? undefined : serviceData.duration_minutes,
+        image_link: serviceData.image_link === null ? undefined : serviceData.image_link,
+        excerpt: serviceData.excerpt === null ? undefined : serviceData.excerpt
+      };
+
+      await this.serviceManagementService.addMedicalService(processedServiceData).toPromise();
       await this.loadData();
       this.closeAddServiceModal();
       this.showSuccessNotification('Service added successfully!');
@@ -450,7 +466,17 @@ export class ServiceManagementComponent implements OnInit {
           return acc;
         }, {} as { [key in DescriptionKey]: string | null })
       };
-      await this.serviceManagementService.updateMedicalService(serviceToUpdate);
+
+      // Convert to MedicalService format with proper null/undefined handling
+      const medicalServiceUpdate: MedicalService = {
+        ...serviceToUpdate,
+        service_cost: serviceToUpdate.service_cost === null ? undefined : serviceToUpdate.service_cost,
+        duration_minutes: serviceToUpdate.duration_minutes === null ? undefined : serviceToUpdate.duration_minutes,
+        image_link: serviceToUpdate.image_link === null ? undefined : serviceToUpdate.image_link,
+        excerpt: serviceToUpdate.excerpt === null ? undefined : serviceToUpdate.excerpt
+      };
+
+      await this.serviceManagementService.updateMedicalService(medicalServiceUpdate).toPromise();
       await this.loadData();
       this.closeEditServiceModal();
       this.showSuccessNotification('Service updated successfully!');
@@ -508,7 +534,7 @@ export class ServiceManagementComponent implements OnInit {
     try {
       this.isLoading = true;
       const { category_id, ...categoryData } = this.newCategory;
-      await this.categoryService.createServiceCategory(categoryData);
+      await this.categoryService.createServiceCategory(categoryData).toPromise();
       await this.loadData();
       this.closeAddCategoryModal();
       this.showSuccessNotification('Category added successfully!');

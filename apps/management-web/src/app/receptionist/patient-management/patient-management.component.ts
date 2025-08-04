@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SupabaseService } from '../../supabase.service';
 import { Patient } from '../../models/patient.interface';
+import { BaseComponent } from '../../shared/base.component';
 
 @Component({
   selector: 'app-receptionist-patient-management',
@@ -11,7 +12,7 @@ import { Patient } from '../../models/patient.interface';
   templateUrl: './patient-management.component.html',
   styleUrls: ['./patient-management.component.css'],
 })
-export class PatientManagementComponent implements OnInit {
+export class PatientManagementComponent extends BaseComponent implements OnInit {
   // Data properties
   patients: Patient[] = [];
   filteredPatients: Patient[] = [];
@@ -78,7 +79,9 @@ export class PatientManagementComponent implements OnInit {
   errorMessage: string = '';
   successMessage: string = '';
 
-  constructor(private supabaseService: SupabaseService) {}
+  constructor(private supabaseService: SupabaseService) {
+    super();
+  }
 
   async ngOnInit() {
     await this.loadPatients();
@@ -371,51 +374,6 @@ export class PatientManagementComponent implements OnInit {
       return false;
     }
     return true;
-  }
-
-  getStatusBadgeClass(status: string): string {
-    switch (status) {
-      case 'active':
-        return 'bg-green-100 text-green-800';
-      case 'inactive':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  }
-
-  getGenderBadgeClass(gender: string): string {
-    switch (gender) {
-      case 'male':
-        return 'bg-blue-100 text-blue-800';
-      case 'female':
-        return 'bg-pink-100 text-pink-800';
-      case 'other':
-        return 'bg-purple-100 text-purple-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  }
-
-  formatDate(dateString: string): string {
-    return new Date(dateString).toLocaleDateString('vi-VN');
-  }
-
-  calculateAge(dateOfBirth: string | null): number {
-    if (!dateOfBirth) return 0;
-    const today = new Date();
-    const birthDate = new Date(dateOfBirth);
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-
-    if (
-      monthDiff < 0 ||
-      (monthDiff === 0 && today.getDate() < birthDate.getDate())
-    ) {
-      age--;
-    }
-
-    return age;
   }
 
   formatArrayField(array: string[] | undefined): string {

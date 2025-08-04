@@ -3,7 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SupabaseService } from '../../supabase.service';
 import { Router } from '@angular/router';
-import { ProcessStatus, VisitType } from '../../models/appointment.interface';
+import { ProcessStatus } from '../../models/database.interface';
+import { VisitType } from '../../models/appointment.interface';
 
 interface AppointmentDisplay {
   appointment_id: string;
@@ -189,8 +190,8 @@ export class AppointmentsComponent implements OnInit {
 
       const result = await this.supabaseService.updateAppointmentStatus(
         this.selectedAppointment!.appointment_id,
-        this.selectedAppointment!.appointment_type || 'patient',
-        this.updateForm.appointment_status,
+        'patient',
+        this.updateForm.appointment_status as ProcessStatus,
         this.updateForm.message
       );
 

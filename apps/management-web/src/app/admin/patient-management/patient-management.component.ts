@@ -260,9 +260,14 @@ export class PatientManagementComponent implements OnInit {
   /**
    * Calculate age from date of birth
    */
-  private calculateAge(dateOfBirth: string): number {
+  private calculateAge(dateOfBirth: string | undefined | null): number {
+    if (!dateOfBirth) return 0;
+
     const today = new Date();
     const birthDate = new Date(dateOfBirth);
+
+    if (isNaN(birthDate.getTime())) return 0;
+
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
 

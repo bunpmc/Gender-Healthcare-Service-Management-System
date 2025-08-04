@@ -5,6 +5,7 @@ import { SupabaseService } from '../../supabase.service';
 import { Router } from '@angular/router';
 import { Patient } from '../../models/patient.interface';
 import { PatientReport, CreatePatientReportRequest, ReportStatus } from '../../models/patient-report.interface';
+import { BaseComponent } from '../../shared/base.component';
 
 @Component({
   selector: 'app-doctor-patients',
@@ -13,7 +14,7 @@ import { PatientReport, CreatePatientReportRequest, ReportStatus } from '../../m
   templateUrl: './patients.component.html',
   styleUrls: ['./patients.component.css']
 })
-export class PatientsComponent implements OnInit {
+export class PatientsComponent extends BaseComponent implements OnInit {
   patients: Patient[] = [];
   filteredPatients: Patient[] = [];
   loading = true;
@@ -61,7 +62,9 @@ export class PatientsComponent implements OnInit {
   constructor(
     private supabaseService: SupabaseService,
     private router: Router
-  ) { }
+  ) {
+    super();
+  }
 
   ngOnInit() {
     this.doctorId = localStorage.getItem('doctor_id') || localStorage.getItem('staff_id');
@@ -232,10 +235,6 @@ export class PatientsComponent implements OnInit {
     }
   }
 
-  formatDate(dateString: string): string {
-    return new Date(dateString).toLocaleDateString();
-  }
-
   formatDateTime(dateString: string): string {
     return new Date(dateString).toLocaleString();
   }
@@ -268,33 +267,5 @@ export class PatientsComponent implements OnInit {
     } catch (error) {
       console.error('🔍 Debug error:', error);
     }
-  }
-
-  getGenderIcon(gender: string): string {
-    switch (gender) {
-      case 'male': return '♂';
-      case 'female': return '♀';
-      default: return '⚧';
-    }
-  }
-
-  getStatusColor(status: string): string {
-    switch (status) {
-      case 'active': return 'text-green-600 bg-green-100';
-      case 'inactive': return 'text-red-600 bg-red-100';
-      default: return 'text-gray-600 bg-gray-100';
-    }
-  }
-
-  calculateAge(dateOfBirth: string | null): number {
-    if (!dateOfBirth) return 0;
-    const today = new Date();
-    const birthDate = new Date(dateOfBirth);
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
-    }
-    return age;
   }
 }

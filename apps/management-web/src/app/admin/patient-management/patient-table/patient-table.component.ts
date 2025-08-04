@@ -1,6 +1,7 @@
 import { Patient } from './../../../models/patient.interface';
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { BaseComponent } from '../../../shared/base.component';
 
 export type SortDirection = 'asc' | 'desc' | null;
 export type SortField = keyof Patient;
@@ -12,7 +13,7 @@ export type SortField = keyof Patient;
   templateUrl: './patient-table.component.html',
   styleUrls: ['./patient-table.component.css']
 })
-export class PatientTableComponent {
+export class PatientTableComponent extends BaseComponent {
   @Input() paginatedPatients: Patient[] = [];
   @Input() totalPatients: number = 0;
   @Input() currentPage: number = 1;
@@ -66,7 +67,7 @@ export class PatientTableComponent {
    */
   isAllSelected(): boolean {
     return this.paginatedPatients.length > 0 &&
-           this.paginatedPatients.every(patient => this.selectedPatients.has(patient.id));
+      this.paginatedPatients.every(patient => this.selectedPatients.has(patient.id));
   }
 
   /**
@@ -126,102 +127,12 @@ export class PatientTableComponent {
   }
 
   /**
-   * Calculate age from date of birth
-   */
-  calculateAge(dateOfBirth: string | null): number {
-    if (!dateOfBirth) return 0;
-    const today = new Date();
-    const birthDate = new Date(dateOfBirth);
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
-    }
-
-    return age;
-  }
-
-  /**
-   * Format gender for display
-   */
-  formatGender(gender: string): string {
-    if (!gender) return 'Not specified';
-    const genderMap: { [key: string]: string } = {
-      'male': 'Male',
-      'female': 'Female',
-      'other': 'Other',
-      'prefer_not_to_say': 'Prefer not to say'
-    };
-    return genderMap[gender.toLowerCase()] || gender;
-  }
-
-  /**
-   * Format status for display
-   */
-  formatStatus(status: string): string {
-    if (!status) return 'Unknown';
-    return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
-  }
-
-  /**
-   * Get CSS classes for gender badge
-   */
-  getGenderBadgeClass(gender: string): string {
-    const baseClasses = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium';
-
-    switch (gender?.toLowerCase()) {
-      case 'male':
-        return `${baseClasses} bg-blue-100 text-blue-800`;
-      case 'female':
-        return `${baseClasses} bg-pink-100 text-pink-800`;
-      case 'other':
-        return `${baseClasses} bg-purple-100 text-purple-800`;
-      default:
-        return `${baseClasses} bg-gray-100 text-gray-800`;
-    }
-  }
-
-  /**
-   * Get CSS classes for status badge
-   */
-  getStatusBadgeClass(status: string): string {
-    const baseClasses = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium';
-
-    switch (status?.toLowerCase()) {
-      case 'active':
-        return `${baseClasses} bg-green-100 text-green-800`;
-      case 'inactive':
-        return `${baseClasses} bg-gray-100 text-gray-800`;
-      case 'suspended':
-        return `${baseClasses} bg-red-100 text-red-800`;
-      default:
-        return `${baseClasses} bg-yellow-100 text-yellow-800`;
-    }
-  }
-
-  /**
-   * Format date for display
-   */
-  formatDate(dateString: string | null): string {
-    if (!dateString) return '—';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-  }
-
-  /**
    * Handle bulk export
    */
   bulkExport(): void {
     const selectedIds = Array.from(this.selectedPatients);
     this.bulkAction.emit({ action: 'export', patientIds: selectedIds });
   }
-
-
 
   /**
    * Handle bulk deactivate
@@ -230,6 +141,4 @@ export class PatientTableComponent {
     const selectedIds = Array.from(this.selectedPatients);
     this.bulkAction.emit({ action: 'deactivate', patientIds: selectedIds });
   }
-
-
 }

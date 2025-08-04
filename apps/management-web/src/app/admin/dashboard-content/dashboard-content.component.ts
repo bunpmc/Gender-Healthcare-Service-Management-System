@@ -1,6 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SupabaseService } from '../../supabase.service';
+import { DatabaseService } from '../../Services/database.service';
 import { interval } from 'rxjs';
 import { startWith, switchMap } from 'rxjs/operators';
 
@@ -47,6 +48,7 @@ interface RecentActivity {
 
 export class DashboardContentComponent implements OnInit {
   private supabaseService = inject(SupabaseService);
+  private databaseService = inject(DatabaseService);
 
   // Loading and error states
   isLoading: boolean = true;
@@ -171,26 +173,57 @@ export class DashboardContentComponent implements OnInit {
       this.isLoading = true;
       this.hasError = false;
 
-      // Fetch real data from Supabase
-      const [patients, staff] = await Promise.all([
-        this.supabaseService.getPatients(1, 1000), // Get all patients
-        this.supabaseService.getStaffMembers()
+      // Fetch analytics data using database functions
+      const [
+        dashboardAnalytics,
+        patientStats,
+        appointmentStats,
+        revenueStats,
+        staffStats
+      ] = await Promise.all([
+        this.databaseService.getDashboardAnalytics().toPromise().catch(() => null),
+        this.databaseService.getPatientStats().toPromise().catch(() => null),
+        this.databaseService.getAppointmentStats().toPromise().catch(() => null),
+        this.databaseService.getRevenueStats().toPromise().catch(() => null),
+        this.databaseService.getStaffStats().toPromise().catch(() => null)
       ]);
 
-      // For appointments, we'll use mock data since the service method doesn't exist yet
-      const appointments: any[] = [];
+      // Use database function results or fallback to existing service
+      if (dashboardAnalytics && patientStats && appointmentStats && revenueStats && staffStats) {
+        console.log('📊 Using database function results for dashboard');
 
-      // Calculate dashboard statistics
-      this.dashboardStats = {
-        totalPatients: patients.total || patients.patients?.length || 0,
-        totalStaff: staff.length,
-        activeStaff: staff.filter((s: any) => s.staff_status === 'active').length,
-        todayAppointments: this.getTodayAppointments(appointments),
-        pendingAppointments: appointments.filter((a: any) => a.status === 'pending').length,
-        completedAppointments: appointments.filter((a: any) => a.status === 'completed').length,
-        newPatientsThisMonth: this.getNewPatientsThisMonth(patients.patients || []),
-        monthlyRevenue: this.calculateMonthlyRevenue(appointments)
-      };
+        this.dashboardStats = {
+          totalPatients: dashboardAnalytics.total_patients || patientStats.active_patients,
+          totalStaff: dashboardAnalytics.total_doctors || staffStats.total_doctors + staffStats.total_receptionists,
+          activeStaff: staffStats.active_staff,
+          todayAppointments: appointmentStats.pending_appointments,
+          pendingAppointments: appointmentStats.pending_appointments,
+          completedAppointments: appointmentStats.completed_appointments,
+          newPatientsThisMonth: patientStats.new_patients_this_month,
+          monthlyRevenue: revenueStats.monthly_revenue
+        };
+      } else {
+        console.log('⚠️ Database functions not available, using fallback service');
+
+        // Fallback to existing Supabase service
+        const [patients, staff] = await Promise.all([
+          this.supabaseService.getPatients(1, 1000), // Get all patients
+          this.supabaseService.getStaffMembers()
+        ]);
+
+        const appointments: any[] = [];
+
+        this.dashboardStats = {
+          totalPatients: patients.total || patients.patients?.length || 0,
+          totalStaff: staff.length,
+          activeStaff: staff.filter((s: any) => s.staff_status === 'active').length,
+          todayAppointments: this.getTodayAppointments(appointments),
+          pendingAppointments: appointments.filter((a: any) => a.status === 'pending').length,
+          completedAppointments: appointments.filter((a: any) => a.status === 'completed').length,
+          newPatientsThisMonth: this.getNewPatientsThisMonth(patients.patients || []),
+          monthlyRevenue: this.calculateMonthlyRevenue(appointments)
+        };
+      }
 
       // Update stats cards with real data
       this.updateStatsCards();

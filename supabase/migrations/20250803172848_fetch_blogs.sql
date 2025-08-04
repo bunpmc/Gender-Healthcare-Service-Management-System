@@ -20,12 +20,13 @@ begin
       'id', s.staff_id,
       'fullname', s.full_name,
       'gender', s.gender,
-      'img', `https://xzxxodxplyetecrsbxmc.supabase.co/storage/v1/object/public/blog-uploads/` || s.image_link
+      'img', 'https://xzxxodxplyetecrsbxmc.supabase.co/storage/v1/object/public/blog-uploads/' || s.image_link
     )
   )
   into result
   from blog_posts b
-  left join staff_members s on b.doctor_id = s.staff_id
+  left join staff_members s on b.doctor_id = s.staff_id;
+
   if result is null then
     raise exception 'Blogs not found';
   end if;

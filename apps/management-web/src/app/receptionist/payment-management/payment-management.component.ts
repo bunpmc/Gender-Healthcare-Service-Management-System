@@ -177,7 +177,7 @@ export class PaymentManagementComponent implements OnInit {
   generatePaymentRecords(patients: Patient[]): PaymentRecord[] {
     // Simulate payment records based on patients
     return patients.map((patient, index) => {
-      const totalAmount = Math.floor(Math.random() * 500) + 100;
+      const totalAmount = (Math.floor(Math.random() * 500) + 100) * 1000; // 100,000 - 600,000 VND
       const paidAmount =
         Math.random() > 0.3
           ? totalAmount
@@ -212,7 +212,7 @@ export class PaymentManagementComponent implements OnInit {
         service_name: ['Consultation', 'Blood Test', 'X-Ray', 'Ultrasound'][
           Math.floor(Math.random() * 4)
         ],
-        service_price: Math.floor(Math.random() * 200) + 50,
+        service_price: (Math.floor(Math.random() * 300) + 100) * 1000, // 100,000 - 400,000 VND
         quantity: Math.floor(Math.random() * 2) + 1,
         usage_date: new Date().toISOString(),
         appointment_id: `APT-${Date.now()}-${i}`,
@@ -481,6 +481,10 @@ export class PaymentManagementComponent implements OnInit {
 
   formatCurrency(amount: number): string {
     return CurrencyUtil.formatVND(amount);
+  }
+
+  formatCurrencyThousands(amount: number): string {
+    return CurrencyUtil.formatThousandsVND(amount);
   }
 
   formatDate(dateString: string): string {

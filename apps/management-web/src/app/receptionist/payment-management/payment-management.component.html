@@ -37,7 +37,7 @@
           </div>
           <div class="ml-4">
             <p class="text-sm font-medium text-gray-500">Total Revenue</p>
-            <p class="text-2xl font-bold text-gray-900">{{formatCurrency(stats.totalRevenue)}}</p>
+            <p class="text-2xl font-bold text-gray-900">{{formatCurrencyThousands(stats.totalRevenue)}}</p>
           </div>
         </div>
       </div>
@@ -187,14 +187,14 @@
                   <div *ngFor="let service of record.services" class="text-sm">
                     <span class="font-medium text-gray-900">{{service.service_name}}</span>
                     <span class="text-gray-500"> x{{service.quantity}}</span>
-                    <span class="text-gray-400"> - {{formatCurrency(service.service_price)}}</span>
+                    <span class="text-gray-400"> - {{formatCurrencyThousands(service.service_price)}}</span>
                   </div>
                 </div>
               </td>
 
               <!-- Amount -->
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-bold text-gray-900">{{formatCurrency(record.total_amount)}}</div>
+                <div class="text-sm font-bold text-gray-900">{{formatCurrencyThousands(record.total_amount)}}</div>
               </td>
 
               <!-- Status -->
@@ -367,7 +367,7 @@
                 <p class="text-xs text-gray-400">{{formatDate(service.usage_date)}}</p>
               </div>
               <div class="text-right">
-                <p class="font-semibold text-gray-900">{{formatCurrency(service.service_price)}}</p>
+                <p class="font-semibold text-gray-900">{{formatCurrencyThousands(service.service_price)}}</p>
                 <p class="text-sm text-gray-500">per unit</p>
               </div>
             </div>
@@ -377,7 +377,7 @@
           <div class="border-t border-gray-200 mt-4 pt-4">
             <div class="flex justify-between items-center">
               <span class="text-lg font-semibold text-gray-900">Total Amount</span>
-              <span class="text-2xl font-bold text-indigo-600">{{formatCurrency(selectedRecord.total_amount)}}</span>
+              <span class="text-2xl font-bold text-indigo-600">{{formatCurrencyThousands(selectedRecord.total_amount)}}</span>
             </div>
           </div>
         </div>
@@ -435,10 +435,10 @@
               <div *ngFor="let service of newPayment.services; let i = index" class="flex justify-between items-center bg-gray-50 rounded-xl p-4">
                 <div>
                   <h4 class="font-medium text-gray-900">{{service.service_name}}</h4>
-                  <p class="text-sm text-gray-500">Quantity: {{service.quantity}} × {{formatCurrency(service.service_price)}}</p>
+                  <p class="text-sm text-gray-500">Quantity: {{service.quantity}} × {{formatCurrencyThousands(service.service_price)}}</p>
                 </div>
                 <div class="flex items-center space-x-2">
-                  <span class="font-semibold text-gray-900">{{formatCurrency(service.service_price * service.quantity)}}</span>
+                  <span class="font-semibold text-gray-900">{{formatCurrencyThousands(service.service_price * service.quantity)}}</span>
                   <button
                     type="button"
                     (click)="removeServiceFromPayment(i)"
@@ -459,7 +459,7 @@
             <div *ngIf="newPayment.services.length > 0" class="border-t border-gray-200 mt-4 pt-4">
               <div class="flex justify-between items-center">
                 <span class="text-lg font-semibold text-gray-900">Total Amount</span>
-                <span class="text-2xl font-bold text-indigo-600">{{formatCurrency(getTotalAmount())}}</span>
+                <span class="text-2xl font-bold text-indigo-600">{{formatCurrencyThousands(getTotalAmount())}}</span>
               </div>
             </div>
           </div>
@@ -529,7 +529,7 @@
             class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
             <option [ngValue]="null">Choose a service</option>
             <option *ngFor="let service of services" [ngValue]="service">
-              {{service.service_name}} - {{formatCurrency(service.service_cost || 0)}}
+              {{service.service_name}} - {{formatCurrencyThousands(service.service_cost || 0)}}
             </option>
           </select>
         </div>
@@ -538,7 +538,7 @@
         <div *ngIf="selectedService" class="bg-gray-50 rounded-xl p-4">
           <h3 class="font-medium text-gray-900 mb-2">{{selectedService.service_name}}</h3>
           <p class="text-sm text-gray-600 mb-2">{{selectedService.service_description}}</p>
-          <p class="text-lg font-semibold text-indigo-600">{{formatCurrency(selectedService.service_cost || 0)}}</p>
+          <p class="text-lg font-semibold text-indigo-600">{{formatCurrencyThousands(selectedService.service_cost || 0)}}</p>
         </div>
 
         <!-- Quantity -->
@@ -556,7 +556,7 @@
         <div *ngIf="selectedService" class="bg-indigo-50 rounded-xl p-4">
           <div class="flex justify-between items-center">
             <span class="font-medium text-gray-900">Total for this service</span>
-            <span class="text-xl font-bold text-indigo-600">{{formatCurrency((selectedService.service_cost || 0) * serviceQuantity)}}</span>
+            <span class="text-xl font-bold text-indigo-600">{{formatCurrencyThousands((selectedService.service_cost || 0) * serviceQuantity)}}</span>
           </div>
         </div>
       </div>

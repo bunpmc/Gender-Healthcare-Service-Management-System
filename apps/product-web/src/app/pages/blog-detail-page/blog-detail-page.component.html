@@ -80,15 +80,14 @@
         >
           <div class="flex items-center gap-2">
             <img
-              [src]="
-                blog.doctor_details.image_link || '/assets/default-doctor.png'
-              "
+               [src]="getDoctorImage()"
               alt="Author photo"
               class="w-8 h-8 rounded-full object-cover border border-[#e6eaf3] bg-white"
               loading="lazy"
               style="box-shadow: 0 0 0 3px #fff"
             />
             <a
+                
               class="font-semibold text-[#4E6688]"
               [routerLink]="['/doctor', blog.doctor_details.staff_id]"
             >
@@ -143,9 +142,9 @@
         >
           @if (blog.image_link) {
           <img
-            [src]="blog.image_link"
+            [src]="getBlogImage()"
             alt="Blog banner"
-            class="w-full h-full object-cover rounded-[16px] transition-all duration-300 group-hover:blur-[2px] group-hover:brightness-90"
+            class="w-full h-full object-cover [object-position:50%_10%]  rounded-[16px] transition-all duration-300 group-hover:blur-[2px] group-hover:brightness-90"
             loading="lazy"
           />
           } @else {

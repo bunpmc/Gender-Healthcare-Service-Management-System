@@ -24,17 +24,19 @@ export class BlogService {
     environment.supabaseAnonKey,
   );
 
-  getBlogs(): Observable<Blog[]> {
+ getBlogs(): Observable<Blog[]> {
     return from(
       this.supabase
-        .from("blog_posts")
+        .from('blog_posts')
         .select(`*,
-          doctor_details:staff_members(full_name)
+          doctor_details:staff_members(staff_id,full_name, image_link)
         `)
         .then(({ data, error }) => {
           if (error) {
+            console.error('Supabase error in getBlogs:', error);
             throw error;
           }
+          console.log('Blogs API response:', JSON.stringify(data, null, 2));
           return data as Blog[];
         })
     );
@@ -43,16 +45,18 @@ export class BlogService {
   getBlogById(blogId: string): Observable<BlogDetail> {
     return from(
       this.supabase
-        .from("blog_posts")
+        .from('blog_posts')
         .select(`*,
-          doctor_details:staff_members(full_name)
+          doctor_details:staff_members(staff_id,full_name, image_link)
         `)
-        .eq("blog_id", blogId)
+        .eq('blog_id', blogId)
         .single()
         .then(({ error, data }) => {
           if (error) {
+            console.error('Supabase error in getBlogById:', error);
             throw error;
           }
+          console.log('Blog API response:', JSON.stringify(data, null, 2));
           return data as BlogDetail;
         })
     );

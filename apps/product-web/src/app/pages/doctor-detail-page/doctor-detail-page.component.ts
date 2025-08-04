@@ -44,16 +44,30 @@ export class DoctorDetailComponent implements OnInit, OnDestroy {
 
   fallbackImage = 'https://via.placeholder.com/300x400?text=No+Image';
 
-  ngOnInit(): void {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    this.doctorId = this.route.snapshot.paramMap.get('id');
-    if (!this.doctorId) {
+  // ngOnInit(): void {
+  //   window.scrollTo({ top: 0, behavior: 'smooth' });
+  //   this.doctorId = this.route.snapshot.paramMap.get('id');
+  //   if (!this.doctorId) {
+  //     this.errorMsg.set('Doctor not found');
+  //     this.loading.set(false);
+  //     return;
+  //   }
+  //   this.fetchDoctor(this.doctorId);
+  // }
+ ngOnInit(): void {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  this.route.paramMap.subscribe(paramMap => {
+    const id = paramMap.get('id'); // 👉 đây
+    if (!id) {
       this.errorMsg.set('Doctor not found');
       this.loading.set(false);
       return;
     }
-    this.fetchDoctor(this.doctorId);
-  }
+    this.doctorId = id;
+    this.fetchDoctor(id); // ✅ gọi API khi có ID
+  });
+}
 
   fetchDoctor(doctor_id: string): void {
     this.loading.set(true);

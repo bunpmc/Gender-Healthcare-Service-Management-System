@@ -8,7 +8,7 @@ import { BlogDetail } from '../../models/blog.model';
 import { BreadcrumbsComponent } from '../../components/breadcrumbs/breadcrumbs.component';
 import { BreadcrumbService } from '../../services/breadcrumb.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-
+import { environment } from '../../environments/environment';
 @Component({
   selector: 'app-blog-detail',
   standalone: true,
@@ -34,6 +34,8 @@ export class BlogDetailComponent implements OnInit, OnDestroy {
   isLoading = true;
   error: string | null = null;
   private blogId: string | null = null;
+  
+    supabasePublicUrl = environment.supabaseStorageUrl;
 
   ngOnInit() {
     this.blogId = this.route.snapshot.paramMap.get('id');
@@ -94,4 +96,36 @@ export class BlogDetailComponent implements OnInit, OnDestroy {
     this.router.navigate(['/blog']);
     setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 10);
   }
+  getDoctorImage(): string {
+  const fileName = this.blog?.doctor_details?.image_link;
+  const bucket = 'staff-uploads';
+  
+  if (!fileName) {
+   
+    return '/assets/default-doctor.png';
+  }
+  const cleanFileName = fileName.startsWith('/') ? fileName.slice(1) : fileName;
+ 
+  const imageUrl = `${this.supabasePublicUrl}${bucket}/${cleanFileName}`;
+  
+  return imageUrl;
+}
+getBlogImage(): string {
+  const fileName = this.blog?.image_link;
+  const bucket = 'blog-uploads';
+  
+
+  if (!fileName) {
+   
+    return '/assets/default-blog.png'; // 👉 ảnh mặc định của blog
+  }
+
+  const cleanFileName = fileName.startsWith('/') ? fileName.slice(1) : fileName;
+  
+
+  const imageUrl = `${this.supabasePublicUrl}${bucket}/${cleanFileName}`;
+  
+
+  return imageUrl;
+}
 }

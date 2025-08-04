@@ -192,7 +192,7 @@ export class AppointmentManagementComponent implements OnInit {
           (apt) => apt.appointment_status === 'pending'
         );
         this.applyFilters();
-        await this.calculateStats();
+        await this.calculateStats(); // Ensure stats are calculated after loading
 
         console.log('✅ Loaded appointments:', {
           total: this.appointments.length,
@@ -316,7 +316,11 @@ export class AppointmentManagementComponent implements OnInit {
   }
 
   async calculateStats() {
-    const today = new Date().toISOString().split('T')[0];
+    // Get Vietnam time date
+    const today = this.getVietnamDate();
+
+    console.log('📊 Calculating stats for date (Vietnam):', today);
+    console.log('📊 All appointments dates:', this.appointments.map(apt => apt.appointment_date));
 
     this.stats = {
       totalAppointments: this.appointments.length,
@@ -332,6 +336,9 @@ export class AppointmentManagementComponent implements OnInit {
           apt.appointment_status === 'in_progress'
       ).length,
     };
+
+    console.log('📊 Stats updated:', this.stats);
+    console.log('📊 Today appointments:', this.appointments.filter(apt => apt.appointment_date === today));
   }
 
   // Pagination methods
@@ -461,6 +468,10 @@ export class AppointmentManagementComponent implements OnInit {
       // Use a default receptionist ID for testing (no auth required)
       const receptionistId = 'default-receptionist-id';
 
+      console.log('📅 Creating appointment with date:', this.newAppointment.appointment_date);
+      console.log('🕐 Creating appointment with time:', this.newAppointment.appointment_time);
+      console.log('📊 Today date for comparison (Vietnam):', this.getVietnamDate());
+
       if (this.newAppointment.appointment_type === 'patient') {
         // Create appointment for existing patient
         const patient = this.patients.find(p => p.id === this.newAppointment.patient_id);
@@ -509,9 +520,15 @@ export class AppointmentManagementComponent implements OnInit {
       }
 
       if (result.success) {
+        console.log('✅ Appointment created successfully:', result);
         this.showSuccess(`${this.newAppointment.appointment_type === 'patient' ? 'Patient' : 'Guest'} appointment created successfully`);
-        await this.loadAppointments(); // Reload to get fresh data
-        await this.calculateStats(); // Recalculate stats immediately
+
+        // Reload appointments first
+        await this.loadAppointments();
+
+        // Force stats recalculation
+        await this.calculateStats();
+
         this.closeCreateModal();
       } else {
         this.showError(result.error || 'Failed to create appointment');
@@ -547,7 +564,7 @@ export class AppointmentManagementComponent implements OnInit {
             updated_at: new Date().toISOString(),
           };
           this.applyFilters();
-          await this.calculateStats();
+          await this.calculateStats(); // Recalculate stats immediately
         }
         this.showSuccess('Appointment approved successfully');
       } else {
@@ -585,7 +602,7 @@ export class AppointmentManagementComponent implements OnInit {
             updated_at: new Date().toISOString(),
           };
           this.applyFilters();
-          await this.calculateStats();
+          await this.calculateStats(); // Recalculate stats immediately
         }
         this.showSuccess('Appointment status updated successfully');
       } else {
@@ -622,7 +639,7 @@ export class AppointmentManagementComponent implements OnInit {
             updated_at: new Date().toISOString(),
           };
           this.applyFilters();
-          await this.calculateStats();
+          await this.calculateStats(); // Recalculate stats immediately
         }
         this.showSuccess('Appointment rejected successfully');
       } else {
@@ -734,7 +751,14 @@ export class AppointmentManagementComponent implements OnInit {
   }
 
   getTodayDate(): string {
-    return new Date().toISOString().split('T')[0];
+    return this.getVietnamDate();
+  }
+
+  // Helper method to get Vietnam time date string
+  private getVietnamDate(): string {
+    const now = new Date();
+    const vietnamTime = new Date(now.getTime() + (7 * 60 * 60 * 1000));
+    return vietnamTime.toISOString().split('T')[0];
   }
 
   onStatusChange(appointment: any, event: any) {

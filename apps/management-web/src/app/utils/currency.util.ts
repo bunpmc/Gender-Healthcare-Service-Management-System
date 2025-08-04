@@ -54,7 +54,7 @@ export class CurrencyUtil {
     } else if (amount >= 1000) {
       return `${(amount / 1000).toFixed(1)}K ₫`;
     }
-    
+
     return `${amount.toLocaleString('vi-VN')} ₫`;
   }
 
@@ -65,12 +65,12 @@ export class CurrencyUtil {
    */
   static parseVND(currencyString: string): number {
     if (!currencyString) return 0;
-    
+
     // Remove currency symbols and spaces
     const cleanString = currencyString
       .replace(/[₫đồng,\s]/g, '')
       .replace(/\./g, '');
-    
+
     const parsed = parseFloat(cleanString);
     return isNaN(parsed) ? 0 : parsed;
   }
@@ -115,13 +115,13 @@ export class CurrencyUtil {
     }
 
     const thousands = amount / 1000;
-    
+
     // Format with Vietnamese number formatting
     const formatted = new Intl.NumberFormat('vi-VN', {
       minimumFractionDigits: 0,
       maximumFractionDigits: 1
     }).format(thousands);
-    
+
     return `${formatted} nghìn ₫`;
   }
 
@@ -132,12 +132,12 @@ export class CurrencyUtil {
    */
   static parseThousandsVND(thousandsString: string): number {
     if (!thousandsString) return 0;
-    
+
     // Remove currency symbols and "nghìn" text
     const cleanString = thousandsString
       .replace(/[₫nghìn,\s]/g, '')
       .replace(/\./g, '');
-    
+
     const parsed = parseFloat(cleanString);
     return isNaN(parsed) ? 0 : parsed * 1000; // Convert back to full VND
   }

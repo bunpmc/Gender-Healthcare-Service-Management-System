@@ -3,45 +3,45 @@ import { ComponentCacheGuard } from '../shared/guards/component-cache.guard';
 import { ComponentPreloadResolver } from '../shared/resolvers/component-preload.resolver';
 
 export const adminRoutes: Routes = [
-  { 
-    path: '', 
-    redirectTo: 'dashboard', 
-    pathMatch: 'full' 
+  {
+    path: '',
+    redirectTo: 'dashboard',
+    pathMatch: 'full'
   },
-  { 
-    path: 'dashboard', 
+  {
+    path: 'dashboard',
     loadComponent: () => import('./dashboard-content/dashboard-content.component').then(m => m.DashboardContentComponent),
     canActivate: [ComponentCacheGuard],
     resolve: { preload: ComponentPreloadResolver },
     data: { preload: true, title: 'Admin Dashboard' }
   },
-  { 
-    path: 'analytic', 
+  {
+    path: 'analytic',
     loadComponent: () => import('./analytics-content/analytics-content.component').then(m => m.AnalyticsContentComponent),
     canActivate: [ComponentCacheGuard],
     resolve: { preload: ComponentPreloadResolver },
     data: { preload: true, title: 'Analytics' }
   },
-  { 
-    path: 'patient', 
+  {
+    path: 'patient',
     loadComponent: () => import('./patient-management/patient-management.component').then(m => m.PatientManagementComponent),
     canActivate: [ComponentCacheGuard],
     data: { title: 'Patient Management' }
   },
-  { 
-    path: 'staff', 
+  {
+    path: 'staff',
     loadComponent: () => import('./staff-management/staff-management.component').then(m => m.AdminStaffManagementComponent),
     canActivate: [ComponentCacheGuard],
     data: { title: 'Staff Management' }
   },
-  { 
-    path: 'appointment', 
+  {
+    path: 'appointment',
     loadComponent: () => import('./appointment-management/appointment-management.component').then(m => m.AppointmentManagementComponent),
     canActivate: [ComponentCacheGuard],
     data: { title: 'Appointment Management' }
   },
-  { 
-    path: 'services', 
+  {
+    path: 'services',
     loadComponent: () => import('./service-management/service-management.component').then(m => m.ServiceManagementComponent),
     canActivate: [ComponentCacheGuard],
     data: { title: 'Service Management' }

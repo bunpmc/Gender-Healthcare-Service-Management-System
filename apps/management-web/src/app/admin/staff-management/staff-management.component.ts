@@ -3,16 +3,10 @@ import { CommonModule } from '@angular/common';
 import { StaffManagementContainerComponent } from '../../shared/staff-management';
 import { StaffManagementConfig, StaffManagementEvents } from '../../shared/staff-management/models/staff-management.interface';
 import { SupabaseService } from '../../supabase.service';
-import { EdgeFunctionService, CreateStaffRequest } from '../../Services/edge-function.service';
 import { DatabaseService } from '../../Services/database.service';
 import { ErrorHandlerService } from '../../core/services/error-handler.service';
 import { LoggerService } from '../../core/services/logger.service';
-import {
-  StaffMember,
-  StaffRole,
-  StaffStatus,
-  GenderEnum
-} from '../../models/database.interface';
+import { StaffDataService } from '../../Services/staff-data.service'; // Import new service
 
 // Legacy compatibility
 import { Staff, Role } from '../../models/staff.interface';
@@ -40,7 +34,7 @@ export class AdminStaffManagementComponent implements OnInit {
     customActions: [
       {
         id: 'test-edge',
-        label: 'Test Edge Function',
+        label: 'Test Staff Service',
         icon: 'code',
         color: 'bg-blue-500'
       }
@@ -59,10 +53,10 @@ export class AdminStaffManagementComponent implements OnInit {
 
   constructor(
     private supabaseService: SupabaseService,
-    private edgeFunctionService: EdgeFunctionService,
     private databaseService: DatabaseService,
     private errorHandler: ErrorHandlerService,
-    private logger: LoggerService
+    private logger: LoggerService,
+    private staffDataService: StaffDataService // Inject new service
   ) { }
 
   async ngOnInit() {
@@ -72,17 +66,23 @@ export class AdminStaffManagementComponent implements OnInit {
   async loadStaff(): Promise<void> {
     this.isLoading = true;
     try {
-      const result = await this.supabaseService.getAllStaff();
+      // Use new StaffDataService to fetch all staff with proper avatar URLs
+      const result = await this.staffDataService.fetchAllStaff(true, true); // Include unavailable and inactive
+
       if (result.success && result.data) {
         this.staffMembers = result.data;
+        this.logger.info(`Loaded ${result.data.length} staff members successfully`);
       } else {
+        this.logger.error('Failed to load staff:', result.error);
         this.errorHandler.handleApiError(
-          result.error,
+          new Error(result.error || 'Unknown error'),
           'loadStaff',
           'Failed to load staff directory'
         );
       }
+
     } catch (error) {
+      this.logger.error('Error in loadStaff:', error);
       this.errorHandler.handleApiError(
         error,
         'loadStaff',
@@ -93,39 +93,46 @@ export class AdminStaffManagementComponent implements OnInit {
     }
   }
 
-  // Handle create staff using edge function
+  // Handle create staff using Supabase service (no edge function)
   async handleCreateStaff(staffData: any): Promise<void> {
     try {
-      this.logger.info('Creating staff using edge function:', staffData);
+      this.logger.info('Creating staff using Supabase service:', staffData);
 
-      const createRequest: CreateStaffRequest = {
+      // Prepare staff data for creation
+      const newStaffData = {
         full_name: staffData.full_name,
         working_email: staffData.working_email,
-        role: staffData.role as StaffRole,
-        years_experience: staffData.years_experience,
-        hired_at: staffData.hired_at,
+        role: staffData.role as 'doctor' | 'receptionist',
+        years_experience: staffData.years_experience || 0,
+        hired_at: staffData.hired_at || new Date().toISOString().split('T')[0],
         is_available: staffData.is_available ?? true,
-        staff_status: staffData.staff_status as StaffStatus ?? 'active',
-        gender: staffData.gender as GenderEnum,
-        languages: staffData.languages,
+        staff_status: (staffData.staff_status as 'active' | 'inactive' | 'on_leave') ?? 'active',
+        gender: staffData.gender as 'male' | 'female' | 'other',
+        languages: staffData.languages || [],
         image_link: staffData.image_link
       };
 
-      this.edgeFunctionService.createStaffMember(createRequest).subscribe({
-        next: (result) => {
-          if (result.success) {
-            this.logger.info('Staff created successfully via edge function:', result.data);
-            this.loadStaff(); // Reload staff list
-          } else {
-            this.logger.error('Error creating staff:', result.error);
-            this.errorHandler.handleApiError(result.error, 'createStaff', 'Failed to create staff member');
-          }
-        },
-        error: (error) => {
-          this.logger.error('Edge function error:', error);
-          this.errorHandler.handleApiError(error, 'createStaff', 'Failed to create staff member');
-        }
-      });
+      // Use Supabase service to create staff
+      const result = await this.supabaseService.createStaffMember(newStaffData);
+
+      if (result.success) {
+        this.logger.info('Staff created successfully:', result.data);
+
+        // Show success message
+        const staffName = newStaffData.full_name;
+        const message = `Staff member "${staffName}" created successfully!`;
+        alert(message);
+
+        // Reload staff list to show new member
+        await this.loadStaff();
+      } else {
+        this.logger.error('Error creating staff:', result.error);
+        this.errorHandler.handleApiError(
+          new Error(result.error || 'Unknown error'),
+          'createStaff',
+          'Failed to create staff member'
+        );
+      }
 
     } catch (error) {
       this.logger.error('Error in handleCreateStaff:', error);
@@ -137,10 +144,38 @@ export class AdminStaffManagementComponent implements OnInit {
   async handleEditStaff(staffData: any): Promise<void> {
     try {
       this.logger.info('Updating staff:', staffData);
-      // For now, just reload data - actual update implementation needed
-      this.logger.info('Staff update feature to be implemented');
-      await this.loadStaff();
+
+      // Prepare updated staff data
+      const updateData = {
+        full_name: staffData.full_name,
+        working_email: staffData.working_email,
+        role: staffData.role as 'doctor' | 'receptionist',
+        years_experience: staffData.years_experience || 0,
+        hired_at: staffData.hired_at,
+        is_available: staffData.is_available ?? true,
+        staff_status: (staffData.staff_status as 'active' | 'inactive' | 'on_leave') ?? 'active',
+        gender: staffData.gender as 'male' | 'female' | 'other',
+        languages: staffData.languages || [],
+        image_link: staffData.image_link
+      };
+
+      // Use Supabase service to update staff
+      const result = await this.supabaseService.updateStaffMember(staffData.staff_id, updateData);
+
+      if (result.success) {
+        this.logger.info('Staff updated successfully:', result.data);
+        alert(`Staff member "${updateData.full_name}" updated successfully!`);
+        await this.loadStaff(); // Reload to show updated data
+      } else {
+        this.logger.error('Error updating staff:', result.error);
+        this.errorHandler.handleApiError(
+          new Error(result.error || 'Unknown error'),
+          'updateStaff',
+          'Failed to update staff member'
+        );
+      }
     } catch (error) {
+      this.logger.error('Error in handleEditStaff:', error);
       this.errorHandler.handleApiError(error, 'updateStaff', 'Failed to update staff');
     }
   }
@@ -149,10 +184,32 @@ export class AdminStaffManagementComponent implements OnInit {
   async handleDeleteStaff(staff: Staff): Promise<void> {
     try {
       this.logger.info('Deleting staff:', staff.staff_id);
-      // For now, just log - actual delete implementation needed
-      this.logger.info('Staff delete feature to be implemented');
-      await this.loadStaff();
+
+      // Confirm deletion
+      const confirmDelete = confirm(`Are you sure you want to delete staff member "${staff.full_name}"? This action cannot be undone.`);
+
+      if (!confirmDelete) {
+        this.logger.info('Staff deletion cancelled by user');
+        return;
+      }
+
+      // Use Supabase service to delete staff
+      const result = await this.supabaseService.deleteStaffMember(staff.staff_id);
+
+      if (result.success) {
+        this.logger.info('Staff deleted successfully');
+        alert(`Staff member "${staff.full_name}" deleted successfully!`);
+        await this.loadStaff(); // Reload to show updated data
+      } else {
+        this.logger.error('Error deleting staff:', result.error);
+        this.errorHandler.handleApiError(
+          new Error(result.error || 'Unknown error'),
+          'deleteStaff',
+          'Failed to delete staff member'
+        );
+      }
     } catch (error) {
+      this.logger.error('Error in handleDeleteStaff:', error);
       this.errorHandler.handleApiError(error, 'deleteStaff', 'Failed to delete staff');
     }
   }
@@ -168,42 +225,56 @@ export class AdminStaffManagementComponent implements OnInit {
     }
   }
 
-  // Handle test edge function
+  // Handle test staff data service
   async handleTestEdgeFunction(): Promise<void> {
     try {
-      this.logger.info('Testing edge function...');
+      this.logger.info('Testing StaffDataService...');
 
-      const testStaffData: CreateStaffRequest = {
-        full_name: 'Test Staff Member',
-        working_email: `test.staff.${Date.now()}@example.com`,
-        role: 'receptionist',
-        years_experience: 2,
-        hired_at: new Date().toISOString().split('T')[0],
-        is_available: true,
-        staff_status: 'active',
-        gender: 'other'
-      };
+      // Test fetching all staff
+      const allStaffResult = await this.staffDataService.fetchAllStaff(true, true);
 
-      this.edgeFunctionService.createStaffMember(testStaffData).subscribe({
-        next: (result) => {
-          if (result.success) {
-            this.logger.info('✅ Edge function test successful!', result.data);
-            alert('Edge function test successful! Check console for details.');
-            this.loadStaff(); // Reload to show new test data
-          } else {
-            this.logger.error('❌ Edge function test failed:', result.error);
-            alert(`Edge function test failed: ${result.error}`);
-          }
-        },
-        error: (error) => {
-          this.logger.error('💥 Edge function test error:', error);
-          alert(`Edge function test error: ${error}`);
-        }
-      });
+      if (allStaffResult.success && allStaffResult.data) {
+        const allCount = allStaffResult.data.length;
+
+        // Test fetching doctors only
+        const doctorsResult = await this.staffDataService.fetchDoctors(true, true);
+        const doctorCount = doctorsResult.success && doctorsResult.data ? doctorsResult.data.length : 0;
+
+        // Test fetching receptionists only
+        const receptionistsResult = await this.staffDataService.fetchReceptionists(true, true);
+        const receptionistCount = receptionistsResult.success && receptionistsResult.data ? receptionistsResult.data.length : 0;
+
+        // Check avatars
+        const withAvatars = allStaffResult.data.filter(s => s.avatar_url).length;
+        const available = allStaffResult.data.filter(s => s.is_available).length;
+
+        const testResults = `StaffDataService Test Results:
+        
+✅ Total Staff: ${allCount}
+👨‍⚕️ Doctors: ${doctorCount}
+👨‍💼 Receptionists: ${receptionistCount}
+📸 With Avatars: ${withAvatars}/${allCount}
+✅ Available: ${available}/${allCount}
+
+Service is working correctly!`;
+
+        this.logger.info('✅ StaffDataService test successful!', {
+          allCount,
+          doctorCount,
+          receptionistCount,
+          withAvatars,
+          available
+        });
+
+        alert(testResults);
+      } else {
+        this.logger.error('❌ StaffDataService test failed:', allStaffResult.error);
+        alert(`StaffDataService test failed: ${allStaffResult.error}`);
+      }
 
     } catch (error) {
       this.logger.error('Error in handleTestEdgeFunction:', error);
-      this.errorHandler.handleApiError(error, 'testEdgeFunction', 'Failed to test edge function');
+      this.errorHandler.handleApiError(error, 'testStaffDataService', 'Failed to test StaffDataService');
     }
   }
 

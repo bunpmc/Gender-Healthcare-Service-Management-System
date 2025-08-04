@@ -4,12 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
 
 import { Staff } from '../../models/staff.interface';
-import { 
-  StaffManagementConfig, 
-  StaffFilters, 
-  PaginationConfig, 
-  ModalConfig, 
-  StaffManagementEvents 
+import {
+  StaffManagementConfig,
+  StaffFilters,
+  PaginationConfig,
+  ModalConfig,
+  StaffManagementEvents
 } from './models/staff-management.interface';
 
 import { StaffManagementUtilsService } from './services/staff-management-utils.service';
@@ -269,7 +269,7 @@ export class StaffManagementContainerComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   filteredStaff: Staff[] = [];
   paginatedStaff: Staff[] = [];
-  
+
   currentFilters: StaffFilters = {
     search: '',
     role: '',
@@ -291,7 +291,7 @@ export class StaffManagementContainerComponent implements OnInit, OnDestroy {
     config: { mode: 'view', allowEdit: true } as ModalConfig
   };
 
-  constructor(public utils: StaffManagementUtilsService) {}
+  constructor(public utils: StaffManagementUtilsService) { }
 
   ngOnInit() {
     this.initializeData();
@@ -314,16 +314,16 @@ export class StaffManagementContainerComponent implements OnInit, OnDestroy {
   private applyFiltersAndPagination() {
     // Apply filters
     this.filteredStaff = this.utils.applyFilters(this.allStaff, this.currentFilters);
-    
+
     // Update pagination total
     this.pagination.total = this.filteredStaff.length;
-    
+
     // Reset to page 1 if current page is beyond available pages
     const maxPage = Math.ceil(this.filteredStaff.length / this.pagination.pageSize) || 1;
     if (this.pagination.currentPage > maxPage) {
       this.pagination.currentPage = 1;
     }
-    
+
     // Apply pagination
     this.paginatedStaff = this.utils.getPaginatedData(this.filteredStaff, this.pagination);
   }
@@ -362,6 +362,7 @@ export class StaffManagementContainerComponent implements OnInit, OnDestroy {
 
   // Modal handlers
   onViewStaff(staff: Staff) {
+    console.log('Viewing staff member:', staff); // Debug log
     this.modalState = {
       isOpen: true,
       staff,
@@ -457,11 +458,11 @@ export class StaffManagementContainerComponent implements OnInit, OnDestroy {
     const pages: number[] = [];
     const start = Math.max(1, this.pagination.currentPage - 2);
     const end = Math.min(this.totalPages, this.pagination.currentPage + 2);
-    
+
     for (let i = start; i <= end; i++) {
       pages.push(i);
     }
-    
+
     return pages;
   }
 }

@@ -56,4 +56,25 @@ export class StaffTableComponent {
   formatDate(date: string): string {
     return date ? new Date(date).toLocaleDateString() : 'N/A';
   }
+
+  /**
+   * Get initials from full name for avatar fallback
+   */
+  getInitials(name: string): string {
+    if (!name) return '?';
+    const words = name.split(' ');
+    if (words.length === 1) {
+      return words[0].charAt(0).toUpperCase();
+    }
+    return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase();
+  }
+
+  /**
+   * Handle image load error - fallback to placeholder
+   */
+  onImageError(event: any): void {
+    const img = event.target;
+    img.style.display = 'none';
+    // The div with initials will show instead due to *ngIf logic
+  }
 }

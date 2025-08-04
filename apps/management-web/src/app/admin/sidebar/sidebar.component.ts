@@ -87,7 +87,7 @@ export class SidebarComponent implements OnInit {
     } else if (url.includes('/admin/appointment')) {
       this.activeMenu = 'calendar';
     } else if (url.includes('/admin/staff')) {
-      this.activeMenu = 'staff';
+      this.activeMenu = 'check-badge';
     } else if (url.includes('/admin/services')) {
       this.activeMenu = 'clipboard-document-check';
     }

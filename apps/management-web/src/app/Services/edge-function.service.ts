@@ -49,6 +49,36 @@ export interface EdgeFunctionResponse<T> {
     data?: T;
     error?: string;
     message?: string;
+    count?: number;
+}
+
+export interface DoctorResponse {
+    doctor_id: string;
+    department: string;
+    speciality: string;
+    educations?: any;
+    certifications?: any;
+    staff_members: {
+        full_name: string | null;
+        working_email: string | null;
+        years_experience: number | null;
+        hired_at: string | null;
+        is_available: boolean | null;
+        staff_status: string | null;
+        languages: string[] | null;
+        role: string | null;
+        image_link: string | null;
+        avatar_url: string | null;
+        gender: string | null;
+        experience_display?: string;
+        availability_status?: string;
+    };
+}
+
+export interface FetchDoctorParams {
+    doctor_id?: string;
+    include_unavailable?: boolean;
+    specialization?: string;
 }
 
 @Injectable({
@@ -63,7 +93,63 @@ export class EdgeFunctionService {
      * Create staff member using edge function
      */
     createStaffMember(staffData: CreateStaffRequest): Observable<EdgeFunctionResponse<StaffMember>> {
-        return from(this.callEdgeFunction<StaffMember>('create-staff', staffData));
+        return from(this.callCreateStaffEdgeFunction(staffData));
+    }
+
+    /**
+     * Fetch all doctors with avatar information
+     */
+    fetchDoctors(params?: FetchDoctorParams): Observable<EdgeFunctionResponse<DoctorResponse[]>> {
+        // The updated fetch-doctor endpoint doesn't use query parameters
+        return from(this.callEdgeFunction<DoctorResponse[]>('fetch-doctor', {}, 'GET'));
+    }
+
+    /**
+     * Fetch a single doctor by ID with avatar information
+     */
+    fetchDoctorById(doctorId: string): Observable<EdgeFunctionResponse<DoctorResponse>> {
+        // Note: Current implementation doesn't support individual doctor fetching
+        // Will return all doctors and filter on frontend
+        return from(this.callEdgeFunction<DoctorResponse[]>('fetch-doctor', {}, 'GET')
+            .then(result => {
+                if (result.success && result.data) {
+                    const doctor = result.data.find(d => d.doctor_id === doctorId);
+                    return {
+                        success: doctor ? true : false,
+                        data: doctor,
+                        error: doctor ? undefined : 'Doctor not found',
+                        message: doctor ? 'Doctor found' : 'Doctor not found'
+                    } as EdgeFunctionResponse<DoctorResponse>;
+                }
+                return {
+                    success: false,
+                    error: result.error || 'Failed to fetch doctors',
+                    data: undefined
+                } as EdgeFunctionResponse<DoctorResponse>;
+            }));
+    }
+
+    /**
+     * Fetch available doctors only (for appointment booking)
+     */
+    fetchAvailableDoctors(specialization?: string): Observable<EdgeFunctionResponse<DoctorResponse[]>> {
+        // Filter available doctors on frontend after fetching all
+        return from(this.callEdgeFunction<DoctorResponse[]>('fetch-doctor', {}, 'GET')
+            .then(result => {
+                if (result.success && result.data) {
+                    const availableDoctors = result.data.filter(doctor =>
+                        doctor.staff_members?.is_available &&
+                        doctor.staff_members?.staff_status === 'active' &&
+                        (!specialization || doctor.speciality === specialization || doctor.department === specialization)
+                    );
+                    return {
+                        ...result,
+                        data: availableDoctors,
+                        count: availableDoctors.length
+                    };
+                }
+                return result;
+            }));
     }
 
     /**
@@ -250,11 +336,28 @@ export class EdgeFunctionService {
             const result = await response.json();
             console.log('✅ Edge function success:', result);
 
-            return {
-                success: true,
-                data: result.data || result,
-                message: result.message
-            };
+            // Handle different response formats
+            // Some functions return data directly (like fetch-doctor)
+            // Others return with success wrapper
+            if (Array.isArray(result)) {
+                return {
+                    success: true,
+                    data: result as T,
+                    message: 'Data fetched successfully'
+                };
+            } else if (result.success !== undefined) {
+                return {
+                    success: result.success,
+                    data: result.data || result,
+                    message: result.message
+                };
+            } else {
+                return {
+                    success: true,
+                    data: result.data || result,
+                    message: result.message
+                };
+            }
 
         } catch (error) {
             console.error('💥 Edge function call failed:', error);
@@ -314,6 +417,100 @@ export class EdgeFunctionService {
             sessionStorage.removeItem('supabase.auth.token');
         } catch (error) {
             console.error('Failed to clear auth token:', error);
+        }
+    }
+
+    /**
+     * Special method for create-staff edge function that uses FormData
+     */
+    private async callCreateStaffEdgeFunction(staffData: CreateStaffRequest): Promise<EdgeFunctionResponse<StaffMember>> {
+        try {
+            console.log(`🚀 Calling create-staff edge function with FormData`);
+            console.log('📝 Staff data:', staffData);
+
+            const url = `${this.BASE_URL}/create-staff`;
+
+            // Create FormData for create-staff endpoint
+            const formData = new FormData();
+            formData.append('full_name', staffData.full_name);
+            formData.append('working_email', staffData.working_email);
+            formData.append('role', staffData.role);
+
+            if (staffData.years_experience !== undefined) {
+                formData.append('years_experience', staffData.years_experience.toString());
+            }
+            if (staffData.hired_at) {
+                formData.append('hired_at', staffData.hired_at);
+            }
+            if (staffData.is_available !== undefined) {
+                formData.append('is_available', staffData.is_available ? 'True' : 'False');
+            }
+            if (staffData.staff_status) {
+                formData.append('staff_status', staffData.staff_status);
+            }
+            if (staffData.gender) {
+                formData.append('gender', staffData.gender);
+            }
+            if (staffData.languages && staffData.languages.length > 0) {
+                formData.append('languages', staffData.languages.join(','));
+            }
+
+            const requestOptions: RequestInit = {
+                method: 'POST',
+                body: formData
+            };
+
+            // Get auth token if available
+            const token = this.getAuthToken();
+            if (token) {
+                requestOptions.headers = {
+                    'Authorization': `Bearer ${token}`
+                };
+            }
+
+            console.log('📡 Making FormData request to:', url);
+
+            const response = await fetch(url, requestOptions);
+
+            console.log('📥 Response status:', response.status, response.statusText);
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('❌ Create staff error:', errorText);
+
+                try {
+                    const errorJson = JSON.parse(errorText);
+                    return {
+                        success: false,
+                        error: errorJson.error || `HTTP ${response.status}: ${response.statusText}`,
+                        data: errorJson.details || null
+                    };
+                } catch {
+                    return {
+                        success: false,
+                        error: `HTTP ${response.status}: ${response.statusText}`,
+                        data: undefined
+                    };
+                }
+            }
+
+            const result = await response.json();
+            console.log('✅ Create staff success:', result);
+
+            return {
+                success: true,
+                data: result.data || result,
+                message: result.message
+            };
+
+        } catch (error) {
+            console.error('💥 Create staff edge function call failed:', error);
+
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Unknown error occurred',
+                data: undefined
+            };
         }
     }
 }

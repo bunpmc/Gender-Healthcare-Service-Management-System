@@ -2,6 +2,7 @@
     <table *ngIf="paginatedStaff.length > 0" class="w-full table-fixed text-left bg-white rounded-lg shadow-sm text-xs">
     <thead>
       <tr class="border-b border-gray-200 bg-gray-50">
+        <th class="py-2 px-2 font-semibold text-gray-600 w-12">Avatar</th>
         <th class="py-2 px-2 font-semibold text-gray-600 w-12">ID</th>
         <th class="py-2 px-2 font-semibold text-gray-600 w-32">Full Name</th>
         <th class="py-2 px-2 font-semibold text-gray-600 w-48">Email</th>
@@ -15,23 +16,38 @@
     </thead>
     <tbody>
       <tr *ngFor="let staff of paginatedStaff" class="border-b border-gray-200 hover:bg-gray-50">
-        <td class="py-2 px-3">
-          <div class="font-mono truncate">{{ staff.staff_id }}</div>
+        <td class="py-2 px-2">
+          <div class="w-8 h-8 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
+            <img 
+              *ngIf="staff.avatar_url || staff.imageUrl" 
+              [src]="staff.avatar_url || staff.imageUrl" 
+              [alt]="staff.full_name || staff.name"
+              class="w-full h-full object-cover"
+              (error)="onImageError($event)"
+            />
+            <div *ngIf="!staff.avatar_url && !staff.imageUrl" 
+                 class="w-full h-full bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center text-white text-xs font-semibold">
+              {{ getInitials((staff.full_name || staff.name) ?? '') }}
+            </div>
+          </div>
         </td>
         <td class="py-2 px-3">
-          <div class="truncate">{{ staff.full_name }}</div>
+          <div class="font-mono truncate">{{ staff.staff_id || staff.id }}</div>
         </td>
         <td class="py-2 px-3">
-          <div class="truncate">{{ staff.working_email }}</div>
+          <div class="truncate">{{ staff.full_name || staff.name }}</div>
+        </td>
+        <td class="py-2 px-3">
+          <div class="truncate">{{ staff.working_email || staff.email }}</div>
         </td>
         <td class="py-2 px-3">
           <div class="truncate">{{ getRoleName(staff.role) }}</div>
         </td>
         <td class="py-2 px-3">
-          <div>{{ staff.years_experience || 'N/A' }} years</div>
+          <div>{{ staff.experience_display || ((staff.years_experience || 0) + ' years') }}</div>
         </td>
         <td class="py-2 px-3">
-          <div>{{ formatDate(staff.hired_at) }}</div>
+          <div>{{ formatDate((staff.hired_at || staff.startDate || '')) }}</div>
         </td>
         <td class="py-2 px-3">
           <span

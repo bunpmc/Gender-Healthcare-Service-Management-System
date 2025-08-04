@@ -58,8 +58,18 @@ import { StaffManagementUtilsService } from '../../services/staff-management-uti
             <td class="px-6 py-4 whitespace-nowrap">
               <div class="flex items-center">
                 <div class="flex-shrink-0 h-10 w-10">
-                  <div class="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-medium text-sm">
-                    {{ utils.getInitials(member.full_name) }}
+                  <div class="h-10 w-10 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
+                    <img 
+                      *ngIf="member.avatar_url || member.imageUrl" 
+                      [src]="member.avatar_url || member.imageUrl" 
+                      [alt]="member.full_name"
+                      class="w-full h-full object-cover"
+                      (error)="onImageError($event)"
+                    />
+                    <div *ngIf="!member.avatar_url && !member.imageUrl" 
+                         class="w-full h-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-medium text-sm">
+                      {{ utils.getInitials(member.full_name) }}
+                    </div>
                   </div>
                 </div>
                 <div class="ml-4">
@@ -157,8 +167,18 @@ import { StaffManagementUtilsService } from '../../services/staff-management-uti
           <div class="flex items-center justify-between">
             <div class="flex items-center space-x-3 flex-1">
               <div class="flex-shrink-0">
-                <div class="h-12 w-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-medium">
-                  {{ utils.getInitials(member.full_name) }}
+                <div class="h-12 w-12 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
+                  <img 
+                    *ngIf="member.avatar_url || member.imageUrl" 
+                    [src]="member.avatar_url || member.imageUrl" 
+                    [alt]="member.full_name"
+                    class="w-full h-full object-cover"
+                    (error)="onImageError($event)"
+                  />
+                  <div *ngIf="!member.avatar_url && !member.imageUrl" 
+                       class="w-full h-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-medium">
+                    {{ utils.getInitials(member.full_name) }}
+                  </div>
                 </div>
               </div>
               <div class="flex-1 min-w-0">
@@ -246,7 +266,7 @@ export class StaffTableComponent {
   @Output() createStaff = new EventEmitter<void>();
   @Output() customAction = new EventEmitter<{ action: string; staff: Staff }>();
 
-  constructor(public utils: StaffManagementUtilsService) {}
+  constructor(public utils: StaffManagementUtilsService) { }
 
   onView(staff: Staff) {
     this.viewStaff.emit(staff);
@@ -266,5 +286,14 @@ export class StaffTableComponent {
 
   onCustomAction(action: string, staff: Staff) {
     this.customAction.emit({ action, staff });
+  }
+
+  /**
+   * Handle image load error - fallback to placeholder
+   */
+  onImageError(event: any): void {
+    const img = event.target;
+    img.style.display = 'none';
+    // The div with initials will show instead due to *ngIf logic
   }
 }

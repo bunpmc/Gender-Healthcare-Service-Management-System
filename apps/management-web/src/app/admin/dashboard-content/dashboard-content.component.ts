@@ -1,5 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { SupabaseService } from '../../supabase.service';
 import { DatabaseService } from '../../Services/database.service';
 import { interval } from 'rxjs';
@@ -49,6 +50,7 @@ interface RecentActivity {
 export class DashboardContentComponent implements OnInit {
   private supabaseService = inject(SupabaseService);
   private databaseService = inject(DatabaseService);
+  private router = inject(Router);
 
   // Loading and error states
   isLoading: boolean = true;
@@ -465,19 +467,50 @@ export class DashboardContentComponent implements OnInit {
     return new Date().toLocaleTimeString();
   }
 
+  getCurrentDate(): string {
+    return new Date().toLocaleDateString('en-US', { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+  }
+
   navigateToAppointments(): void {
-    // Navigation logic for appointments
-    console.log('Navigating to appointments');
+    this.router.navigate(['/admin/appointment']);
   }
 
   navigateToPatients(): void {
-    // Navigation logic for patients
-    console.log('Navigating to patients');
+    this.router.navigate(['/admin/patient']);
   }
 
   navigateToStaff(): void {
-    // Navigation logic for staff
-    console.log('Navigating to staff');
+    this.router.navigate(['/admin/staff']);
+  }
+
+  navigateToServices(): void {
+    this.router.navigate(['/admin/services']);
+  }
+
+  navigateToAnalytics(): void {
+    this.router.navigate(['/admin/analytic']);
+  }
+
+  // Quick action handlers
+  addNewPatient(): void {
+    this.router.navigate(['/admin/patient'], { queryParams: { action: 'add' } });
+  }
+
+  scheduleAppointment(): void {
+    this.router.navigate(['/admin/appointment'], { queryParams: { action: 'schedule' } });
+  }
+
+  addNewStaff(): void {
+    this.router.navigate(['/admin/staff'], { queryParams: { action: 'add' } });
+  }
+
+  generateReport(): void {
+    this.router.navigate(['/admin/analytic'], { queryParams: { action: 'report' } });
   }
 
   refreshActivity(): void {

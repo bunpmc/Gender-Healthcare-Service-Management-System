@@ -45,6 +45,22 @@ export class SupportChatComponent implements AfterViewChecked, OnDestroy {
 
   quickReplyText: string = '';
   showQuickReplies = false;
+  inputFocused = false;
+
+  // Smart suggestions based on context
+  contextualSuggestions: Array<{ icon: string, text: string, category: string }> = [
+    { icon: '🏥', text: 'Tell me about women\'s health services', category: 'services' },
+    { icon: '📅', text: 'I need to book an appointment', category: 'booking' },
+    { icon: '📊', text: 'Period tracking help', category: 'tracking' },
+    { icon: '👩‍⚕️', text: 'Find a doctor', category: 'doctors' },
+    { icon: '💊', text: 'Medication information', category: 'medication' },
+    { icon: '🤰', text: 'Pregnancy care', category: 'pregnancy' },
+    { icon: '🩺', text: 'Gynecological checkup', category: 'checkup' },
+    { icon: '💬', text: 'Ask about symptoms', category: 'symptoms' },
+  ];
+
+  currentSuggestions: Array<{ icon: string, text: string, category: string }> = [];
+  suggestionHistory: string[] = [];
 
   currentThinkingMessage: string = '';
   private thinkingMessages: string[] = [
@@ -792,25 +808,22 @@ Example: "I recommend Dr. Sarah Johnson, a gynecologist specializing in reproduc
         <div class="period-details">
           <h4><strong>Period Details</strong></h4>
           <p><strong>Start Date:</strong> ${new Date(
-            entry.start_date
-          ).toLocaleDateString()}</p>
-          <p><strong>End Date:</strong> ${
-            entry.end_date
-              ? new Date(entry.end_date).toLocaleDateString()
-              : 'Ongoing'
-          }</p>
+        entry.start_date
+      ).toLocaleDateString()}</p>
+          <p><strong>End Date:</strong> ${entry.end_date
+          ? new Date(entry.end_date).toLocaleDateString()
+          : 'Ongoing'
+        }</p>
           <p><strong>Flow Intensity:</strong> ${entry.flow_intensity}</p>
           <p><strong>Cycle Length:</strong> ${entry.cycle_length} days</p>
-          ${
-            entry.symptoms
-              ? `<p><strong>Symptoms:</strong> ${entry.symptoms.join(', ')}</p>`
-              : ''
-          }
-          ${
-            entry.period_description
-              ? `<p><strong>Notes:</strong> ${entry.period_description}</p>`
-              : ''
-          }
+          ${entry.symptoms
+          ? `<p><strong>Symptoms:</strong> ${entry.symptoms.join(', ')}</p>`
+          : ''
+        }
+          ${entry.period_description
+          ? `<p><strong>Notes:</strong> ${entry.period_description}</p>`
+          : ''
+        }
         </div>
       `;
 
@@ -870,6 +883,35 @@ Example: "I recommend Dr. Sarah Johnson, a gynecologist specializing in reproduc
       event.preventDefault();
       this.sendMessage();
     }
+  }
+
+  onInputChange(): void {
+    // Auto-resize textarea
+    const textarea = this.messageInput?.nativeElement;
+    if (textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+    }
+
+    // Hide quick replies when user starts typing
+    if (this.message.trim().length > 0) {
+      this.showQuickReplies = false;
+    }
+  }
+
+  onInputFocus(): void {
+    this.inputFocused = true;
+    this.showQuickReplies = true;
+  }
+
+  onInputBlur(): void {
+    this.inputFocused = false;
+    // Delay hiding quick replies to allow clicking on them
+    setTimeout(() => {
+      if (!this.inputFocused) {
+        this.showQuickReplies = false;
+      }
+    }, 200);
   }
 
   clearChat(): void {

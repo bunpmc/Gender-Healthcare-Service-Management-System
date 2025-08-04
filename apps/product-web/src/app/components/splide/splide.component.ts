@@ -139,4 +139,43 @@ export class SplideComponent implements OnInit, AfterViewInit, OnDestroy {
       ? link.replace('//doctor', '/doctor')
       : link;
   }
+
+  /**
+   * Format display names for specialty, department, and gender
+   * @param name - Raw name from API
+   * @returns Formatted display name
+   */
+  formatDisplayName(name: string | null | undefined): string {
+    if (!name) return '';
+
+    // Handle common cases
+    const formatted = name
+      .replace(/_/g, ' ')           // Replace underscores with spaces
+      .replace(/([a-z])([A-Z])/g, '$1 $2')  // Add space before capital letters
+      .toLowerCase()                // Convert to lowercase first
+      .split(' ')                   // Split into words
+      .map(word => {
+        // Capitalize first letter of each word
+        if (word.length === 0) return word;
+        return word.charAt(0).toUpperCase() + word.slice(1);
+      })
+      .join(' ');
+
+    // Handle special cases
+    const specialCases: { [key: string]: string } = {
+      'Male': 'Male',
+      'Female': 'Female',
+      'Other': 'Other',
+      'Cardiology': 'Cardiology',
+      'Dermatology': 'Dermatology',
+      'Neurology': 'Neurology',
+      'Pediatrics': 'Pediatrics',
+      'Orthopedics': 'Orthopedics',
+      'General Medicine': 'General Medicine',
+      'Internal Medicine': 'Internal Medicine',
+      'Emergency Medicine': 'Emergency Medicine'
+    };
+
+    return specialCases[formatted] || formatted;
+  }
 }

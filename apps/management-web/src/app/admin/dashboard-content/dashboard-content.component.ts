@@ -467,15 +467,6 @@ export class DashboardContentComponent implements OnInit {
     return new Date().toLocaleTimeString();
   }
 
-  getCurrentDate(): string {
-    return new Date().toLocaleDateString('en-US', { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    });
-  }
-
   navigateToAppointments(): void {
     this.router.navigate(['/admin/appointment']);
   }
@@ -511,6 +502,22 @@ export class DashboardContentComponent implements OnInit {
 
   generateReport(): void {
     this.router.navigate(['/admin/analytic'], { queryParams: { action: 'report' } });
+  }
+
+  // System management actions
+  viewSystemLogs(): void {
+    console.log('📋 Viewing system logs...');
+    // Could implement a modal or navigate to logs page
+  }
+
+  backupDatabase(): void {
+    console.log('💾 Initiating database backup...');
+    // Could implement backup functionality
+  }
+
+  optimizePerformance(): void {
+    console.log('⚡ Optimizing system performance...');
+    // Could implement performance optimization
   }
 
   refreshActivity(): void {

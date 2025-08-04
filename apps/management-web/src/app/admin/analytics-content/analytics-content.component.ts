@@ -82,6 +82,7 @@ export class AnalyticsContentComponent implements OnInit, OnDestroy {
   errorMessage: string = '';
   lastUpdated: string = '';
   selectedPeriod: string = '30d';
+  currentDate: Date = new Date();
 
   // Analytics data
   analyticsData: AnalyticsData | null = null;
@@ -605,6 +606,67 @@ export class AnalyticsContentComponent implements OnInit, OnDestroy {
   // TrackBy functions for performance
   trackByKpiTitle(_index: number, kpi: KPICard): string {
     return kpi.title;
+  }
+
+  // Helper methods for KPI cards
+  getProgressColor(changeType: 'increase' | 'decrease' | 'neutral'): string {
+    switch (changeType) {
+      case 'increase':
+        return 'bg-gradient-to-r from-green-400 to-emerald-500';
+      case 'decrease':
+        return 'bg-gradient-to-r from-red-400 to-red-500';
+      default:
+        return 'bg-gradient-to-r from-gray-400 to-gray-500';
+    }
+  }
+
+  getProgressWidth(changeType: 'increase' | 'decrease' | 'neutral'): number {
+    switch (changeType) {
+      case 'increase':
+        return 85;
+      case 'decrease':
+        return 45;
+      default:
+        return 65;
+    }
+  }
+
+  // Color helpers for demographics
+  getItemColor(index: number): string {
+    const colors = [
+      'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+      'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+      'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+      'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+      'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)'
+    ];
+    return colors[index % colors.length];
+  }
+
+  getGenderColor(gender: string): string {
+    const colorMap: { [key: string]: string } = {
+      'Male': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      'Female': 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+      'Other': 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+      'Prefer not to say': 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+      'Non-binary': 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)'
+    };
+    return colorMap[gender] || 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)';
+  }
+
+  // Helper method for calculating total patients
+  getTotalPatients(): number {
+    if (!this.analyticsData?.patientStats) return 0;
+
+    // Calculate from age distribution
+    const ageTotal = this.getAgeDistributionArray().reduce((sum, item) => sum + item.count, 0);
+
+    // Calculate from gender distribution  
+    const genderTotal = this.getGenderDistributionArray().reduce((sum, item) => sum + item.count, 0);
+
+    // Use the larger of the two, or fallback to totalPatients
+    return Math.max(ageTotal, genderTotal, this.analyticsData.patientStats.totalPatients);
   }
 
   // Cleanup

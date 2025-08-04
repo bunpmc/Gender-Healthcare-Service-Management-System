@@ -226,9 +226,9 @@ import {
         border-radius: 12px;
         cursor: pointer;
         transition: all 0.2s ease-in-out;
-        background: white;
+        background: ;
         border: 2px solid transparent;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 1px 3px rgba(255, 255, 255, 0.1);
       }
 
       .calendar-day:hover {
@@ -338,7 +338,7 @@ import {
 
       .normal-day {
         background: white;
-        color: #374151;
+        color: #ffffffff;
         border-color: #f3f4f6;
       }
 
@@ -585,37 +585,6 @@ import {
         .legend-title {
           font-size: 0.8rem;
           margin-bottom: 8px;
-        }
-      }
-
-      /* Dark mode support (if needed in future) */
-      @media (prefers-color-scheme: dark) {
-        .calendar-grid {
-          background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
-        }
-
-        .calendar-day {
-          background: #374151;
-          color: #f9fafb;
-          border-color: #4b5563;
-        }
-
-        .normal-day:hover {
-          background: #4b5563;
-        }
-
-        .legend-container {
-          background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
-          border-color: #6b7280;
-        }
-
-        .legend-item {
-          background: #4b5563;
-          border-color: #6b7280;
-        }
-
-        .legend-text {
-          color: #d1d5db;
         }
       }
 

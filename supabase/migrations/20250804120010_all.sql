@@ -1,12 +1,13 @@
+
+
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;
-SET transaction_timeout = 0;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 SELECT pg_catalog.set_config('search_path', '', false);
 SET check_function_bodies = false;
-SET xmloption = 'content';
+SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
@@ -18,7 +19,12 @@ COMMENT ON SCHEMA "public" IS 'standard public schema';
 CREATE EXTENSION IF NOT EXISTS "pg_graphql" WITH SCHEMA "graphql";
 
 
+
+
+
+
 CREATE EXTENSION IF NOT EXISTS "pg_stat_statements" WITH SCHEMA "extensions";
+
 
 
 
@@ -336,8 +342,7 @@ ALTER FUNCTION "public"."book_appointment_slot"("p_slot_id" "uuid") OWNER TO "po
 
 CREATE OR REPLACE FUNCTION "public"."calculate_daily_revenue"("target_date" "date") RETURNS numeric
     LANGUAGE "plpgsql"
-    AS $$
-DECLARE
+    AS $$DECLARE
   total NUMERIC;
 BEGIN
   SELECT COALESCE(SUM(amount), 0) INTO total
@@ -346,7 +351,6 @@ BEGIN
 
   RETURN total;
 END;
-$$;
 
 
 ALTER FUNCTION "public"."calculate_daily_revenue"("target_date" "date") OWNER TO "postgres";
@@ -411,8 +415,7 @@ ALTER FUNCTION "public"."change_status_appointment"("appointment_id_input" "uuid
 
 CREATE OR REPLACE FUNCTION "public"."count_appointments_by_day"("target_date" "date") RETURNS integer
     LANGUAGE "plpgsql"
-    AS $$
-DECLARE
+    AS $$DECLARE
   appt_count INT;
 BEGIN
   SELECT COUNT(*) INTO appt_count
@@ -421,7 +424,6 @@ BEGIN
 
   RETURN appt_count;
 END;
-$$;
 
 
 ALTER FUNCTION "public"."count_appointments_by_day"("target_date" "date") OWNER TO "postgres";
@@ -447,8 +449,7 @@ ALTER FUNCTION "public"."count_appointments_by_status"("target_status" "public".
 
 CREATE OR REPLACE FUNCTION "public"."count_patients_by_month"("target_year" integer, "target_month" integer) RETURNS integer
     LANGUAGE "plpgsql"
-    AS $$
-DECLARE
+    AS $$DECLARE
   patient_count INT;
 BEGIN
   SELECT COUNT(*) INTO patient_count
@@ -458,7 +459,6 @@ BEGIN
 
   RETURN patient_count;
 END;
-$$;
 
 
 ALTER FUNCTION "public"."count_patients_by_month"("target_year" integer, "target_month" integer) OWNER TO "postgres";
@@ -544,15 +544,7 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."create_blog_post"(
-    "p_doctor_id" "uuid", 
-    "p_blog_title" "text", 
-    "p_blog_content" "text", 
-    "p_excerpt" "text", 
-    "p_image_link" "text", 
-    "p_blog_tags" json, 
-    "p_published_at" timestamp with time zone, 
-    "p_blog_status" "public"."blog_status") OWNER TO "postgres";
+ALTER FUNCTION "public"."create_blog_post"("p_doctor_id" "uuid", "p_blog_title" "text", "p_blog_content" "text", "p_excerpt" "text", "p_image_link" "text", "p_blog_tags" json, "p_published_at" timestamp with time zone, "p_blog_status" "public"."blog_status") OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."create_doctor_detail"("p_doctor_id" "uuid", "p_department" "public"."department_enum", "p_speciality" "public"."speciality_enum", "p_about_me" json, "p_license_no" character varying, "p_bio" "text", "p_slogan" "text", "p_educations" json, "p_certifications" json) RETURNS "void"
@@ -691,6 +683,71 @@ $$;
 
 
 ALTER FUNCTION "public"."create_period_entry"("p_patient_id" "uuid", "p_start_date" timestamp with time zone, "p_end_date" timestamp with time zone, "p_cycle_length" integer, "p_flow_intensity" "text", "p_symptoms" json, "p_period_description" "text", "p_predictions" json, "p_period_length" numeric) OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."create_period_tracking"("p_patient_id" "uuid", "p_start_date" timestamp with time zone, "p_end_date" timestamp with time zone, "p_cycle_length" integer, "p_flow_intensity" "text", "p_symptoms" "jsonb", "p_period_description" "text", "p_predictions" "jsonb", "p_period_length" integer) RETURNS "uuid"
+    LANGUAGE "plpgsql"
+    AS $$
+declare
+  new_period_id uuid;
+  existing_period_id uuid;
+begin
+  -- Check overlap: ép kiểu timestamp -> date
+  select period_id into existing_period_id
+  from public.period_tracking
+  where patient_id = p_patient_id
+    and daterange(start_date::date, end_date::date, '[]') && daterange(p_start_date::date, p_end_date::date, '[]')
+  limit 1;
+
+  if existing_period_id is not null then
+    -- Update nếu overlap
+    update public.period_tracking
+    set 
+      start_date = p_start_date,
+      end_date = p_end_date,
+      cycle_length = p_cycle_length,
+      flow_intensity = p_flow_intensity,
+      symptoms = p_symptoms,
+      period_description = p_period_description,
+      predictions = p_predictions,
+      period_length = p_period_length,
+      updated_at = now()
+    where period_id = existing_period_id;
+
+    return existing_period_id;
+  else
+    -- Insert nếu không overlap
+    insert into public.period_tracking (
+      patient_id,
+      start_date,
+      end_date,
+      cycle_length,
+      flow_intensity,
+      symptoms,
+      period_description,
+      predictions,
+      period_length
+    )
+    values (
+      p_patient_id,
+      p_start_date,
+      p_end_date,
+      p_cycle_length,
+      p_flow_intensity,
+      p_symptoms,
+      p_period_description,
+      p_predictions,
+      p_period_length
+    )
+    returning period_id into new_period_id;
+
+    return new_period_id;
+  end if;
+end;
+$$;
+
+
+ALTER FUNCTION "public"."create_period_tracking"("p_patient_id" "uuid", "p_start_date" timestamp with time zone, "p_end_date" timestamp with time zone, "p_cycle_length" integer, "p_flow_intensity" "text", "p_symptoms" "jsonb", "p_period_description" "text", "p_predictions" "jsonb", "p_period_length" integer) OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."create_staff_member"("user_id_input" "uuid", "full_name_input" "text", "role_name_input" "public"."staff_role_enum", "working_email_input" character varying, "department_input" "public"."department_enum" DEFAULT NULL::"public"."department_enum", "hire_date_input" "date" DEFAULT CURRENT_DATE, "specialty_input" "public"."speciality_enum" DEFAULT NULL::"public"."speciality_enum", "license_no_input" character varying DEFAULT NULL::character varying, "years_experience_input" integer DEFAULT NULL::integer, "created_at_input" timestamp with time zone DEFAULT "now"(), "updated_at_input" timestamp with time zone DEFAULT "now"()) RETURNS TABLE("staff_id" "uuid", "doctor_id" "uuid", "message" "text")
@@ -963,10 +1020,372 @@ $$;
 ALTER FUNCTION "public"."delete_staff_by_id"("staff_id_input" "uuid") OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."filter_appointments_by_patient_day_status_type"("p_patient_id" "uuid" DEFAULT NULL::"uuid", "p_target_date" "date" DEFAULT NULL::"date", "p_status" "public"."process_status" DEFAULT NULL::"public"."process_status", "p_visit_type" "public"."visit_type_enum" DEFAULT NULL::"public"."visit_type_enum") RETURNS TABLE("appointment_id" "uuid", "patient_id" "uuid", "phone" "text", "email" character varying, "visit_type" "public"."visit_type_enum", "appointment_status" "public"."process_status", "created_at" timestamp with time zone, "updated_at" timestamp with time zone)
+CREATE OR REPLACE FUNCTION "public"."fetch_blog_id"("input_blog_id" "uuid") RETURNS "jsonb"
     LANGUAGE "plpgsql"
     AS $$
-BEGIN
+declare
+  result jsonb;
+begin
+  -- Tăng view count
+  update blog_posts
+  set view_count = coalesce(view_count, 0) + 1
+  where blog_id = input_blog_id;
+
+  -- Lấy thông tin blog + bác sĩ
+  select jsonb_build_object(
+    'blog_id', b.blog_id,
+    'blog_title', b.blog_title,
+    'blog_content', b.blog_content,
+    'excerpt', b.excerpt,
+    'image_link', b.image_link,
+    'blog_tags', b.blog_tags,
+    'blog_status', b.blog_status,
+    'created_at', b.created_at,
+    'updated_at', b.updated_at,
+    'doctor_details', jsonb_build_object(
+      'id', s.staff_id,
+      'fullname', s.full_name,
+      'gender', s.gender,
+      'img', s.image_link
+    )
+  )
+  into result
+  from blog_posts b
+  left join staff_members s on b.doctor_id = s.staff_id
+  where b.blog_id = input_blog_id;
+
+  if result is null then
+    raise exception 'Blog not found';
+  end if;
+
+  return result;
+end;
+$$;
+
+
+ALTER FUNCTION "public"."fetch_blog_id"("input_blog_id" "uuid") OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."fetch_doctor_id"("p_doctor_id" "uuid", "p_email" "text") RETURNS "jsonb"
+    LANGUAGE "plpgsql"
+    AS $$
+declare
+  result jsonb;
+begin
+  -- Kiểm tra tham số
+  if p_doctor_id is null or p_email is null then
+    return jsonb_build_object('error', 'Both doctor_id and email are required');
+  end if;
+
+  -- Kiểm tra doctor_id và email khớp nhau
+  if not exists (
+    select 1 from staff_members
+    where staff_id = p_doctor_id and working_email = p_email
+  ) then
+    return jsonb_build_object('error', 'Doctor ID and email do not match');
+  end if;
+
+  -- Lấy dữ liệu và trả JSON
+  select jsonb_build_object(
+    'doctor_id', d.doctor_id,
+    'department', d.department,
+    'speciality', d.speciality,
+    'bio', d.bio,
+    'slogan', d.slogan,
+    'educations', d.educations,
+    'certifications', d.certifications,
+    'about_me', d.about_me,
+    'license_no', d.license_no,
+    'staff_members', jsonb_build_object(
+      'full_name', s.full_name,
+      'gender', s.gender,
+      'image_link', s.image_link,
+      'working_email', s.working_email,
+      'years_experience', s.years_experience,
+      'languages', s.languages
+    ),
+    'blogs', (
+      select coalesce(jsonb_agg(jsonb_build_object(
+        'blog_id', b.blog_id,
+        'title', b.blog_title,
+        'excerpt', b.excerpt,
+        'image_link', b.image_link,
+        'created_at', b.created_at,
+        'updated_at', b.updated_at,
+        'doctor_id', b.doctor_id
+      )), '[]'::jsonb)
+      from blog_posts b
+      where b.doctor_id = d.doctor_id and b.blog_status = 'published'
+    )
+  ) into result
+  from doctor_details d
+  join staff_members s on s.staff_id = d.doctor_id
+  where d.doctor_id = p_doctor_id;
+
+  if result is null then
+    return jsonb_build_object('error', 'Doctor not found');
+  end if;
+
+  return result;
+end;
+$$;
+
+
+ALTER FUNCTION "public"."fetch_doctor_id"("p_doctor_id" "uuid", "p_email" "text") OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."fetch_doctorbooking"() RETURNS "jsonb"
+    LANGUAGE "plpgsql"
+    AS $$
+declare
+  result jsonb;
+begin
+  select jsonb_agg(profile)
+  into result
+  from (
+    select
+      dd.doctor_id,
+      sm.full_name,
+      sm.image_link,
+      sm.gender,
+      dd.speciality as specialization,
+      (
+        select array_agg(ds.service_id)
+        from doctor_services ds
+        join medical_services ms on ms.service_id = ds.service_id
+        where ds.doctor_id = dd.doctor_id
+          and ms.is_active = true
+      ) as services
+    from doctor_details dd
+    join staff_members sm on dd.doctor_id = sm.staff_id
+  ) as profile;
+
+  return coalesce(result, '[]'::jsonb);
+end;
+$$;
+
+
+ALTER FUNCTION "public"."fetch_doctorbooking"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."fetch_service"() RETURNS "jsonb"
+    LANGUAGE "plpgsql"
+    AS $$
+declare
+  result jsonb;
+begin
+  select coalesce(jsonb_agg(jsonb_build_object(
+    'id', s.service_id,
+    'name', s.service_name,
+    'excerpt', s.excerpt,
+    'price', s.service_cost,
+    'image_link', s.image_link,
+    'service_categories', jsonb_build_object(
+      'category_id', c.category_id,
+      'category_name', c.category_name
+    )
+  )), '[]'::jsonb)
+  into result
+  from medical_services s
+  left join service_categories c
+    on c.category_id = s.category_id;
+
+  return result;
+end;
+$$;
+
+
+ALTER FUNCTION "public"."fetch_service"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."fetch_service_by_doctor_id"("p_doctor_id" "uuid") RETURNS "jsonb"
+    LANGUAGE "plpgsql"
+    AS $$
+declare
+  result jsonb;
+begin
+  select jsonb_build_object(
+    'doctor_id', sm.staff_id,
+    'full_name', sm.full_name,
+    'gender', sm.gender,
+    'image_link', sm.image_link,
+    'specialization', dd.speciality,
+    'services', coalesce(jsonb_agg(
+      jsonb_build_object(
+        'service_id', ds.service_id,
+        'service_name', ms.service_name
+      )
+    ) filter (where ms.is_active is true), '[]'::jsonb)
+  )
+  into result
+  from staff_members sm
+  left join doctor_details dd on sm.staff_id = dd.doctor_id
+  left join doctor_services ds on sm.staff_id = ds.doctor_id
+  left join medical_services ms on ds.service_id = ms.service_id
+  where sm.staff_id = p_doctor_id
+  group by sm.staff_id, sm.full_name, sm.gender, sm.image_link, dd.speciality;
+
+  if result is null then
+    raise exception 'Doctor not found';
+  end if;
+
+  return result;
+end;
+$$;
+
+
+ALTER FUNCTION "public"."fetch_service_by_doctor_id"("p_doctor_id" "uuid") OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."fetch_service_id"("p_service_id" "uuid") RETURNS "jsonb"
+    LANGUAGE "plpgsql"
+    AS $$
+declare
+  result jsonb;
+begin
+  with service_info as (
+    select 
+      s.service_id,
+      s.service_name,
+      s.service_description,
+      s.service_cost,
+      s.image_link,
+      jsonb_build_object(
+        'category_id', c.category_id,
+        'category_name', c.category_name
+      ) as service_categories
+    from medical_services s
+    left join service_categories c on s.category_id = c.category_id
+    where s.service_id = p_service_id
+  ),
+  linked_doctors as (
+    select sm.staff_id, sm.full_name, sm.gender, sm.image_link
+    from doctor_services ds
+    join staff_members sm on ds.doctor_id = sm.staff_id
+    where ds.service_id = p_service_id
+  )
+  select jsonb_build_object(
+    'service_id', si.service_id,
+    'service_name', si.service_name,
+    'description', si.service_description,
+    'price', si.service_cost,
+    'image_link', si.image_link,
+    'service_categories', si.service_categories,
+    'doctors', coalesce(jsonb_agg(jsonb_build_object(
+      'id', d.staff_id,
+      'fullname', d.full_name,
+      'gender', d.gender,
+      'img', d.image_link
+    )) filter (where d.staff_id is not null), '[]'::jsonb)
+  )
+  into result
+  from service_info si
+  left join linked_doctors d on true;
+
+  if result is null then
+    raise exception 'Service not found';
+  end if;
+
+  return result;
+end;
+$$;
+
+
+ALTER FUNCTION "public"."fetch_service_id"("p_service_id" "uuid") OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."fetch_servicebooking"() RETURNS "jsonb"
+    LANGUAGE "plpgsql"
+    AS $$
+declare
+  result jsonb;
+begin
+  select jsonb_agg(
+    jsonb_build_object(
+      'service_id', service_id,
+      'service_name', service_name,
+      'description', excerpt
+    )
+  )
+  into result
+  from medical_services
+  where is_active = true;
+
+  return coalesce(result, '[]'::jsonb);
+end;
+$$;
+
+
+ALTER FUNCTION "public"."fetch_servicebooking"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."fetch_slot"() RETURNS TABLE("doctor_slot_id" "uuid", "doctor_id" "uuid", "slot_date" "date", "slot_time" time without time zone)
+    LANGUAGE "sql"
+    AS $$
+  select
+    dsa.doctor_slot_id,
+    dsa.doctor_id,
+    s.slot_date,
+    s.slot_time
+  from doctor_slot_assignments dsa
+  join slots s on dsa.slot_id = s.slot_id
+  where s.is_active = true
+    and s.slot_date between current_date and current_date + interval '7 days'
+  order by s.slot_date, s.slot_time;
+$$;
+
+
+ALTER FUNCTION "public"."fetch_slot"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."fetch_slot_by_doctor_id"("p_doctor_id" "uuid") RETURNS "jsonb"
+    LANGUAGE "plpgsql"
+    AS $$
+declare
+  result jsonb;
+begin
+  with filtered_slots as (
+    select 
+      dsa.doctor_slot_id,
+      dsa.appointments_count,
+      dsa.max_appointments,
+      s.slot_id,
+      s.slot_date,
+      s.slot_time,
+      s.is_active
+    from doctor_slot_assignments dsa
+    join slots s on dsa.slot_id = s.slot_id
+    where dsa.doctor_id = p_doctor_id
+      and s.slot_date >= current_date
+      and s.slot_date <= current_date + interval '7 days'
+      and s.is_active = true
+  )
+  select jsonb_build_object(
+    'doctor_id', p_doctor_id,
+    'slots', coalesce(jsonb_agg(jsonb_build_object(
+      'doctor_slot_id', fs.doctor_slot_id,
+      'appointments_count', fs.appointments_count,
+      'max_appointments', fs.max_appointments,
+      'slot_id', fs.slot_id,
+      'slot_date', fs.slot_date,
+      'slot_time', fs.slot_time,
+      'is_active', fs.is_active
+    )), '[]'::jsonb)
+  )
+  into result
+  from filtered_slots fs;
+
+  return result;
+end;
+$$;
+
+
+ALTER FUNCTION "public"."fetch_slot_by_doctor_id"("p_doctor_id" "uuid") OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."filter_appointments_by_patient_day_status_type"("p_patient_id" "uuid" DEFAULT NULL::"uuid", "p_target_date" "date" DEFAULT NULL::"date", "p_status" "public"."process_status" DEFAULT NULL::"public"."process_status", "p_visit_type" "public"."visit_type_enum" DEFAULT NULL::"public"."visit_type_enum") RETURNS TABLE("appointment_id" "uuid", "patient_id" "uuid", "phone" "text", "email" character varying, "visit_type" "public"."visit_type_enum", "appointment_status" "public"."process_status", "created_at" timestamp with time zone, "updated_at" timestamp with time zone)
+    LANGUAGE "plpgsql"
+    AS $$BEGIN
   RETURN QUERY
   SELECT a.*
   FROM appointments a
@@ -984,8 +1403,7 @@ ALTER FUNCTION "public"."filter_appointments_by_patient_day_status_type"("p_pati
 
 CREATE OR REPLACE FUNCTION "public"."filter_services"("p_category_id" "uuid") RETURNS TABLE("service_id" "uuid", "category_id" "uuid", "category_name" "text", "service_name" "text", "service_cost" numeric, "duration_minutes" integer, "image_link" "text", "service_description" json, "excerpt" "text")
     LANGUAGE "plpgsql"
-    AS $$
-BEGIN
+    AS $$BEGIN
     RETURN QUERY
     SELECT 
         ms.service_id,
@@ -1062,8 +1480,7 @@ ALTER FUNCTION "public"."generate_doctor_slots"("p_doctor_id" "uuid", "p_start_d
 
 CREATE OR REPLACE FUNCTION "public"."get_available_slots"("p_doctor_id" "uuid", "p_slot_date" "date", "p_start_time" time without time zone, "p_end_time" time without time zone, "p_slot_id" "uuid") RETURNS TABLE("slot_id" "uuid", "doctor_slot_id" "uuid", "slot_date" "date", "slot_time" time without time zone, "doctor_id" "uuid", "appointments_count" integer, "max_appointments" integer)
     LANGUAGE "plpgsql"
-    AS $$
-BEGIN
+    AS $$BEGIN
   RETURN QUERY
   SELECT 
     ds.slot_id,
@@ -1304,7 +1721,7 @@ BEGIN
         SELECT
             NULL::UUID,
             NULL::TEXT,
-            NULL::staff_role_enum,
+            NULL::role_enum,
             NULL::VARCHAR(100),
             NULL::department_enum,
             NULL::INTEGER,
@@ -1484,8 +1901,8 @@ BEGIN
     SET appointments_count = appointments_count + 1
     WHERE slot_id = v_slot_id
       AND doctor_id = v_apt.doctor_id;
-
-    RETURN v_apt;
+      
+    RETURN v_appointment_id;
 END;
 $$;
 
@@ -1528,8 +1945,7 @@ ALTER FUNCTION "public"."toggle_medical_services_status"("p_service_id" "uuid") 
 
 CREATE OR REPLACE FUNCTION "public"."track_period_and_fertility"("p_patient_id" "text", "p_start_date" "date", "p_end_date" "date" DEFAULT NULL::"date", "p_symptoms" "text"[] DEFAULT '{}'::"text"[], "p_flow_intensity" "text" DEFAULT 'medium'::"text", "p_period_description" "text" DEFAULT NULL::"text") RETURNS "jsonb"
     LANGUAGE "plpgsql" SECURITY DEFINER
-    AS $$
-DECLARE
+    AS $$DECLARE
     v_period_id BIGINT;
     v_cycle_length INTEGER;
     v_previous_start_date DATE;
@@ -1632,8 +2048,7 @@ EXCEPTION
             'success', false,
             'message', 'Error tracking period: ' || SQLERRM
         );
-END;
-$$;
+END;$$;
 
 
 ALTER FUNCTION "public"."track_period_and_fertility"("p_patient_id" "text", "p_start_date" "date", "p_end_date" "date", "p_symptoms" "text"[], "p_flow_intensity" "text", "p_period_description" "text") OWNER TO "postgres";
@@ -2109,11 +2524,13 @@ ALTER TABLE "public"."medical_services" OWNER TO "postgres";
 
 CREATE TABLE IF NOT EXISTS "public"."otps" (
     "id" integer NOT NULL,
-    "phone" "text" NOT NULL,
+    "phone" "text",
     "otp_code" "text" NOT NULL,
     "created_at" timestamp with time zone DEFAULT "now"(),
     "expires_at" timestamp with time zone NOT NULL,
-    "is_used" boolean DEFAULT false
+    "is_used" boolean DEFAULT false,
+    "email" "text",
+    CONSTRAINT "email_or_phone_required" CHECK ((("email" IS NOT NULL) OR ("phone" IS NOT NULL)))
 );
 
 
@@ -2216,11 +2633,11 @@ ALTER TABLE "public"."profiles" OWNER TO "postgres";
 
 CREATE TABLE IF NOT EXISTS "public"."receipts" (
     "receipt_id" "uuid" DEFAULT "extensions"."uuid_generate_v4"() NOT NULL,
-    "patient_id" "uuid" NOT NULL,
     "amount" numeric(10,2),
     "created_at" timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     "services" json,
     "status" "public"."receipt_status" DEFAULT 'pending'::"public"."receipt_status",
+    "transaction_id" "uuid",
     CONSTRAINT "receipts_amount_check" CHECK (("amount" >= (0)::numeric))
 );
 
@@ -2351,17 +2768,18 @@ ALTER TABLE "public"."tickets" OWNER TO "postgres";
 CREATE TABLE IF NOT EXISTS "public"."transactions" (
     "id" "uuid" DEFAULT "extensions"."uuid_generate_v4"() NOT NULL,
     "order_id" "text" NOT NULL,
-    "patient_id" "text" NOT NULL,
     "amount" double precision NOT NULL,
     "order_info" "text" NOT NULL,
     "services" "jsonb",
     "status" "text" NOT NULL,
     "created_at" timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     "vnpay_response" "jsonb",
-    "updated_at" timestamp with time zone
+    "updated_at" timestamp with time zone,
+    "patient_id" "uuid"
 );
 
 
+ALTER TABLE "public"."transactions" OWNER TO "postgres";
 
 
 ALTER TABLE ONLY "public"."otps" ALTER COLUMN "id" SET DEFAULT "nextval"('"public"."otps_id_seq"'::"regclass");
@@ -2538,6 +2956,11 @@ ALTER TABLE ONLY "public"."transactions"
 
 
 ALTER TABLE ONLY "public"."otps"
+    ADD CONSTRAINT "unique_email_address" UNIQUE ("email");
+
+
+
+ALTER TABLE ONLY "public"."otps"
     ADD CONSTRAINT "unique_phone_number" UNIQUE ("phone");
 
 
@@ -2612,6 +3035,11 @@ ALTER TABLE ONLY "public"."doctor_slot_assignments"
 
 
 
+ALTER TABLE ONLY "public"."receipts"
+    ADD CONSTRAINT "fk_receipts_transaction" FOREIGN KEY ("transaction_id") REFERENCES "public"."transactions"("id");
+
+
+
 ALTER TABLE ONLY "public"."guest_appointments"
     ADD CONSTRAINT "guest_appointments_category_id_fkey" FOREIGN KEY ("category_id") REFERENCES "public"."service_categories"("category_id");
 
@@ -2662,11 +3090,6 @@ ALTER TABLE ONLY "public"."profiles"
 
 
 
-ALTER TABLE ONLY "public"."receipts"
-    ADD CONSTRAINT "receipts_patient_id_fkey" FOREIGN KEY ("patient_id") REFERENCES "public"."patients"("id") ON DELETE CASCADE;
-
-
-
 ALTER TABLE ONLY "public"."refreshtoken"
     ADD CONSTRAINT "refreshtoken_patient_id_fkey" FOREIGN KEY ("patient_id") REFERENCES "public"."patients"("id") ON DELETE CASCADE;
 
@@ -2697,6 +3120,11 @@ ALTER TABLE ONLY "public"."tickets"
 
 
 
+ALTER TABLE ONLY "public"."transactions"
+    ADD CONSTRAINT "transactions_patient_id_fkey" FOREIGN KEY ("patient_id") REFERENCES "public"."patients"("id") ON DELETE CASCADE;
+
+
+
 CREATE POLICY "Users can access own OTPs" ON "public"."otps" USING (("phone" = ( SELECT "otps_1"."phone" AS "phone_number"
    FROM "public"."otps" "otps_1"
   WHERE ("otps_1"."phone" = "otps_1"."phone")
@@ -2710,6 +3138,9 @@ ALTER TABLE "public"."otps" ENABLE ROW LEVEL SECURITY;
 
 
 ALTER PUBLICATION "supabase_realtime" OWNER TO "postgres";
+
+
+
 
 
 
@@ -3091,6 +3522,12 @@ GRANT ALL ON FUNCTION "public"."create_period_entry"("p_patient_id" "uuid", "p_s
 
 
 
+GRANT ALL ON FUNCTION "public"."create_period_tracking"("p_patient_id" "uuid", "p_start_date" timestamp with time zone, "p_end_date" timestamp with time zone, "p_cycle_length" integer, "p_flow_intensity" "text", "p_symptoms" "jsonb", "p_period_description" "text", "p_predictions" "jsonb", "p_period_length" integer) TO "anon";
+GRANT ALL ON FUNCTION "public"."create_period_tracking"("p_patient_id" "uuid", "p_start_date" timestamp with time zone, "p_end_date" timestamp with time zone, "p_cycle_length" integer, "p_flow_intensity" "text", "p_symptoms" "jsonb", "p_period_description" "text", "p_predictions" "jsonb", "p_period_length" integer) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."create_period_tracking"("p_patient_id" "uuid", "p_start_date" timestamp with time zone, "p_end_date" timestamp with time zone, "p_cycle_length" integer, "p_flow_intensity" "text", "p_symptoms" "jsonb", "p_period_description" "text", "p_predictions" "jsonb", "p_period_length" integer) TO "service_role";
+
+
+
 GRANT ALL ON FUNCTION "public"."create_staff_member"("user_id_input" "uuid", "full_name_input" "text", "role_name_input" "public"."staff_role_enum", "working_email_input" character varying, "department_input" "public"."department_enum", "hire_date_input" "date", "specialty_input" "public"."speciality_enum", "license_no_input" character varying, "years_experience_input" integer, "created_at_input" timestamp with time zone, "updated_at_input" timestamp with time zone) TO "anon";
 GRANT ALL ON FUNCTION "public"."create_staff_member"("user_id_input" "uuid", "full_name_input" "text", "role_name_input" "public"."staff_role_enum", "working_email_input" character varying, "department_input" "public"."department_enum", "hire_date_input" "date", "specialty_input" "public"."speciality_enum", "license_no_input" character varying, "years_experience_input" integer, "created_at_input" timestamp with time zone, "updated_at_input" timestamp with time zone) TO "authenticated";
 GRANT ALL ON FUNCTION "public"."create_staff_member"("user_id_input" "uuid", "full_name_input" "text", "role_name_input" "public"."staff_role_enum", "working_email_input" character varying, "department_input" "public"."department_enum", "hire_date_input" "date", "specialty_input" "public"."speciality_enum", "license_no_input" character varying, "years_experience_input" integer, "created_at_input" timestamp with time zone, "updated_at_input" timestamp with time zone) TO "service_role";
@@ -3124,6 +3561,60 @@ GRANT ALL ON FUNCTION "public"."delete_period_entry"("p_period_id" "uuid", "p_pa
 GRANT ALL ON FUNCTION "public"."delete_staff_by_id"("staff_id_input" "uuid") TO "anon";
 GRANT ALL ON FUNCTION "public"."delete_staff_by_id"("staff_id_input" "uuid") TO "authenticated";
 GRANT ALL ON FUNCTION "public"."delete_staff_by_id"("staff_id_input" "uuid") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."fetch_blog_id"("input_blog_id" "uuid") TO "anon";
+GRANT ALL ON FUNCTION "public"."fetch_blog_id"("input_blog_id" "uuid") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."fetch_blog_id"("input_blog_id" "uuid") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."fetch_doctor_id"("p_doctor_id" "uuid", "p_email" "text") TO "anon";
+GRANT ALL ON FUNCTION "public"."fetch_doctor_id"("p_doctor_id" "uuid", "p_email" "text") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."fetch_doctor_id"("p_doctor_id" "uuid", "p_email" "text") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."fetch_doctorbooking"() TO "anon";
+GRANT ALL ON FUNCTION "public"."fetch_doctorbooking"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."fetch_doctorbooking"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."fetch_service"() TO "anon";
+GRANT ALL ON FUNCTION "public"."fetch_service"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."fetch_service"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."fetch_service_by_doctor_id"("p_doctor_id" "uuid") TO "anon";
+GRANT ALL ON FUNCTION "public"."fetch_service_by_doctor_id"("p_doctor_id" "uuid") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."fetch_service_by_doctor_id"("p_doctor_id" "uuid") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."fetch_service_id"("p_service_id" "uuid") TO "anon";
+GRANT ALL ON FUNCTION "public"."fetch_service_id"("p_service_id" "uuid") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."fetch_service_id"("p_service_id" "uuid") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."fetch_servicebooking"() TO "anon";
+GRANT ALL ON FUNCTION "public"."fetch_servicebooking"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."fetch_servicebooking"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."fetch_slot"() TO "anon";
+GRANT ALL ON FUNCTION "public"."fetch_slot"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."fetch_slot"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."fetch_slot_by_doctor_id"("p_doctor_id" "uuid") TO "anon";
+GRANT ALL ON FUNCTION "public"."fetch_slot_by_doctor_id"("p_doctor_id" "uuid") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."fetch_slot_by_doctor_id"("p_doctor_id" "uuid") TO "service_role";
 
 
 

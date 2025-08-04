@@ -8,4 +8,3 @@ ALTER TABLE ONLY "public"."transactions"
 
 ALTER TABLE ONLY "public"."transactions"
     DROP COLUMN "patient_id";
-

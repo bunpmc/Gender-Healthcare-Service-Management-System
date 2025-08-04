@@ -11,7 +11,7 @@ function createResponse(data, status = 200) {
     }
   });
 }
-serve(async (req)=>{
+serve(async (req) => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response("ok", {
@@ -28,13 +28,13 @@ serve(async (req)=>{
     }, 405);
   }
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
-  const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  if (!supabaseUrl || !supabaseServiceRoleKey) {
+  const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
+  if (!supabaseUrl || !supabaseAnonKey) {
     return createResponse({
       error: "Server configuration error"
     }, 500);
   }
-  const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
   try {
     const today = new Date();
     const sevenDaysLater = new Date();
@@ -61,12 +61,12 @@ serve(async (req)=>{
         error: error.message
       }, 500);
     }
-    const slots = data.filter((assignment)=>assignment.slots != null).map((assignment)=>({
-        doctor_slot_id: assignment.doctor_slot_id,
-        doctor_id: assignment.doctor_id,
-        slot_date: assignment.slots.slot_date,
-        slot_time: assignment.slots.slot_time
-      }));
+    const slots = data.filter((assignment) => assignment.slots != null).map((assignment) => ({
+      doctor_slot_id: assignment.doctor_slot_id,
+      doctor_id: assignment.doctor_id,
+      slot_date: assignment.slots.slot_date,
+      slot_time: assignment.slots.slot_time
+    }));
     return createResponse({
       slots
     });
@@ -78,3 +78,7 @@ serve(async (req)=>{
     }, 500);
   }
 });
+
+// curl -X GET "http://127.0.0.1:54321/functions/v1/fetch-slots" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0" -H "Content-Type: application/json"
+
+// curl -X POST "http://127.0.0.1:54321/functions/v1/vnpay-payment" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh6eHhvZHhwbHlldGVjcnNieG1jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk2MTE2MjAsImV4cCI6MjA2NTE4NzYyMH0.O60A63ihSaQ_2qbLozpU04yy7ZB5h8BUZqEvWWCLnf0"-H "Content-Type: application/json" -d '{"amount":"150000","orderInfo":"Payment for order #12345","patientId":"dfc1b883-47f7-40db-91ee-16424e212b37","services":["Consultation"]}'

@@ -24,6 +24,7 @@ export interface BaseEntity {
 export interface Patient extends BaseEntity {
     patient_id: string;
     id: string; // Legacy field for compatibility - required not optional
+    guest_id?: string; // Added for guest compatibility
     full_name: string;
     email: string;
     phone: string;

@@ -38,6 +38,7 @@ export class AppointmentManagementComponent implements OnInit {
   // Modal states
   showViewModal = false;
   showEditModal = false;
+  showStatusModal = false;
   selectedAppointment: AdminAppointment | null = null;
 
   // Edit modal states
@@ -303,8 +304,24 @@ export class AppointmentManagementComponent implements OnInit {
     this.showEditModal = true;
   }
 
+  openUpdateStatusModal(appointment: AdminAppointment): void {
+    this.selectedAppointment = { ...appointment };
+    this.updateError = null;
+    this.isUpdating = false;
+    this.showStatusModal = true;
+  }
+
   closeEditModal(): void {
     this.showEditModal = false;
+    this.selectedAppointment = null;
+    this.updateError = null;
+    this.updateSuccess = null;
+    this.validationErrors = {};
+    this.isUpdating = false;
+  }
+
+  closeStatusModal(): void {
+    this.showStatusModal = false;
     this.selectedAppointment = null;
     this.updateError = null;
     this.updateSuccess = null;

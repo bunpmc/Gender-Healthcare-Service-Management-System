@@ -26,12 +26,15 @@ export class PatientManagementComponent extends BaseComponent implements OnInit 
   searchQuery: string = '';
   selectedGender: string = '';
   selectedStatus: string = '';
+  selectedPatientType: string = '';
 
   // Modal states
   showCreateModal = false;
   showEditModal = false;
   showViewModal = false;
   selectedPatient: Patient | null = null;
+  patientAppointments: any[] = [];
+  loadingAppointments = false;
 
   // New patient form
   newPatient: Partial<Patient> = {
@@ -67,6 +70,11 @@ export class PatientManagementComponent extends BaseComponent implements OnInit 
     { value: 'inactive', label: 'Inactive' },
   ];
 
+  patientTypeOptions = [
+    { value: 'patient', label: 'Patient' },
+    { value: 'guest', label: 'Guest' },
+  ];
+
   // Statistics
   stats = {
     totalPatients: 0,
@@ -91,7 +99,7 @@ export class PatientManagementComponent extends BaseComponent implements OnInit 
   async loadPatients() {
     this.isLoading = true;
     try {
-      const result = await this.supabaseService.getAllPatients();
+      const result = await this.supabaseService.getAllPatientsAndGuests();
       if (result.success && result.data) {
         this.patients = result.data;
         this.filteredPatients = [...this.patients];
@@ -164,8 +172,10 @@ export class PatientManagementComponent extends BaseComponent implements OnInit 
         !this.selectedGender || patient.gender === this.selectedGender;
       const matchesStatus =
         !this.selectedStatus || patient.patient_status === this.selectedStatus;
+      const matchesPatientType =
+        !this.selectedPatientType || patient.patient_type === this.selectedPatientType;
 
-      return matchesSearch && matchesGender && matchesStatus;
+      return matchesSearch && matchesGender && matchesStatus && matchesPatientType;
     });
 
     this.currentPage = 1;
@@ -183,6 +193,10 @@ export class PatientManagementComponent extends BaseComponent implements OnInit 
     this.applyFilters();
   }
 
+  onPatientTypeFilterChange() {
+    this.applyFilters();
+  }
+
   // Modal methods
   openCreateModal() {
     this.resetNewPatientForm();
@@ -196,6 +210,10 @@ export class PatientManagementComponent extends BaseComponent implements OnInit 
 
   openEditModal(patient: Patient) {
     this.selectedPatient = { ...patient };
+    // Ensure phone_number is populated for editing
+    if (!this.selectedPatient.phone_number && this.selectedPatient.phone) {
+      this.selectedPatient.phone_number = this.selectedPatient.phone;
+    }
     this.showEditModal = true;
   }
 
@@ -207,11 +225,32 @@ export class PatientManagementComponent extends BaseComponent implements OnInit 
   openViewModal(patient: Patient) {
     this.selectedPatient = patient;
     this.showViewModal = true;
+    this.loadPatientAppointments(patient.id);
+  }
+
+  async loadPatientAppointments(patientId: string) {
+    this.loadingAppointments = true;
+    this.patientAppointments = [];
+
+    try {
+      const result = await this.supabaseService.getAppointmentsByPatientId(patientId);
+      if (result.success && result.data) {
+        this.patientAppointments = result.data;
+      } else {
+        console.error('Error loading appointments:', result.error);
+      }
+    } catch (error) {
+      console.error('Error loading patient appointments:', error);
+    } finally {
+      this.loadingAppointments = false;
+    }
   }
 
   closeViewModal() {
     this.showViewModal = false;
     this.selectedPatient = null;
+    this.patientAppointments = [];
+    this.loadingAppointments = false;
   }
 
   resetNewPatientForm() {
@@ -331,10 +370,30 @@ export class PatientManagementComponent extends BaseComponent implements OnInit 
     this.clearMessages();
 
     try {
-      const result = await this.supabaseService.updatePatient(
-        this.selectedPatient.id,
-        this.selectedPatient
-      );
+      let result;
+
+      // Check if this is a guest or patient record
+      if (this.selectedPatient.patient_type === 'guest') {
+        // Update guest record
+        const guestData = {
+          full_name: this.selectedPatient.full_name,
+          phone: this.selectedPatient.phone_number || this.selectedPatient.phone,
+          email: this.selectedPatient.email,
+          date_of_birth: this.selectedPatient.date_of_birth,
+          gender: this.selectedPatient.gender
+        };
+        result = await this.supabaseService.updateGuest(this.selectedPatient.id, guestData);
+      } else {
+        // Update patient record - ensure phone synchronization
+        const updatedPatient = {
+          ...this.selectedPatient,
+          phone: this.selectedPatient.phone_number || this.selectedPatient.phone
+        };
+        result = await this.supabaseService.updatePatient(
+          this.selectedPatient.id,
+          updatedPatient
+        );
+      }
 
       if (result.success) {
         this.showSuccess('Patient updated successfully!');
@@ -395,5 +454,108 @@ export class PatientManagementComponent extends BaseComponent implements OnInit 
   clearMessages() {
     this.errorMessage = '';
     this.successMessage = '';
+  }
+
+  // Badge class methods
+  override getGenderBadgeClass(gender: string): string {
+    switch (gender) {
+      case 'male':
+        return 'bg-blue-100 text-blue-800';
+      case 'female':
+        return 'bg-pink-100 text-pink-800';
+      case 'other':
+        return 'bg-purple-100 text-purple-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  }
+
+  override getStatusBadgeClass(status: string): string {
+    switch (status) {
+      case 'active':
+        return 'bg-green-100 text-green-800';
+      case 'inactive':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  }
+
+  getPatientTypeBadgeClass(patientType: string): string {
+    switch (patientType) {
+      case 'patient':
+        return 'bg-indigo-100 text-indigo-800';
+      case 'guest':
+        return 'bg-orange-100 text-orange-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  }
+
+  getAppointmentStatusBadgeClass(status: string): string {
+    switch (status?.toLowerCase()) {
+      case 'completed':
+        return 'bg-green-100 text-green-800';
+      case 'cancelled':
+        return 'bg-red-100 text-red-800';
+      case 'scheduled':
+        return 'bg-blue-100 text-blue-800';
+      case 'confirmed':
+        return 'bg-indigo-100 text-indigo-800';
+      case 'no-show':
+        return 'bg-gray-100 text-gray-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  }
+
+  getVaccinationStatusBadgeClass(status: string): string {
+    switch (status?.toLowerCase()) {
+      case 'fully_vaccinated':
+        return 'bg-green-100 text-green-800';
+      case 'partially_vaccinated':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'not_vaccinated':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  }
+
+  onImageError(event: Event): void {
+    const target = event.target as HTMLImageElement;
+    if (target) {
+      target.style.display = 'none';
+    }
+  }
+
+  override calculateAge(dateOfBirth: string | Date | null | undefined): number {
+    if (!dateOfBirth) return 0;
+
+    const today = new Date();
+    const birthDate = new Date(dateOfBirth);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+
+    return age;
+  }
+
+  override formatDate(dateString: string): string {
+    if (!dateString) return '';
+
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    } catch (error) {
+      return dateString;
+    }
   }
 }

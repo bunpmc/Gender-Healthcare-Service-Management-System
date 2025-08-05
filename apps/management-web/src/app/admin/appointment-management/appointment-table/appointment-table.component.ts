@@ -65,6 +65,7 @@ export class AppointmentTableComponent {
   @Output() viewAppointmentEvent = new EventEmitter<AdminAppointment>();
   @Output() editAppointmentEvent = new EventEmitter<AdminAppointment>();
   @Output() deleteAppointmentEvent = new EventEmitter<AdminAppointment>();
+  @Output() updateStatusEvent = new EventEmitter<AdminAppointment>();
   @Output() sortChange = new EventEmitter<{ field: SortField; direction: SortDirection }>();
   @Output() bulkAction = new EventEmitter<{ action: string; appointmentIds: string[] }>();
   @Output() clearFiltersEvent = new EventEmitter<void>();
@@ -112,9 +113,9 @@ export class AppointmentTableComponent {
    */
   isAllSelected(): boolean {
     return this.paginatedAppointments.length > 0 &&
-           this.paginatedAppointments.every(appointment =>
-             this.selectedAppointments.has(appointment.appointment_id)
-           );
+      this.paginatedAppointments.every(appointment =>
+        this.selectedAppointments.has(appointment.appointment_id)
+      );
   }
 
   /**
@@ -166,6 +167,13 @@ export class AppointmentTableComponent {
    */
   deleteAppointment(appointment: AdminAppointment): void {
     this.deleteAppointmentEvent.emit(appointment);
+  }
+
+  /**
+   * Update appointment status
+   */
+  updateStatus(appointment: AdminAppointment): void {
+    this.updateStatusEvent.emit(appointment);
   }
 
   /**

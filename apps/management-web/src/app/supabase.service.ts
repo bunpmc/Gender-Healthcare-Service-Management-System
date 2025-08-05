@@ -752,6 +752,88 @@ export class SupabaseService {
     }
   }
 
+  async getAllPatientsAndGuests(): Promise<{
+    success: boolean;
+    data?: Patient[];
+    error?: string;
+  }> {
+    try {
+      // Fetch patients
+      const { data: patientsData, error: patientsError } = await supabase
+        .from('patients')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (patientsError) {
+        this.logger.error('Error fetching patients:', patientsError);
+        return { success: false, error: patientsError.message };
+      }
+
+      // Fetch guests
+      const { data: guestsData, error: guestsError } = await supabase
+        .from('guests')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (guestsError) {
+        this.logger.error('Error fetching guests:', guestsError);
+        return { success: false, error: guestsError.message };
+      }
+
+      // Transform patients data to include patient_type
+      const transformedPatients = (patientsData || []).map((patient: any) => ({
+        ...patient,
+        patient_type: 'patient' as const,
+        phone_number: patient.phone, // Ensure phone_number field exists for compatibility
+      }));
+
+      // Transform guests data to match Patient interface
+      const transformedGuests = (guestsData || []).map((guest: any) => ({
+        id: guest.guest_id,
+        full_name: guest.full_name,
+        phone: guest.phone,
+        phone_number: guest.phone,
+        email: guest.email,
+        date_of_birth: guest.date_of_birth,
+        gender: guest.gender,
+        allergies: null,
+        chronic_conditions: null,
+        past_surgeries: null,
+        vaccination_status: 'not_vaccinated' as const,
+        patient_status: 'active' as const,
+        created_at: guest.created_at,
+        updated_at: guest.created_at,
+        image_link: null,
+        bio: null,
+        patient_type: 'guest' as const,
+        address: null,
+        emergency_contact_name: null,
+        emergency_contact_phone: null,
+      }));
+
+      // Combine both arrays
+      const combinedData = [...transformedPatients, ...transformedGuests];
+
+      // Sort by created_at descending
+      combinedData.sort((a, b) => {
+        const dateA = new Date(a.created_at || '').getTime();
+        const dateB = new Date(b.created_at || '').getTime();
+        return dateB - dateA;
+      });
+
+      // Process patient data to add full image URLs (only for actual patients)
+      const processedData = this.processImageUrls(
+        combinedData,
+        'patient-uploads'
+      ) as Patient[];
+
+      return { success: true, data: processedData };
+    } catch (error) {
+      this.logger.error('Unexpected error fetching patients and guests:', error);
+      return { success: false, error: 'An unexpected error occurred' };
+    }
+  }
+
   async createPatient(
     patientData: Partial<Patient>
   ): Promise<{ success: boolean; data?: Patient; error?: string }> {
@@ -807,6 +889,56 @@ export class SupabaseService {
       return { success: true, data: data };
     } catch (error) {
       this.logger.error('Unexpected error updating patient:', error);
+      return { success: false, error: 'An unexpected error occurred' };
+    }
+  }
+
+  async updateGuest(
+    guestId: string,
+    guestData: any
+  ): Promise<{ success: boolean; data?: any; error?: string }> {
+    try {
+      const { data, error } = await supabase
+        .from('guests')
+        .update(guestData)
+        .eq('guest_id', guestId)
+        .select()
+        .single();
+
+      if (error) {
+        this.logger.error('Error updating guest:', error);
+        return { success: false, error: error.message };
+      }
+
+      return { success: true, data: data };
+    } catch (error) {
+      this.logger.error('Unexpected error updating guest:', error);
+      return { success: false, error: 'An unexpected error occurred' };
+    }
+  }
+
+  async getAppointmentsByPatientId(
+    patientId: string
+  ): Promise<{ success: boolean; data?: any[]; error?: string }> {
+    try {
+      const { data, error } = await supabase
+        .from('appointments')
+        .select(`
+          *,
+          doctor:staff_members(full_name, speciality),
+          service:medical_services(service_name)
+        `)
+        .eq('patient_id', patientId)
+        .order('appointment_date', { ascending: false });
+
+      if (error) {
+        this.logger.error('Error fetching appointments:', error);
+        return { success: false, error: error.message };
+      }
+
+      return { success: true, data: data || [] };
+    } catch (error) {
+      this.logger.error('Unexpected error fetching appointments:', error);
       return { success: false, error: 'An unexpected error occurred' };
     }
   }
@@ -4951,6 +5083,208 @@ export class SupabaseService {
       return {
         success: false,
         message: 'Unexpected error: ' + error.message
+      };
+    }
+  }
+
+  // ============================
+  // TRANSACTION MANAGEMENT
+  // ============================
+
+  /**
+   * Get all transactions with patient information
+   */
+  async getAllTransactions(): Promise<{
+    success: boolean;
+    data?: any[];
+    error?: string;
+  }> {
+    try {
+      this.logger.info('💳 Getting all transactions...', undefined, new Date().toISOString());
+
+      const { data, error } = await supabase
+        .from('transactions')
+        .select(`
+          *,
+          patients (
+            id,
+            full_name,
+            email,
+            phone
+          )
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        this.logger.error('❌ Error getting transactions:', error);
+        throw error;
+      }
+
+      // Transform data to include patient information
+      const transformedData = data?.map(transaction => ({
+        ...transaction,
+        patient_name: transaction.patients?.full_name || 'Guest',
+        patient_email: transaction.patients?.email || '',
+        patient_phone: transaction.patients?.phone || '',
+        payment_method: transaction.vnpay_response && Object.keys(transaction.vnpay_response).length > 0 ? 'VNPay' : 'Cash',
+        services_list: Array.isArray(transaction.services) ? transaction.services : []
+      })) || [];
+
+      this.logger.info('✅ Transactions loaded successfully:', { count: transformedData.length }, new Date().toISOString());
+      return {
+        success: true,
+        data: transformedData
+      };
+    } catch (error: any) {
+      this.logger.error('❌ Error getting transactions:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  /**
+   * Get transaction statistics
+   */
+  async getTransactionStats(): Promise<{
+    success: boolean;
+    data?: any;
+    error?: string;
+  }> {
+    try {
+      this.logger.info('📊 Getting transaction statistics...', undefined, new Date().toISOString());
+
+      // Get all transactions
+      const { data: transactions, error } = await supabase
+        .from('transactions')
+        .select('amount, status, created_at');
+
+      if (error) {
+        this.logger.error('❌ Error getting transaction stats:', error);
+        throw error;
+      }
+
+      // Calculate statistics
+      const today = new Date().toISOString().split('T')[0];
+      const stats = {
+        total_transactions: transactions?.length || 0,
+        total_amount: transactions?.reduce((sum, t) => sum + (t.amount || 0), 0) || 0,
+        completed_transactions: transactions?.filter(t => t.status === 'completed').length || 0,
+        pending_transactions: transactions?.filter(t => t.status === 'pending').length || 0,
+        failed_transactions: transactions?.filter(t => t.status === 'failed').length || 0,
+        today_transactions: transactions?.filter(t => t.created_at?.startsWith(today)).length || 0,
+        today_amount: transactions?.filter(t => t.created_at?.startsWith(today))
+          .reduce((sum, t) => sum + (t.amount || 0), 0) || 0
+      };
+
+      this.logger.info('✅ Transaction statistics calculated:', stats, new Date().toISOString());
+      return {
+        success: true,
+        data: stats
+      };
+    } catch (error: any) {
+      this.logger.error('❌ Error calculating transaction stats:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  /**
+   * Update transaction status
+   */
+  async updateTransactionStatus(
+    transactionId: string,
+    status: string
+  ): Promise<{
+    success: boolean;
+    data?: any;
+    error?: string;
+  }> {
+    try {
+      this.logger.info('🔄 Updating transaction status:', { transactionId, status }, new Date().toISOString());
+
+      const { data, error } = await supabase
+        .from('transactions')
+        .update({
+          status,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', transactionId)
+        .select()
+        .single();
+
+      if (error) {
+        this.logger.error('❌ Error updating transaction status:', error);
+        throw error;
+      }
+
+      this.logger.info('✅ Transaction status updated successfully', undefined, new Date().toISOString());
+      return {
+        success: true,
+        data
+      };
+    } catch (error: any) {
+      this.logger.error('❌ Error updating transaction status:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  /**
+   * Create a new transaction
+   */
+  async createTransaction(transactionData: {
+    patient_id: string;
+    amount: number;
+    status: any;
+    services: any[];
+    order_id: string;
+    order_info: string;
+    vnpay_response: any;
+  }): Promise<{
+    success: boolean;
+    data?: any;
+    error?: string;
+  }> {
+    try {
+      this.logger.info('💳 Creating new transaction:', transactionData, new Date().toISOString());
+
+      const { data, error } = await supabase
+        .from('transactions')
+        .insert([{
+          patient_id: transactionData.patient_id,
+          amount: transactionData.amount,
+          status: transactionData.status,
+          services: transactionData.services,
+          order_id: transactionData.order_id,
+          order_info: transactionData.order_info,
+          vnpay_response: transactionData.vnpay_response,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }])
+        .select()
+        .single();
+
+      if (error) {
+        this.logger.error('❌ Error creating transaction:', error);
+        throw error;
+      }
+
+      this.logger.info('✅ Transaction created successfully:', data, new Date().toISOString());
+      return {
+        success: true,
+        data: data
+      };
+    } catch (error: any) {
+      this.logger.error('❌ Error creating transaction:', error);
+      return {
+        success: false,
+        error: error.message
       };
     }
   }

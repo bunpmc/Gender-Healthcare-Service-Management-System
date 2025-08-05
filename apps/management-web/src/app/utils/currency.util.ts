@@ -126,6 +126,24 @@ export class CurrencyUtil {
   }
 
   /**
+   * Format amount with comma-separated thousands (1,000 VND format)
+   * @param amount - The amount in VND
+   * @returns Formatted string with comma-separated thousands
+   */
+  static formatVNDWithCommas(amount: number | null | undefined): string {
+    if (amount === null || amount === undefined || isNaN(amount)) {
+      return '0 VND';
+    }
+
+    const formatted = new Intl.NumberFormat('en-US', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(amount);
+
+    return `${formatted} VND`;
+  }
+
+  /**
    * Parse thousands VND string back to full VND number
    * @param thousandsString - The thousands string to parse (e.g., "150 nghìn ₫")
    * @returns Parsed number in full VND or 0 if invalid
@@ -154,7 +172,7 @@ import { Pipe, PipeTransform } from '@angular/core';
   standalone: true
 })
 export class VndCurrencyPipe implements PipeTransform {
-  transform(value: number | null | undefined, format: 'standard' | 'custom' | 'compact' | 'thousands' = 'standard'): string {
+  transform(value: number | null | undefined, format: 'standard' | 'custom' | 'compact' | 'thousands' | 'commas' = 'standard'): string {
     switch (format) {
       case 'custom':
         return CurrencyUtil.formatVNDCustom(value);
@@ -162,6 +180,8 @@ export class VndCurrencyPipe implements PipeTransform {
         return CurrencyUtil.formatCompact(value);
       case 'thousands':
         return CurrencyUtil.formatThousandsVND(value);
+      case 'commas':
+        return CurrencyUtil.formatVNDWithCommas(value);
       default:
         return CurrencyUtil.formatVND(value);
     }

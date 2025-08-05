@@ -15,6 +15,10 @@ interface Patient {
   created_at: string;
   last_visit?: string;
   status: 'active' | 'inactive';
+  allergies?: string[];
+  chronic_conditions?: string[];
+  medications?: string[];
+  vaccination_status?: string;
 }
 
 @Component({
@@ -179,6 +183,223 @@ interface Patient {
         </div>
       </div>
     </div>
+
+    <!-- Patient Details Modal -->
+    <div *ngIf="showPatientModal && selectedPatient" 
+         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+         (click)="closePatientModal()">
+      <div class="bg-white rounded-3xl shadow-2xl max-w-5xl w-full max-h-[95vh] overflow-hidden"
+           (click)="$event.stopPropagation()">
+        
+        <!-- Modal Header -->
+        <div class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-6">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+              <div class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                </svg>
+              </div>
+              <div>
+                <h2 class="text-2xl font-bold">{{ selectedPatient.full_name }}</h2>
+                <p class="text-indigo-200">Patient ID: {{ selectedPatient.id }}</p>
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium mt-2"
+                      [ngClass]="selectedPatient.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'">
+                  {{ selectedPatient.status | titlecase }}
+                </span>
+              </div>
+            </div>
+            <button (click)="closePatientModal()"
+                    class="text-white hover:text-gray-200 p-2 rounded-full hover:bg-white hover:bg-opacity-20 transition-colors">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Modal Content -->
+        <div class="overflow-y-auto max-h-[calc(95vh-140px)]">
+          <div class="p-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              
+              <!-- Basic Information -->
+              <div class="space-y-6">
+                <div>
+                  <h3 class="text-lg font-semibold text-gray-900 border-b pb-2 mb-4">Basic Information</h3>
+                  
+                  <div class="space-y-4">
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700">Full Name</label>
+                      <p class="mt-1 text-sm text-gray-900">{{ selectedPatient.full_name }}</p>
+                    </div>
+                    
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700">Email</label>
+                      <p class="mt-1 text-sm text-gray-900">{{ selectedPatient.email }}</p>
+                    </div>
+                    
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700">Phone</label>
+                      <p class="mt-1 text-sm text-gray-900">{{ selectedPatient.phone }}</p>
+                    </div>
+                    
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700">Date of Birth</label>
+                      <p class="mt-1 text-sm text-gray-900">{{ formatDate(selectedPatient.date_of_birth) }}</p>
+                    </div>
+                    
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700">Age</label>
+                      <p class="mt-1 text-sm text-gray-900">{{ calculateAge(selectedPatient.date_of_birth) }} years old</p>
+                    </div>
+                    
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700">Gender</label>
+                      <p class="mt-1">
+                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
+                              [ngClass]="getGenderBadgeClass(selectedPatient.gender)">
+                          {{ selectedPatient.gender }}
+                        </span>
+                      </p>
+                    </div>
+                    
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700">Address</label>
+                      <p class="mt-1 text-sm text-gray-900">{{ selectedPatient.address }}</p>
+                    </div>
+                    
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700">Emergency Contact</label>
+                      <p class="mt-1 text-sm text-gray-900">{{ selectedPatient.emergency_contact }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Medical Information -->
+              <div class="space-y-6">
+                <div>
+                  <h3 class="text-lg font-semibold text-gray-900 border-b pb-2 mb-4">Medical Information</h3>
+                  
+                  <div class="space-y-4">
+                    <!-- Allergies -->
+                    <div *ngIf="selectedPatient.allergies && selectedPatient.allergies.length > 0">
+                      <label class="block text-sm font-medium text-gray-700">Allergies</label>
+                      <div class="mt-1 flex flex-wrap gap-2">
+                        <span *ngFor="let allergy of selectedPatient.allergies"
+                              class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-red-100 text-red-800">
+                          {{ allergy }}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <!-- Chronic Conditions -->
+                    <div *ngIf="selectedPatient.chronic_conditions && selectedPatient.chronic_conditions.length > 0">
+                      <label class="block text-sm font-medium text-gray-700">Chronic Conditions</label>
+                      <div class="mt-1 flex flex-wrap gap-2">
+                        <span *ngFor="let condition of selectedPatient.chronic_conditions"
+                              class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-800">
+                          {{ condition }}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <!-- Current Medications -->
+                    <div *ngIf="selectedPatient.medications && selectedPatient.medications.length > 0">
+                      <label class="block text-sm font-medium text-gray-700">Current Medications</label>
+                      <div class="mt-1 flex flex-wrap gap-2">
+                        <span *ngFor="let medication of selectedPatient.medications"
+                              class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
+                          {{ medication }}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <!-- Vaccination Status -->
+                    <div *ngIf="selectedPatient.vaccination_status">
+                      <label class="block text-sm font-medium text-gray-700">Vaccination Status</label>
+                      <p class="mt-1">
+                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
+                              [ngClass]="getVaccinationBadgeClass(selectedPatient.vaccination_status)">
+                          {{ selectedPatient.vaccination_status.replace('_', ' ') | titlecase }}
+                        </span>
+                      </p>
+                    </div>
+                    
+                    <!-- Medical History -->
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700">Medical History</label>
+                      <div class="mt-1 bg-gray-50 border border-gray-200 rounded-lg p-3">
+                        <p class="text-sm text-gray-900">{{ selectedPatient.medical_history || 'No medical history recorded' }}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Visit History Section -->
+            <div class="mt-8 border-t pt-6">
+              <h3 class="text-lg font-semibold text-gray-900 border-b pb-2 mb-4">Visit History</h3>
+              
+              <div class="space-y-4">
+                <div *ngIf="selectedPatient.last_visit" class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div class="flex items-center space-x-3">
+                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <div>
+                      <p class="text-sm font-medium text-blue-900">Last Visit</p>
+                      <p class="text-sm text-blue-700">{{ formatDate(selectedPatient.last_visit) }}</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div *ngIf="!selectedPatient.last_visit" class="text-center py-6">
+                  <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                  </svg>
+                  <p class="mt-2 text-sm text-gray-500">No visit history available</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Record Information -->
+            <div class="mt-8 border-t pt-6">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700">Patient Since</label>
+                  <p class="mt-1 text-sm text-gray-900">{{ formatDate(selectedPatient.created_at) }}</p>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700">Record Status</label>
+                  <p class="mt-1">
+                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
+                          [ngClass]="selectedPatient.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'">
+                      {{ selectedPatient.status | titlecase }}
+                    </span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="bg-gray-50 px-8 py-4 border-t">
+          <div class="flex justify-end space-x-3">
+            <button (click)="closePatientModal()"
+                    class="px-6 py-2 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors">
+              Close
+            </button>
+            <button class="px-6 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all">
+              Edit Record
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   `,
   styles: [`
     /* Modern Patient Records Styles */
@@ -200,6 +421,26 @@ interface Patient {
     .hover\\:scale-105:hover {
       transform: scale(1.05);
     }
+
+    /* Modal specific styles */
+    .fixed {
+      position: fixed !important;
+      z-index: 9999 !important;
+    }
+
+    /* Ensure modal content is scrollable and properly sized */
+    .max-h-\\[95vh\\] {
+      max-height: 95vh !important;
+    }
+
+    .max-h-\\[calc\\(95vh-140px\\)\\] {
+      max-height: calc(95vh - 140px) !important;
+    }
+
+    /* Badge styles */
+    .rounded-full {
+      border-radius: 9999px;
+    }
   `]
 })
 export class PatientRecordsComponent implements OnInit {
@@ -207,11 +448,13 @@ export class PatientRecordsComponent implements OnInit {
   error: string | null = null;
   searchTerm = '';
   statusFilter = '';
+  showPatientModal = false;
+  selectedPatient: Patient | null = null;
 
   patients: Patient[] = [];
   filteredPatients: Patient[] = [];
 
-  constructor() {}
+  constructor() { }
 
   ngOnInit(): void {
     this.loadPatientRecords();
@@ -236,28 +479,73 @@ export class PatientRecordsComponent implements OnInit {
 
   filterPatients(): void {
     this.filteredPatients = this.patients.filter(patient => {
-      const matchesSearch = !this.searchTerm || 
+      const matchesSearch = !this.searchTerm ||
         patient.full_name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         patient.email.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         patient.phone.includes(this.searchTerm);
-      
+
       const matchesStatus = !this.statusFilter || patient.status === this.statusFilter;
-      
+
       return matchesSearch && matchesStatus;
     });
   }
 
   viewPatientDetails(patient: Patient): void {
     console.log('👤 Viewing patient details:', patient);
-    // TODO: Navigate to patient detail view or open modal
+    this.selectedPatient = patient;
+    this.showPatientModal = true;
+  }
+
+  closePatientModal(): void {
+    this.showPatientModal = false;
+    this.selectedPatient = null;
+  }
+
+  calculateAge(dateOfBirth: string): number {
+    const today = new Date();
+    const birthDate = new Date(dateOfBirth);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+
+    return age;
+  }
+
+  getGenderBadgeClass(gender: string): string {
+    switch (gender?.toLowerCase()) {
+      case 'male':
+        return 'bg-blue-100 text-blue-800';
+      case 'female':
+        return 'bg-pink-100 text-pink-800';
+      case 'other':
+        return 'bg-purple-100 text-purple-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  }
+
+  getVaccinationBadgeClass(status: string): string {
+    switch (status?.toLowerCase()) {
+      case 'fully_vaccinated':
+        return 'bg-green-100 text-green-800';
+      case 'partially_vaccinated':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'not_vaccinated':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
   }
 
   formatDate(dateString: string): string {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
     });
   }
 
@@ -272,10 +560,14 @@ export class PatientRecordsComponent implements OnInit {
         gender: 'Female',
         address: '123 Main St, City, State 12345',
         emergency_contact: 'John Johnson - +1 (555) 987-6543',
-        medical_history: 'No significant medical history',
+        medical_history: 'No significant medical history. Regular checkups show good overall health.',
         created_at: '2024-01-15T10:30:00Z',
         last_visit: '2024-12-01T14:30:00Z',
-        status: 'active'
+        status: 'active',
+        allergies: ['Peanuts', 'Shellfish'],
+        chronic_conditions: [],
+        medications: ['Multivitamin', 'Vitamin D3'],
+        vaccination_status: 'fully_vaccinated'
       },
       {
         id: 'PAT002',
@@ -286,10 +578,14 @@ export class PatientRecordsComponent implements OnInit {
         gender: 'Male',
         address: '456 Oak Ave, City, State 12345',
         emergency_contact: 'Lisa Chen - +1 (555) 876-5432',
-        medical_history: 'Allergic to penicillin',
+        medical_history: 'Allergic to penicillin. Had appendectomy in 2018. Generally healthy.',
         created_at: '2024-02-20T09:15:00Z',
         last_visit: '2024-11-28T11:00:00Z',
-        status: 'active'
+        status: 'active',
+        allergies: ['Penicillin', 'Latex'],
+        chronic_conditions: [],
+        medications: ['Ibuprofen 400mg as needed'],
+        vaccination_status: 'fully_vaccinated'
       },
       {
         id: 'PAT003',
@@ -300,9 +596,31 @@ export class PatientRecordsComponent implements OnInit {
         gender: 'Female',
         address: '789 Pine St, City, State 12345',
         emergency_contact: 'Carlos Rodriguez - +1 (555) 765-4321',
-        medical_history: 'Diabetes Type 2',
+        medical_history: 'Diagnosed with Type 2 Diabetes in 2020. Managing well with medication and diet.',
         created_at: '2024-03-10T16:45:00Z',
-        status: 'inactive'
+        status: 'inactive',
+        allergies: [],
+        chronic_conditions: ['Type 2 Diabetes', 'Hypertension'],
+        medications: ['Metformin 500mg twice daily', 'Lisinopril 10mg daily'],
+        vaccination_status: 'partially_vaccinated'
+      },
+      {
+        id: 'PAT004',
+        full_name: 'David Kim',
+        email: 'david.kim@email.com',
+        phone: '+1 (555) 456-7890',
+        date_of_birth: '1992-05-18',
+        gender: 'Male',
+        address: '321 Elm St, City, State 12345',
+        emergency_contact: 'Anna Kim - +1 (555) 654-3210',
+        medical_history: 'History of seasonal allergies. No major medical issues.',
+        created_at: '2024-04-05T11:20:00Z',
+        last_visit: '2024-12-10T09:30:00Z',
+        status: 'active',
+        allergies: ['Pollen', 'Dust mites'],
+        chronic_conditions: ['Seasonal Allergies'],
+        medications: ['Claritin 10mg daily during allergy season'],
+        vaccination_status: 'fully_vaccinated'
       }
     ];
   }

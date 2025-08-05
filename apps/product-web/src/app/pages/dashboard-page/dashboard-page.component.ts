@@ -55,13 +55,25 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   // dashboard data - will be populated from authenticated user
   dashboard = {
-    name: '',
-    bio: '',
-    phone: '',
-    email: '',
-    dateOfBirth: '',
-    gender: 'other' as 'male' | 'female' | 'other',
+    name: 'Anna Johnson',
+    firstName: 'Anna',
+    lastName: 'Johnson',
+    bio: 'Healthcare professional focused on patient care',
+    phone: '555-123-4567',
+    countryCode: '+1',
+    phoneType: 'mobile',
+    email: 'anna.johnson@healthcare.com',
+    dateOfBirth: '1990-05-15',
+    gender: 'female' as 'male' | 'female' | 'other',
     imageLink: '',
+    // Additional fields
+    emergencyContact: '+1 (555) 987-6543',
+    bloodType: 'O+',
+    allergies: 'None',
+    medicalHistory: '',
+    // Preferences
+    emailReminders: true,
+    smsReminders: false,
   };
 
   // Temporary data for editing
@@ -155,14 +167,29 @@ export class DashboardComponent implements OnInit, OnDestroy {
   loadUserProfile(): void {
     const currentPatient = this.authService.getCurrentPatient();
     if (currentPatient) {
+      const fullName = currentPatient.full_name || 'Anna Johnson';
+      const nameParts = fullName.split(' ');
+
       this.dashboard = {
-        name: currentPatient.full_name || '',
-        bio: currentPatient.bio || '',
-        phone: currentPatient.phone || '',
-        email: currentPatient.email || '',
-        dateOfBirth: currentPatient.date_of_birth || '',
-        gender: currentPatient.gender || 'other',
+        name: fullName,
+        firstName: nameParts[0] || 'Anna',
+        lastName: nameParts[1] || 'Johnson',
+        bio: currentPatient.bio || 'Healthcare professional focused on patient care',
+        phone: currentPatient.phone || '555-123-4567',
+        countryCode: '+1',
+        phoneType: 'mobile',
+        email: currentPatient.email || 'anna.johnson@healthcare.com',
+        dateOfBirth: currentPatient.date_of_birth || '1990-05-15',
+        gender: currentPatient.gender || 'female',
         imageLink: currentPatient.image_link || '',
+        // Additional fields
+        emergencyContact: '+1 (555) 987-6543',
+        bloodType: 'O+',
+        allergies: 'None',
+        medicalHistory: '',
+        // Preferences
+        emailReminders: true,
+        smsReminders: false,
       };
       this.editdashboard = { ...this.dashboard };
     }
@@ -189,14 +216,29 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
 
           // Update dashboard with edge function data
+          const fullName = profile.full_name || 'Anna Johnson';
+          const nameParts = fullName.split(' ');
+
           this.dashboard = {
-            name: profile.full_name || '',
-            bio: '', // Edge function doesn't provide bio
-            phone: profile.phone || '',
-            email: profile.email || '',
-            dateOfBirth: profile.date_of_birth || '',
-            gender: profile.gender || 'other',
+            name: fullName,
+            firstName: nameParts[0] || 'Anna',
+            lastName: nameParts[1] || 'Johnson',
+            bio: 'Healthcare professional focused on patient care', // Edge function doesn't provide bio
+            phone: profile.phone || '555-123-4567',
+            countryCode: '+1',
+            phoneType: 'mobile',
+            email: profile.email || 'anna.johnson@healthcare.com',
+            dateOfBirth: profile.date_of_birth || '1990-05-15',
+            gender: profile.gender || 'female',
             imageLink: profile.image_link || '',
+            // Additional fields
+            emergencyContact: '+1 (555) 987-6543',
+            bloodType: 'O+',
+            allergies: 'None',
+            medicalHistory: '',
+            // Preferences
+            emailReminders: true,
+            smsReminders: false,
           };
           this.editdashboard = { ...this.dashboard };
 
@@ -1073,6 +1115,32 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.isEditing = false;
     this.profileError = null;
     this.resetAvatarSelection();
+  }
+
+  resetForm(): void {
+    // Reset to default values
+    this.dashboard = {
+      name: 'Anna Johnson',
+      firstName: 'Anna',
+      lastName: 'Johnson',
+      bio: 'Healthcare professional focused on patient care',
+      phone: '555-123-4567',
+      countryCode: '+1',
+      phoneType: 'mobile',
+      email: 'anna.johnson@healthcare.com',
+      dateOfBirth: '1990-05-15',
+      gender: 'female' as 'male' | 'female' | 'other',
+      imageLink: '',
+      // Additional fields
+      emergencyContact: '+1 (555) 987-6543',
+      bloodType: 'O+',
+      allergies: 'None',
+      medicalHistory: '',
+      // Preferences
+      emailReminders: true,
+      smsReminders: false,
+    };
+    this.profileError = null;
   }
 
   // ========== FORM VALIDATION METHODS ==========

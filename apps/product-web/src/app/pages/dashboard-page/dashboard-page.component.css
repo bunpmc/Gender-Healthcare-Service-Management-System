@@ -539,6 +539,25 @@
   background: #dc2626;
 }
 
+.btn-secondary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: #6b7280;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: #4b5563;
+}
+
 /* Coming Soon Placeholder */
 .coming-soon {
   text-align: center;

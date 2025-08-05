@@ -176,28 +176,29 @@
 
           <div class="form-row">
             <div class="form-group">
-              <label for="firstname">Firstname</label>
+              <label for="firstname"
+                >First Name <span class="required">*</span></label
+              >
               <input
                 type="text"
                 id="firstname"
-                [value]="(dashboard.name || 'Anna Johnson').split(' ')[0]"
+                [(ngModel)]="dashboard.firstName"
                 class="form-input"
-                [readonly]="!isEditing"
+                placeholder="Enter first name"
+                required
               />
             </div>
-          </div>
-
-          <div class="form-row">
             <div class="form-group">
-              <label for="lastname">Last Name</label>
+              <label for="lastname"
+                >Last Name <span class="required">*</span></label
+              >
               <input
                 type="text"
                 id="lastname"
-                [value]="
-                  (dashboard.name || 'Anna Johnson').split(' ')[1] || 'Johnson'
-                "
+                [(ngModel)]="dashboard.lastName"
                 class="form-input"
-                [readonly]="!isEditing"
+                placeholder="Enter last name"
+                required
               />
             </div>
           </div>
@@ -211,7 +212,7 @@
                     type="radio"
                     name="gender"
                     value="male"
-                    [disabled]="!isEditing"
+                    [(ngModel)]="dashboard.gender"
                   />
                   Male
                 </label>
@@ -220,10 +221,18 @@
                     type="radio"
                     name="gender"
                     value="female"
-                    checked
-                    [disabled]="!isEditing"
+                    [(ngModel)]="dashboard.gender"
                   />
                   Female
+                </label>
+                <label class="radio-label">
+                  <input
+                    type="radio"
+                    name="gender"
+                    value="other"
+                    [(ngModel)]="dashboard.gender"
+                  />
+                  Other
                 </label>
               </div>
             </div>
@@ -231,13 +240,15 @@
 
           <div class="form-row">
             <div class="form-group">
-              <label for="birthday">Birthday</label>
+              <label for="birthday"
+                >Date of Birth <span class="required">*</span></label
+              >
               <input
-                type="text"
+                type="date"
                 id="birthday"
-                placeholder="MM/DD/YYYY"
+                [(ngModel)]="dashboard.dateOfBirth"
                 class="form-input"
-                [readonly]="!isEditing"
+                required
               />
             </div>
           </div>
@@ -249,17 +260,28 @@
 
           <div class="form-row">
             <div class="form-group">
-              <label for="mobile">Mobile Number</label>
+              <label for="mobile"
+                >Mobile Number <span class="required">*</span></label
+              >
               <div class="phone-input">
-                <select class="country-code">
-                  <option value="+44">🇬🇧</option>
+                <select
+                  class="country-code"
+                  [(ngModel)]="dashboard.countryCode"
+                >
+                  <option value="+1">🇺🇸 +1</option>
+                  <option value="+44">🇬🇧 +44</option>
+                  <option value="+33">🇫🇷 +33</option>
+                  <option value="+49">🇩🇪 +49</option>
+                  <option value="+81">🇯🇵 +81</option>
+                  <option value="+86">🇨🇳 +86</option>
                 </select>
                 <input
                   type="tel"
                   id="mobile"
-                  [value]="dashboard.phone || '6282646632'"
+                  [(ngModel)]="dashboard.phone"
                   class="form-input"
-                  [readonly]="!isEditing"
+                  placeholder="Enter phone number"
+                  required
                 />
               </div>
             </div>
@@ -268,24 +290,27 @@
               <select
                 id="phonetype"
                 class="form-select"
-                [disabled]="!isEditing"
+                [(ngModel)]="dashboard.phoneType"
               >
-                <option value="work" selected>Work</option>
-                <option value="home">Home</option>
                 <option value="mobile">Mobile</option>
+                <option value="work">Work</option>
+                <option value="home">Home</option>
               </select>
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label for="email">Email address</label>
+              <label for="email"
+                >Email Address <span class="required">*</span></label
+              >
               <input
                 type="email"
                 id="email"
-                [value]="dashboard.email || 'anna.johnson@gmail.com'"
+                [(ngModel)]="dashboard.email"
                 class="form-input"
-                [readonly]="!isEditing"
+                placeholder="Enter email address"
+                required
               />
             </div>
           </div>
@@ -294,8 +319,15 @@
             <div class="form-group">
               <div class="checkbox-group">
                 <label class="checkbox-label">
-                  <input type="checkbox" checked [disabled]="!isEditing" />
+                  <input
+                    type="checkbox"
+                    [(ngModel)]="dashboard.emailReminders"
+                  />
                   Send E-mail appointment reminders
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" [(ngModel)]="dashboard.smsReminders" />
+                  Send SMS appointment reminders
                 </label>
               </div>
             </div>
@@ -337,7 +369,7 @@
         </div>
 
         <!-- Action Buttons -->
-        <div class="form-actions" *ngIf="isEditing">
+        <div class="form-actions">
           <button class="btn-primary" (click)="savedashboard()">
             <svg
               class="w-4 h-4"
@@ -352,9 +384,9 @@
                 d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
               ></path>
             </svg>
-            Switch Client
+            Save Changes
           </button>
-          <button class="btn-danger" (click)="cancelEdit()">
+          <button class="btn-secondary" (click)="resetForm()">
             <svg
               class="w-4 h-4"
               fill="none"
@@ -368,7 +400,7 @@
                 d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
               ></path>
             </svg>
-            Delete Client
+            Reset Form
           </button>
         </div>
       </div>

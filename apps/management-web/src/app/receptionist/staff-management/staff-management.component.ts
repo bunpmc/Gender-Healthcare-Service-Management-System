@@ -266,10 +266,13 @@ export class ReceptionistStaffManagementComponent implements OnInit {
   onImageError(event: any) {
     // Hide the image element when there's an error loading it
     event.target.style.display = 'none';
-    // Show the fallback initials avatar
-    const fallback = event.target.nextElementSibling;
-    if (fallback) {
-      fallback.style.display = 'flex';
+    // Find and show the fallback initials avatar in the same container
+    const container = event.target.parentElement;
+    if (container) {
+      const fallback = container.querySelector('.avatar-fallback');
+      if (fallback) {
+        fallback.style.display = 'flex';
+      }
     }
   }
 }

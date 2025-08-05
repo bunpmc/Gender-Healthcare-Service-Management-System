@@ -1,5 +1,23 @@
 /* Staff Management Component Styles */
 
+/* Avatar styles */
+.staff-avatar {
+    position: relative;
+    display: inline-block;
+}
+
+.staff-avatar img {
+    transition: transform 0.2s ease-in-out;
+}
+
+.staff-avatar:hover img {
+    transform: scale(1.05);
+}
+
+.avatar-fallback {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
 /* Modal specific styles */
 .modal-overlay {
     position: fixed;

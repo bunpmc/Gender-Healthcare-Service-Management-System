@@ -249,4 +249,27 @@ export class ReceptionistStaffManagementComponent implements OnInit {
       day: 'numeric'
     });
   }
+
+  getStaffAvatarUrl(staff: Staff): string | null {
+    if (staff.image_link) {
+      // If it's already a full URL, return it
+      if (staff.image_link.startsWith('http')) {
+        return staff.image_link;
+      }
+      // If it's a path, construct the full Supabase storage URL
+      const supabaseUrl = 'https://xzxxodxplyetecrsbxmc.supabase.co';
+      return `${supabaseUrl}/storage/v1/object/public/staff-uploads/${staff.image_link}`;
+    }
+    return null;
+  }
+
+  onImageError(event: any) {
+    // Hide the image element when there's an error loading it
+    event.target.style.display = 'none';
+    // Show the fallback initials avatar
+    const fallback = event.target.nextElementSibling;
+    if (fallback) {
+      fallback.style.display = 'flex';
+    }
+  }
 }

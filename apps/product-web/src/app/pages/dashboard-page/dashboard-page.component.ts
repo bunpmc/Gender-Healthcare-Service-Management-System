@@ -5,10 +5,11 @@ import { TranslateModule } from '@ngx-translate/core';
 import { Subject, forkJoin } from 'rxjs';
 import { takeUntil, finalize } from 'rxjs/operators';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-
 import { HeaderComponent } from '../../components/header/header.component';
 import { FooterComponent } from '../../components/footer/footer.component';
-import { AppointmentHistoryComponent } from '../../components/appointment-history/appointment-history.component';
+
+
+import { Router } from '@angular/router';
 import {
   AuthService,
   EdgeFunctionUserProfile,
@@ -26,10 +27,9 @@ import { environment } from '../../environments/environment';
   imports: [
     CommonModule,
     FormsModule,
+    TranslateModule,
     HeaderComponent,
     FooterComponent,
-    TranslateModule,
-    AppointmentHistoryComponent,
   ],
   templateUrl: './dashboard-page.component.html',
   styleUrl: './dashboard-page.component.css',
@@ -43,7 +43,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   isUploadingAvatar = false;
   selectedAvatarFile: File | null = null;
   avatarPreviewUrl: string | null = null;
-  showAppointmentHistory = false;
+
 
   // Calendar properties
   currentDate = new Date();
@@ -101,7 +101,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
     confirmedAppointments: 0,
   };
 
-  constructor(private authService: AuthService, private http: HttpClient) {}
+  constructor(
+    private authService: AuthService,
+    private http: HttpClient,
+    private router: Router
+  ) { }
 
   // Appointment mapping to dates (day of month)
   appointmentMapping: { [key: number]: DashboardAppointment[] } = {};
@@ -182,7 +186,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (profile) => {
           this.edgeFunctionProfile = profile;
-          console.log('Edge function profile loaded:', profile);
+
 
           // Update dashboard with edge function data
           this.dashboard = {
@@ -205,7 +209,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
           this.generateCalendarDays();
         },
         error: (error) => {
-          console.error('Error loading edge function profile:', error);
+
           this.edgeProfileError =
             'Failed to load profile from server. Using local data.';
           // Fallback to local profile loading
@@ -240,7 +244,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         confirmedAppointments: completedCount,
       };
 
-      console.log('Dashboard stats updated:', this.dashboardStatistics);
+
     }
   }
 
@@ -252,10 +256,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       return;
     }
 
-    console.log(
-      'Converting edge function appointments to dashboard format:',
-      this.edgeFunctionProfile.appointments
-    );
+
 
     // Convert edge function appointments to dashboard format
     const edgeAppointments: DashboardAppointment[] =
@@ -277,8 +278,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
           schedule: apt.schedule as 'Morning' | 'Afternoon' | 'Evening',
         }));
 
-    console.log('Converted edge appointments:', edgeAppointments);
-
     // Merge with existing appointments (avoid duplicates)
     const existingIds = new Set(this.appointments.map((apt) => apt.id));
     const newAppointments = edgeAppointments.filter(
@@ -288,7 +287,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     // Add new appointments to the existing list
     this.appointments = [...this.appointments, ...newAppointments];
 
-    console.log('Final appointments list:', this.appointments);
+
   }
 
   /**
@@ -1321,5 +1320,22 @@ export class DashboardComponent implements OnInit, OnDestroy {
     } else {
       console.error('Failed to refresh token');
     }
+  }
+
+  // Navigation methods
+  navigateToHistory(): void {
+    this.router.navigate(['/appointment-history']);
+  }
+
+  navigateToProfiles(): void {
+    this.router.navigate(['/profile-management']);
+  }
+
+  navigateToBooking(): void {
+    this.router.navigate(['/appointment']);
+  }
+
+  navigateToSettings(): void {
+    this.router.navigate(['/settings']);
   }
 }

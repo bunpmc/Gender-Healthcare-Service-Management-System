@@ -88,12 +88,12 @@
                   class="px-3 py-1 rounded-full text-xs font-medium text-white"
                   [ngClass]="{
                     'bg-blue-500/80':
-                      doc.staff_members.gender?.toLowerCase() === 'male',
+                      doc.staff_members.gender.toLowerCase() === 'male',
                     'bg-pink-500/80':
-                      doc.staff_members.gender?.toLowerCase() === 'female',
+                      doc.staff_members.gender.toLowerCase() === 'female',
                     'bg-gray-600/80':
-                      doc.staff_members.gender?.toLowerCase() !== 'male' &&
-                      doc.staff_members.gender?.toLowerCase() !== 'female'
+                      doc.staff_members.gender.toLowerCase() !== 'male' &&
+                      doc.staff_members.gender.toLowerCase() !== 'female'
                   }"
                 >
                   {{ formatDisplayName(doc.staff_members.gender) }}

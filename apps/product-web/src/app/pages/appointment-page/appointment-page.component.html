@@ -168,6 +168,12 @@
       >
         {{ "APPOINTMENT.PATIENT_INFO.TITLE" | translate }}
       </h3>
+
+      <!-- Profile Selector -->
+      <app-profile-selector
+        (profileSelected)="onProfileSelected($event)"
+        (profileCleared)="onProfileCleared()"
+      ></app-profile-selector>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-7 text-black">
         <!-- Full Name -->
         <div>
@@ -307,7 +313,9 @@
             id="gender"
             class="px-4 py-3 w-full rounded-xl border border-gray-200 focus:border-[#4e6688] focus:ring-1 focus:ring-[#4e6688] text-base font-medium outline-none bg-white transition min-w-[120px]"
           >
-            <option value="" selected disabled>--- Select gender ---</option>
+            <option [value]="undefined" selected disabled>
+              --- Select gender ---
+            </option>
             <option value="male">Male</option>
             <option value="female">Female</option>
             <option value="other">Other / Prefer not to say</option>
@@ -1055,4 +1063,14 @@
 
   <!-- Footer Component -->
   <app-footer></app-footer>
+
+  <!-- Profile Save Dialog -->
+  @if (showProfileSaveDialog && profileSaveData) {
+  <app-profile-save-dialog
+    [profileData]="profileSaveData"
+    [show]="showProfileSaveDialog"
+    (save)="onProfileSaveDialogClose()"
+    (close)="onProfileSaveDialogClose()"
+  ></app-profile-save-dialog>
+  }
 </body>

@@ -19,6 +19,9 @@ import { CartComponent } from './components/cart/cart.component';
 import { PaymentResultComponent } from './pages/payment-result-page/payment-result-page.component';
 import { DashboardComponent } from './pages/dashboard-page/dashboard-page.component';
 import { AppointmentResultComponent } from './pages/appointment-result-page/appointment-result-page.component';
+import { AppointmentHistoryPageComponent } from './pages/appointment-history-page/appointment-history-page.component';
+import { ProfileManagementPageComponent } from './pages/profile-management-page/profile-management-page.component';
+import { SettingsPageComponent } from './pages/settings-page/settings-page.component';
 import { AppointmentPaymentPageComponent } from './pages/appointment-payment-page/appointment-payment-page.component';
 import { PeriodTrackingComponent } from './pages/period-tracking-page/period-tracking-page.component';
 import { ErrorPageComponent } from './pages/error-page/error-page.component';
@@ -43,6 +46,21 @@ export const routes: Routes = [
   {
     path: 'dashboard',
     component: DashboardComponent,
+  },
+  {
+    path: 'appointment-history',
+    component: AppointmentHistoryPageComponent,
+    data: { breadcrumb: 'Appointment History' },
+  },
+  {
+    path: 'profile-management',
+    component: ProfileManagementPageComponent,
+    data: { breadcrumb: 'Profile Management' },
+  },
+  {
+    path: 'settings',
+    component: SettingsPageComponent,
+    data: { breadcrumb: 'Settings' },
   },
   {
     path: 'appointment',
@@ -148,4 +166,4 @@ export const routes: Routes = [
   ],
   exports: [RouterModule],
 })
-export class AppRoutingModule {}
+export class AppRoutingModule { }

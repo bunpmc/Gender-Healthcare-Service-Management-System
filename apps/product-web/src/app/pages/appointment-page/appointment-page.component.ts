@@ -9,6 +9,8 @@ import { AppointmentService } from '../../services/appointment.service';
 import { AuthService } from '../../services/auth.service';
 import { HeaderComponent } from '../../components/header/header.component';
 import { FooterComponent } from '../../components/footer/footer.component';
+import { ProfileSaveDialogComponent } from '../../components/profile-save-dialog/profile-save-dialog.component';
+import { ProfileSelectorComponent } from '../../components/profile-selector/profile-selector.component';
 
 import {
   BookingState,
@@ -35,6 +37,8 @@ interface ExtendedBookingState extends BookingState {
     TranslateModule,
     HeaderComponent,
     FooterComponent,
+    ProfileSaveDialogComponent,
+    ProfileSelectorComponent,
   ],
   templateUrl: './appointment-page.component.html',
   styleUrls: ['./appointment-page.component.css'],
@@ -88,6 +92,10 @@ export class AppointmentPageComponent implements OnInit {
   availableDates: string[] = [];
   allDoctorSlots: DoctorSlotDetail[] = [];
   selectedDate: string = '';
+
+  // ========== PROFILE SAVE DIALOG ==========
+  showProfileSaveDialog = false;
+  profileSaveData: any = null;
 
   // ========== INIT ==========
   ngOnInit(): void {
@@ -387,16 +395,99 @@ export class AppointmentPageComponent implements OnInit {
     this.errorMessage = null;
 
     if (this.isFormValidStep2(form)) {
-      // Profile saving logic removed (no profile selection)
-
-      // Prepare available doctors for doctor-first flow
-      if (this.bookingType === 'docfirst') {
-        this.availableDoctors = [...this.doctors];
+      // Check if user is logged in and show profile save dialog
+      if (this.authService.isAuthenticated()) {
+        this.showProfileSaveDialogForUser();
+      } else {
+        this.proceedToNextStep();
       }
-
-      this.goToNextStep();
     } else {
       this.scrollToFirstError();
+    }
+  }
+
+  private showProfileSaveDialogForUser(): void {
+    this.profileSaveData = {
+      full_name: this.booking.fullName || '',
+      email: this.booking.email || '',
+      phone: this.getFullPhoneNumber(),
+      gender: this.booking.gender || 'other'
+    };
+    this.showProfileSaveDialog = true;
+  }
+
+  private proceedToNextStep(): void {
+    // Prepare available doctors for doctor-first flow
+    if (this.bookingType === 'docfirst') {
+      this.availableDoctors = [...this.doctors];
+    }
+
+    this.goToNextStep();
+  }
+
+  onProfileSaveDialogClose(): void {
+    this.showProfileSaveDialog = false;
+    this.proceedToNextStep();
+  }
+
+  onProfileSelected(profile: any): void {
+    // Auto-fill form with profile data
+    this.booking.fullName = profile.full_name;
+    this.booking.email = profile.email || '';
+    this.booking.phone = this.extractPhoneNumber(profile.phone);
+    this.booking.gender = profile.gender;
+
+    // Update phone region if needed
+    this.updatePhoneRegionFromNumber(profile.phone);
+  }
+
+  onProfileCleared(): void {
+    // Clear form data
+    this.booking.fullName = '';
+    this.booking.email = '';
+    this.booking.phone = '';
+    this.booking.gender = undefined;
+    this.booking.phoneRegion = 'VN';
+  }
+
+  private extractPhoneNumber(fullPhone: string): string {
+    // Remove country code and formatting to get just the number
+    if (!fullPhone) return '';
+
+    // Handle Vietnamese numbers
+    if (fullPhone.startsWith('+84')) {
+      return fullPhone.substring(3);
+    }
+
+    // Remove any non-digit characters except +
+    const cleaned = fullPhone.replace(/[^\d+]/g, '');
+
+    // If it starts with country code, remove it
+    if (cleaned.startsWith('+')) {
+      const withoutPlus = cleaned.substring(1);
+      if (withoutPlus.startsWith('84')) {
+        return withoutPlus.substring(2);
+      }
+    }
+
+    return cleaned;
+  }
+
+  private updatePhoneRegionFromNumber(fullPhone: string): void {
+    if (!fullPhone) return;
+
+    // Detect country code and update region
+    if (fullPhone.startsWith('+84')) {
+      this.booking.phoneRegion = 'VN';
+    } else if (fullPhone.startsWith('+1')) {
+      this.booking.phoneRegion = 'US';
+    }
+    // Add more country codes as needed
+
+    // Update selected phone region
+    const region = this.phoneRegions.find(r => r.code === this.booking.phoneRegion);
+    if (region) {
+      this.selectedPhoneRegion = region;
     }
   }
 

@@ -139,7 +139,9 @@
           }}</span>
         </div>
         <div class="client-actions">
-          <span class="status-badge active">Active</span>
+          <span class="status-badge" [class]="dashboard.status || 'inactive'">
+            {{ dashboard.status || "inactive" | titlecase }}
+          </span>
           <button class="edit-btn" (click)="toggleEdit()">
             <svg
               class="w-4 h-4"
@@ -161,252 +163,524 @@
 
       <!-- Navigation Tabs -->
       <div class="client-tabs">
-        <button class="tab-btn active">Info and Settings</button>
-        <button class="tab-btn" (click)="navigateToHistory()">
-          Client Insights
+        <button
+          class="tab-btn"
+          [class.active]="currentSection === 'dashboard'"
+          (click)="navigateToDashboard()"
+        >
+          Info and Settings
         </button>
-        <button class="tab-btn">Doctor's Report</button>
+        <button
+          class="tab-btn"
+          [class.active]="currentSection === 'appointments'"
+          (click)="navigateToHistory()"
+        >
+          Appointments
+        </button>
+        <button
+          class="tab-btn"
+          [class.active]="currentSection === 'profile'"
+          (click)="navigateToProfiles()"
+        >
+          Profile Management
+        </button>
+        <button
+          class="tab-btn"
+          [class.active]="currentSection === 'settings'"
+          (click)="navigateToSettings()"
+        >
+          Settings
+        </button>
       </div>
 
       <!-- Tab Content -->
       <div class="tab-content">
-        <!-- Personal Details Section -->
-        <div class="form-section">
-          <h3 class="section-title">PERSONAL DETAILS</h3>
+        <!-- Dashboard Section -->
+        <div *ngIf="currentSection === 'dashboard'">
+          <!-- Personal Details Section -->
+          <div class="form-section">
+            <h3 class="section-title">PERSONAL DETAILS</h3>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label for="firstname"
-                >First Name <span class="required">*</span></label
-              >
-              <input
-                type="text"
-                id="firstname"
-                [(ngModel)]="dashboard.firstName"
-                class="form-input"
-                placeholder="Enter first name"
-                required
-              />
-            </div>
-            <div class="form-group">
-              <label for="lastname"
-                >Last Name <span class="required">*</span></label
-              >
-              <input
-                type="text"
-                id="lastname"
-                [(ngModel)]="dashboard.lastName"
-                class="form-input"
-                placeholder="Enter last name"
-                required
-              />
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label for="gender">Gender</label>
-              <div class="radio-group">
-                <label class="radio-label">
-                  <input
-                    type="radio"
-                    name="gender"
-                    value="male"
-                    [(ngModel)]="dashboard.gender"
-                  />
-                  Male
-                </label>
-                <label class="radio-label">
-                  <input
-                    type="radio"
-                    name="gender"
-                    value="female"
-                    [(ngModel)]="dashboard.gender"
-                  />
-                  Female
-                </label>
-                <label class="radio-label">
-                  <input
-                    type="radio"
-                    name="gender"
-                    value="other"
-                    [(ngModel)]="dashboard.gender"
-                  />
-                  Other
-                </label>
-              </div>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label for="birthday"
-                >Date of Birth <span class="required">*</span></label
-              >
-              <input
-                type="date"
-                id="birthday"
-                [(ngModel)]="dashboard.dateOfBirth"
-                class="form-input"
-                required
-              />
-            </div>
-          </div>
-        </div>
-
-        <!-- Contact Details Section -->
-        <div class="form-section">
-          <h3 class="section-title">CONTACT DETAILS</h3>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label for="mobile"
-                >Mobile Number <span class="required">*</span></label
-              >
-              <div class="phone-input">
-                <select
-                  class="country-code"
-                  [(ngModel)]="dashboard.countryCode"
+            <div class="form-row">
+              <div class="form-group">
+                <label for="firstname"
+                  >First Name <span class="required">*</span></label
                 >
-                  <option value="+1">🇺🇸 +1</option>
-                  <option value="+44">🇬🇧 +44</option>
-                  <option value="+33">🇫🇷 +33</option>
-                  <option value="+49">🇩🇪 +49</option>
-                  <option value="+81">🇯🇵 +81</option>
-                  <option value="+86">🇨🇳 +86</option>
-                </select>
                 <input
-                  type="tel"
-                  id="mobile"
-                  [(ngModel)]="dashboard.phone"
+                  type="text"
+                  id="firstname"
+                  [(ngModel)]="dashboard.firstName"
                   class="form-input"
-                  placeholder="Enter phone number"
+                  placeholder="Enter first name"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label for="lastname"
+                  >Last Name <span class="required">*</span></label
+                >
+                <input
+                  type="text"
+                  id="lastname"
+                  [(ngModel)]="dashboard.lastName"
+                  class="form-input"
+                  placeholder="Enter last name"
                   required
                 />
               </div>
             </div>
-            <div class="form-group">
-              <label for="phonetype">Phone Type</label>
-              <select
-                id="phonetype"
-                class="form-select"
-                [(ngModel)]="dashboard.phoneType"
-              >
-                <option value="mobile">Mobile</option>
-                <option value="work">Work</option>
-                <option value="home">Home</option>
-              </select>
-            </div>
-          </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label for="email"
-                >Email Address <span class="required">*</span></label
-              >
-              <input
-                type="email"
-                id="email"
-                [(ngModel)]="dashboard.email"
-                class="form-input"
-                placeholder="Enter email address"
-                required
-              />
+            <div class="form-row">
+              <div class="form-group">
+                <label for="gender">Gender</label>
+                <div class="radio-group">
+                  <label class="radio-label">
+                    <input
+                      type="radio"
+                      name="gender"
+                      value="male"
+                      [(ngModel)]="dashboard.gender"
+                    />
+                    Male
+                  </label>
+                  <label class="radio-label">
+                    <input
+                      type="radio"
+                      name="gender"
+                      value="female"
+                      [(ngModel)]="dashboard.gender"
+                    />
+                    Female
+                  </label>
+                  <label class="radio-label">
+                    <input
+                      type="radio"
+                      name="gender"
+                      value="other"
+                      [(ngModel)]="dashboard.gender"
+                    />
+                    Other
+                  </label>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <div class="checkbox-group">
-                <label class="checkbox-label">
-                  <input
-                    type="checkbox"
-                    [(ngModel)]="dashboard.emailReminders"
-                  />
-                  Send E-mail appointment reminders
-                </label>
-                <label class="checkbox-label">
-                  <input type="checkbox" [(ngModel)]="dashboard.smsReminders" />
-                  Send SMS appointment reminders
-                </label>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="birthday"
+                  >Date of Birth <span class="required">*</span></label
+                >
+                <input
+                  type="date"
+                  id="birthday"
+                  [(ngModel)]="dashboard.dateOfBirth"
+                  class="form-input"
+                  required
+                />
               </div>
             </div>
           </div>
 
-          <div class="info-message">
-            <svg
-              class="w-4 h-4 text-orange-500"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 15.5c-.77.833.192 2.5 1.732 2.5z"
-              ></path>
-            </svg>
-            If your client is using the trial via so sweath mobile app
+          <!-- Contact Details Section -->
+          <div class="form-section">
+            <h3 class="section-title">CONTACT DETAILS</h3>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="mobile"
+                  >Mobile Number <span class="required">*</span></label
+                >
+                <div class="phone-input">
+                  <select
+                    class="country-code"
+                    [(ngModel)]="dashboard.countryCode"
+                  >
+                    <option value="+1">🇺🇸 +1</option>
+                    <option value="+44">🇬🇧 +44</option>
+                    <option value="+33">🇫🇷 +33</option>
+                    <option value="+49">🇩🇪 +49</option>
+                    <option value="+81">🇯🇵 +81</option>
+                    <option value="+86">🇨🇳 +86</option>
+                  </select>
+                  <input
+                    type="tel"
+                    id="mobile"
+                    [(ngModel)]="dashboard.phone"
+                    class="form-input"
+                    placeholder="Enter phone number"
+                    required
+                  />
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="phonetype">Phone Type</label>
+                <select
+                  id="phonetype"
+                  class="form-select"
+                  [(ngModel)]="dashboard.phoneType"
+                >
+                  <option value="mobile">Mobile</option>
+                  <option value="work">Work</option>
+                  <option value="home">Home</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="email"
+                  >Email Address <span class="required">*</span></label
+                >
+                <input
+                  type="email"
+                  id="email"
+                  [(ngModel)]="dashboard.email"
+                  class="form-input"
+                  placeholder="Enter email address"
+                  required
+                />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <div class="checkbox-group">
+                  <label class="checkbox-label">
+                    <input
+                      type="checkbox"
+                      [(ngModel)]="dashboard.emailReminders"
+                    />
+                    Send E-mail appointment reminders
+                  </label>
+                  <label class="checkbox-label">
+                    <input
+                      type="checkbox"
+                      [(ngModel)]="dashboard.smsReminders"
+                    />
+                    Send SMS appointment reminders
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="info-message">
+              <svg
+                class="w-4 h-4 text-orange-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 15.5c-.77.833.192 2.5 1.732 2.5z"
+                ></path>
+              </svg>
+              If your client is using the trial via so sweath mobile app
+            </div>
+
+            <div class="reminder-info">
+              <svg
+                class="w-4 h-4 text-blue-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                ></path>
+              </svg>
+              A reminder will be sent 48 minutes before the appointment
+            </div>
           </div>
 
-          <div class="reminder-info">
-            <svg
-              class="w-4 h-4 text-blue-500"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              ></path>
-            </svg>
-            A reminder will be sent 48 minutes before the appointment
+          <!-- Action Buttons -->
+          <div class="form-actions">
+            <button class="btn-primary" (click)="savedashboard()">
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
+                ></path>
+              </svg>
+              Save Changes
+            </button>
+            <button class="btn-secondary" (click)="resetForm()">
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                ></path>
+              </svg>
+              Reset Form
+            </button>
+          </div>
+        </div>
+        <!-- End Dashboard Section -->
+
+        <!-- Appointments Section -->
+        <div
+          *ngIf="currentSection === 'appointments'"
+          class="appointments-section"
+        >
+          <div class="section-header">
+            <h2 class="section-title">Appointments</h2>
+            <button class="btn-primary" (click)="navigateToBooking()">
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                ></path>
+              </svg>
+              Book New Appointment
+            </button>
+          </div>
+
+          <!-- Appointment List -->
+          <div class="appointments-list" *ngIf="!selectedAppointment">
+            <div class="appointment-filters">
+              <button
+                class="filter-btn"
+                [class.active]="appointmentFilter === 'all'"
+                (click)="setAppointmentFilter('all')"
+              >
+                All
+              </button>
+              <button
+                class="filter-btn"
+                [class.active]="appointmentFilter === 'upcoming'"
+                (click)="setAppointmentFilter('upcoming')"
+              >
+                Upcoming
+              </button>
+              <button
+                class="filter-btn"
+                [class.active]="appointmentFilter === 'past'"
+                (click)="setAppointmentFilter('past')"
+              >
+                Past
+              </button>
+              <button
+                class="filter-btn"
+                [class.active]="appointmentFilter === 'cancelled'"
+                (click)="setAppointmentFilter('cancelled')"
+              >
+                Cancelled
+              </button>
+            </div>
+
+            <div class="appointment-cards">
+              <div
+                *ngFor="let appointment of filteredAppointments"
+                class="appointment-card"
+                (click)="viewAppointmentDetails(appointment)"
+              >
+                <div class="appointment-header">
+                  <h3 class="appointment-title">{{ appointment.title }}</h3>
+                  <span
+                    class="appointment-status"
+                    [class]="'status-' + appointment.status"
+                  >
+                    {{ appointment.status | titlecase }}
+                  </span>
+                </div>
+                <div class="appointment-details">
+                  <div class="appointment-date">
+                    <svg
+                      class="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      ></path>
+                    </svg>
+                    {{ appointment.date | date : "mediumDate" }}
+                  </div>
+                  <div class="appointment-time">
+                    <svg
+                      class="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                      ></path>
+                    </svg>
+                    {{ appointment.time }}
+                  </div>
+                  <div
+                    class="appointment-doctor"
+                    *ngIf="appointment.doctorName"
+                  >
+                    <svg
+                      class="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                      ></path>
+                    </svg>
+                    {{ appointment.doctorName }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Empty State -->
+            <div *ngIf="filteredAppointments.length === 0" class="empty-state">
+              <svg
+                class="w-16 h-16 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                ></path>
+              </svg>
+              <h3>No Appointments</h3>
+              <p>You don't have any appointments scheduled yet.</p>
+              <button class="btn-primary" (click)="navigateToBooking()">
+                Book Your First Appointment
+              </button>
+            </div>
+          </div>
+
+          <!-- Appointment Details -->
+          <div class="appointment-details-view" *ngIf="selectedAppointment">
+            <div class="details-header">
+              <button class="back-btn" (click)="selectedAppointment = null">
+                <svg
+                  class="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M15 19l-7-7 7-7"
+                  ></path>
+                </svg>
+                Back to Appointments
+              </button>
+              <h2>Appointment Details</h2>
+            </div>
+
+            <div class="appointment-detail-card">
+              <div class="detail-section">
+                <h3>{{ selectedAppointment.title }}</h3>
+                <div class="detail-grid">
+                  <div class="detail-item">
+                    <label>Date</label>
+                    <span>{{
+                      selectedAppointment.date | date : "fullDate"
+                    }}</span>
+                  </div>
+                  <div class="detail-item">
+                    <label>Time</label>
+                    <span>{{ selectedAppointment.time }}</span>
+                  </div>
+                  <div class="detail-item">
+                    <label>Status</label>
+                    <span
+                      class="appointment-status"
+                      [class]="'status-' + selectedAppointment.status"
+                    >
+                      {{ selectedAppointment.status | titlecase }}
+                    </span>
+                  </div>
+                  <div
+                    class="detail-item"
+                    *ngIf="selectedAppointment.doctorName"
+                  >
+                    <label>Doctor</label>
+                    <span>{{ selectedAppointment.doctorName }}</span>
+                  </div>
+                  <div class="detail-item" *ngIf="selectedAppointment.type">
+                    <label>Type</label>
+                    <span>{{ selectedAppointment.type }}</span>
+                  </div>
+                  <div class="detail-item" *ngIf="selectedAppointment.schedule">
+                    <label>Schedule</label>
+                    <span>{{ selectedAppointment.schedule }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="appointment-actions">
+                <button class="btn-secondary">Reschedule</button>
+                <button class="btn-danger">Cancel Appointment</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- End Appointments Section -->
+
+        <!-- Profile Management Section -->
+        <div *ngIf="currentSection === 'profile'" class="profile-section">
+          <h2 class="section-title">Profile Management</h2>
+          <div class="coming-soon">
+            <h3>Profile Management</h3>
+            <p>Advanced profile management features coming soon.</p>
           </div>
         </div>
 
-        <!-- Action Buttons -->
-        <div class="form-actions">
-          <button class="btn-primary" (click)="savedashboard()">
-            <svg
-              class="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
-              ></path>
-            </svg>
-            Save Changes
-          </button>
-          <button class="btn-secondary" (click)="resetForm()">
-            <svg
-              class="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-              ></path>
-            </svg>
-            Reset Form
-          </button>
+        <!-- Settings Section -->
+        <div *ngIf="currentSection === 'settings'" class="settings-section">
+          <h2 class="section-title">Settings</h2>
+          <div class="coming-soon">
+            <h3>Settings</h3>
+            <p>Settings and preferences coming soon.</p>
+          </div>
         </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- Footer -->
-<app-footer></app-footer>
+  <!-- Footer -->
+  <app-footer></app-footer>
+</div>

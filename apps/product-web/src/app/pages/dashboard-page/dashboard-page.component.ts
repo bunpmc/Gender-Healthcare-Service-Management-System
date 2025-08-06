@@ -53,27 +53,34 @@ export class DashboardComponent implements OnInit, OnDestroy {
   calendarView: 'month' | 'week' | 'day' = 'month';
   showDatePicker = false;
 
+  // Dashboard section management
+  currentSection: 'dashboard' | 'appointments' | 'profile' | 'settings' = 'dashboard';
+  selectedAppointment: DashboardAppointment | null = null;
+  appointmentFilter: 'all' | 'upcoming' | 'past' | 'cancelled' = 'all';
+
   // dashboard data - will be populated from authenticated user
   dashboard = {
-    name: 'Anna Johnson',
-    firstName: 'Anna',
-    lastName: 'Johnson',
-    bio: 'Healthcare professional focused on patient care',
-    phone: '555-123-4567',
+    name: '',
+    firstName: '',
+    lastName: '',
+    bio: '',
+    phone: '',
     countryCode: '+1',
     phoneType: 'mobile',
-    email: 'anna.johnson@healthcare.com',
-    dateOfBirth: '1990-05-15',
-    gender: 'female' as 'male' | 'female' | 'other',
+    email: '',
+    dateOfBirth: '',
+    gender: 'other' as 'male' | 'female' | 'other',
     imageLink: '',
     // Additional fields
-    emergencyContact: '+1 (555) 987-6543',
-    bloodType: 'O+',
-    allergies: 'None',
+    emergencyContact: '',
+    bloodType: '',
+    allergies: '',
     medicalHistory: '',
     // Preferences
-    emailReminders: true,
+    emailReminders: false,
     smsReminders: false,
+    // Status
+    status: 'inactive' as 'active' | 'inactive',
   };
 
   // Temporary data for editing
@@ -167,29 +174,31 @@ export class DashboardComponent implements OnInit, OnDestroy {
   loadUserProfile(): void {
     const currentPatient = this.authService.getCurrentPatient();
     if (currentPatient) {
-      const fullName = currentPatient.full_name || 'Anna Johnson';
+      const fullName = currentPatient.full_name || '';
       const nameParts = fullName.split(' ');
 
       this.dashboard = {
         name: fullName,
-        firstName: nameParts[0] || 'Anna',
-        lastName: nameParts[1] || 'Johnson',
-        bio: currentPatient.bio || 'Healthcare professional focused on patient care',
-        phone: currentPatient.phone || '555-123-4567',
-        countryCode: '+1',
-        phoneType: 'mobile',
-        email: currentPatient.email || 'anna.johnson@healthcare.com',
-        dateOfBirth: currentPatient.date_of_birth || '1990-05-15',
-        gender: currentPatient.gender || 'female',
+        firstName: nameParts[0] || '',
+        lastName: nameParts[1] || '',
+        bio: '', // Patient type doesn't have bio
+        phone: currentPatient.phone || '',
+        countryCode: '+1', // Default value, not in Patient type
+        phoneType: 'mobile', // Default value, not in Patient type
+        email: currentPatient.email || '',
+        dateOfBirth: currentPatient.date_of_birth || '',
+        gender: currentPatient.gender || 'other',
         imageLink: currentPatient.image_link || '',
-        // Additional fields
-        emergencyContact: '+1 (555) 987-6543',
-        bloodType: 'O+',
-        allergies: 'None',
+        // Additional fields - use defaults since not in Patient type
+        emergencyContact: '',
+        bloodType: '',
+        allergies: typeof currentPatient.allergies === 'string' ? currentPatient.allergies : '',
         medicalHistory: '',
-        // Preferences
-        emailReminders: true,
+        // Preferences - use defaults since not in Patient type
+        emailReminders: false,
         smsReminders: false,
+        // Status - use default since not in Patient type
+        status: 'inactive' as 'active' | 'inactive',
       };
       this.editdashboard = { ...this.dashboard };
     }
@@ -216,29 +225,31 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
 
           // Update dashboard with edge function data
-          const fullName = profile.full_name || 'Anna Johnson';
+          const fullName = profile.full_name || '';
           const nameParts = fullName.split(' ');
 
           this.dashboard = {
             name: fullName,
-            firstName: nameParts[0] || 'Anna',
-            lastName: nameParts[1] || 'Johnson',
-            bio: 'Healthcare professional focused on patient care', // Edge function doesn't provide bio
-            phone: profile.phone || '555-123-4567',
-            countryCode: '+1',
-            phoneType: 'mobile',
-            email: profile.email || 'anna.johnson@healthcare.com',
-            dateOfBirth: profile.date_of_birth || '1990-05-15',
-            gender: profile.gender || 'female',
+            firstName: nameParts[0] || '',
+            lastName: nameParts[1] || '',
+            bio: '', // Edge function doesn't provide bio
+            phone: profile.phone || '',
+            countryCode: '+1', // Default value, not in EdgeFunctionUserProfile
+            phoneType: 'mobile', // Default value, not in EdgeFunctionUserProfile
+            email: profile.email || '',
+            dateOfBirth: profile.date_of_birth || '',
+            gender: profile.gender || 'other',
             imageLink: profile.image_link || '',
-            // Additional fields
-            emergencyContact: '+1 (555) 987-6543',
-            bloodType: 'O+',
-            allergies: 'None',
+            // Additional fields - use defaults since not in EdgeFunctionUserProfile
+            emergencyContact: '',
+            bloodType: '',
+            allergies: '',
             medicalHistory: '',
-            // Preferences
-            emailReminders: true,
+            // Preferences - use defaults since not in EdgeFunctionUserProfile
+            emailReminders: false,
             smsReminders: false,
+            // Status - use default since not in EdgeFunctionUserProfile
+            status: 'inactive' as 'active' | 'inactive',
           };
           this.editdashboard = { ...this.dashboard };
 
@@ -1118,27 +1129,29 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   resetForm(): void {
-    // Reset to default values
+    // Reset to empty values - no mock data
     this.dashboard = {
-      name: 'Anna Johnson',
-      firstName: 'Anna',
-      lastName: 'Johnson',
-      bio: 'Healthcare professional focused on patient care',
-      phone: '555-123-4567',
+      name: '',
+      firstName: '',
+      lastName: '',
+      bio: '',
+      phone: '',
       countryCode: '+1',
       phoneType: 'mobile',
-      email: 'anna.johnson@healthcare.com',
-      dateOfBirth: '1990-05-15',
-      gender: 'female' as 'male' | 'female' | 'other',
+      email: '',
+      dateOfBirth: '',
+      gender: 'other' as 'male' | 'female' | 'other',
       imageLink: '',
       // Additional fields
-      emergencyContact: '+1 (555) 987-6543',
-      bloodType: 'O+',
-      allergies: 'None',
+      emergencyContact: '',
+      bloodType: '',
+      allergies: '',
       medicalHistory: '',
       // Preferences
-      emailReminders: true,
+      emailReminders: false,
       smsReminders: false,
+      // Status
+      status: 'inactive' as 'active' | 'inactive',
     };
     this.profileError = null;
   }
@@ -1390,20 +1403,63 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Navigation methods
+  // Navigation methods - now switch sections within dashboard
   navigateToHistory(): void {
-    this.router.navigate(['/appointment-history']);
+    this.currentSection = 'appointments';
+    this.selectedAppointment = null;
   }
 
   navigateToProfiles(): void {
-    this.router.navigate(['/profile-management']);
+    this.currentSection = 'profile';
   }
 
   navigateToBooking(): void {
+    // For booking, we can still navigate to external page or show booking form
     this.router.navigate(['/appointment']);
   }
 
   navigateToSettings(): void {
-    this.router.navigate(['/settings']);
+    this.currentSection = 'settings';
+  }
+
+  // New method to switch back to main dashboard
+  navigateToDashboard(): void {
+    this.currentSection = 'dashboard';
+    this.selectedAppointment = null;
+  }
+
+  // Method to view appointment details
+  viewAppointmentDetails(appointment: DashboardAppointment): void {
+    this.selectedAppointment = appointment;
+    this.currentSection = 'appointments';
+  }
+
+  // Method to filter appointments
+  setAppointmentFilter(filter: 'all' | 'upcoming' | 'past' | 'cancelled'): void {
+    this.appointmentFilter = filter;
+  }
+
+  // Get filtered appointments
+  get filteredAppointments(): DashboardAppointment[] {
+    const now = new Date();
+
+    switch (this.appointmentFilter) {
+      case 'upcoming':
+        return this.appointments.filter(apt => {
+          if (!apt.date) return false;
+          const aptDate = new Date(apt.date);
+          return aptDate >= now && apt.status !== 'cancelled';
+        });
+      case 'past':
+        return this.appointments.filter(apt => {
+          if (!apt.date) return false;
+          const aptDate = new Date(apt.date);
+          return aptDate < now;
+        });
+      case 'cancelled':
+        return this.appointments.filter(apt => apt.status === 'cancelled');
+      default:
+        return this.appointments;
+    }
   }
 }

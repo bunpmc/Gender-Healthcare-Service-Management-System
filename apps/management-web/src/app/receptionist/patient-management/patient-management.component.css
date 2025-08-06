@@ -1,5 +1,75 @@
 /* Patient Management Component Styles */
 
+/* Patient Table Column Layout */
+.patient-table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.patient-table th:nth-child(1),
+.patient-table td:nth-child(1) {
+  width: 20%;
+  min-width: 180px;
+}
+
+/* Patient information truncation */
+.patient-table td:nth-child(1) {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.patient-table td:nth-child(1) .text-sm {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+.patient-table th:nth-child(2),
+.patient-table td:nth-child(2) {
+  width: 15%;
+  min-width: 140px;
+}
+
+/* Contact information truncation */
+.patient-table td:nth-child(2) {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.patient-table td:nth-child(2) .text-sm {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+.patient-table th:nth-child(3),
+.patient-table td:nth-child(3) {
+  width: 12.5%;
+  min-width: 120px;
+}
+
+.patient-table th:nth-child(4),
+.patient-table td:nth-child(4) {
+  width: 12.5%;
+  min-width: 120px;
+}
+
+.patient-table th:nth-child(5),
+.patient-table td:nth-child(5) {
+  width: 20%;
+  min-width: 160px;
+}
+
+.patient-table th:nth-child(6),
+.patient-table td:nth-child(6) {
+  width: 20%;
+  min-width: 120px;
+}
+
 /* Custom scrollbar for modals */
 .overflow-y-auto::-webkit-scrollbar {
   width: 6px;
@@ -118,6 +188,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -133,6 +204,7 @@
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -355,23 +427,23 @@
     margin: 1rem;
     max-height: calc(100vh - 2rem);
   }
-  
+
   .table-container {
     overflow-x: auto;
   }
-  
+
   .stats-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .patient-row {
     transform: none;
   }
-  
+
   .patient-row:hover {
     transform: none;
   }
-  
+
   .medical-tag {
     font-size: 0.75rem;
     padding: 0.25rem 0.5rem;
@@ -384,7 +456,7 @@
     background: rgba(30, 41, 59, 0.8);
     border-color: rgba(71, 85, 105, 0.3);
   }
-  
+
   .form-input {
     background: rgba(30, 41, 59, 0.5);
     border-color: rgba(71, 85, 105, 0.3);
@@ -402,6 +474,7 @@
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -439,10 +512,13 @@
 }
 
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
     transform: translateY(-50%) scale(1);
   }
+
   50% {
     opacity: 0.5;
     transform: translateY(-50%) scale(1.2);

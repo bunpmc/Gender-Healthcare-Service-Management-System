@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Staff } from '../../../../models/staff.interface';
@@ -42,13 +42,23 @@ import { StaffManagementUtilsService } from '../../services/staff-management-uti
                     <!-- View Mode -->
                     <div *ngIf="config.mode === 'view'" class="space-y-6">
                         <div class="flex items-center space-x-4">
-                            <div class="h-20 w-20 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-2xl">
-                                {{ utils.getInitials(staff?.full_name || '') }}
+                            <div class="h-20 w-20 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
+                                <img 
+                                    *ngIf="staff?.avatar_url || staff?.imageUrl" 
+                                    [src]="staff?.avatar_url || staff?.imageUrl" 
+                                    [alt]="staff?.full_name"
+                                    class="w-full h-full object-cover"
+                                    (error)="onImageError($event)"
+                                />
+                                <div *ngIf="!staff?.avatar_url && !staff?.imageUrl" 
+                                     class="w-full h-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-2xl">
+                                    {{ utils.getInitials(staff?.full_name || '') }}
+                                </div>
                             </div>
                             <div>
                                 <h3 class="text-lg font-semibold text-gray-900">{{ staff?.full_name }}</h3>
                                 <p class="text-gray-600">{{ staff?.working_email }}</p>
-                                <p class="text-sm text-gray-500">ID: {{ staff?.staff_id }}</p>
+                                <p class="text-sm text-gray-500">Staff ID: {{ staff?.staff_id }}</p>
                             </div>
                         </div>
 
@@ -80,39 +90,44 @@ import { StaffManagementUtilsService } from '../../services/staff-management-uti
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Years of Experience</label>
                                     <p class="text-gray-900">{{ staff?.years_experience || 0 }} years</p>
                                 </div>
-                            </div>
-
-                            <div class="space-y-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                                    <p class="text-gray-900">{{ staff?.phone_number || staff?.phone || 'Not provided' }}</p>
-                                </div>
-
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
-                                    <p class="text-gray-900">{{ staff?.address || 'Not provided' }}</p>
-                                </div>
-
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
-                                    <p class="text-gray-900">{{ staff?.date_of_birth ? (staff?.date_of_birth | date:'mediumDate') : 'Not provided' }}</p>
-                                </div>
 
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Gender</label>
                                     <p class="text-gray-900">{{ (staff?.gender | titlecase) || 'Not provided' }}</p>
                                 </div>
                             </div>
-                        </div>
 
-                        <div *ngIf="staff?.specialization">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Specialization</label>
-                            <p class="text-gray-900">{{ staff?.specialization }}</p>
-                        </div>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Hired Date</label>
+                                    <p class="text-gray-900">{{ staff?.hired_at ? (staff?.hired_at | date:'mediumDate') : 'Not provided' }}</p>
+                                </div>
 
-                        <div *ngIf="staff?.bio">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Bio</label>
-                            <p class="text-gray-900">{{ staff?.bio }}</p>
+                                <div *ngIf="staff && staff.languages && staff.languages.length > 0">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Languages</label>
+                                    <div class="flex flex-wrap gap-1">
+                                        <span *ngFor="let language of staff.languages" 
+                                              class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                                            {{ language }}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div *ngIf="!staff?.languages || staff?.languages?.length === 0">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Languages</label>
+                                    <p class="text-gray-500">No languages specified</p>
+                                </div>
+
+                                <div *ngIf="staff?.image_link">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Profile Image Path</label>
+                                    <p class="text-xs text-gray-500 break-all">{{ staff?.image_link }}</p>
+                                </div>
+
+                                <div *ngIf="!staff?.image_link">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Profile Image Path</label>
+                                    <p class="text-gray-500">No image uploaded</p>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="text-xs text-gray-500 pt-4 border-t">
@@ -181,15 +196,6 @@ import { StaffManagementUtilsService } from '../../services/staff-management-uti
                                 </div>
 
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                                    <input 
-                                        type="tel" 
-                                        formControlName="phone_number"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                        placeholder="Enter phone number">
-                                </div>
-
-                                <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Years of Experience</label>
                                     <input 
                                         type="number" 
@@ -199,16 +205,28 @@ import { StaffManagementUtilsService } from '../../services/staff-management-uti
                                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                                         placeholder="Enter years of experience">
                                 </div>
+
+                                <div class="flex items-center">
+                                    <input 
+                                        type="checkbox" 
+                                        id="is_available"
+                                        formControlName="is_available"
+                                        class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                    <label for="is_available" class="ml-2 block text-sm text-gray-900">Available for scheduling</label>
+                                </div>
                             </div>
 
                             <!-- Right Column -->
                             <div class="space-y-4">
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Hired Date *</label>
                                     <input 
                                         type="date" 
-                                        formControlName="date_of_birth"
+                                        formControlName="hired_at"
                                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                    <div *ngIf="staffForm.get('hired_at')?.errors && staffForm.get('hired_at')?.touched" class="text-red-500 text-xs mt-1">
+                                        Hired date is required
+                                    </div>
                                 </div>
 
                                 <div>
@@ -224,41 +242,30 @@ import { StaffManagementUtilsService } from '../../services/staff-management-uti
                                 </div>
 
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
-                                    <textarea 
-                                        formControlName="address"
-                                        rows="3"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
-                                        placeholder="Enter address"></textarea>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Image Link</label>
+                                    <input 
+                                        type="text" 
+                                        formControlName="image_link"
+                                        [readonly]="config.mode === 'edit'"
+                                        [class]="config.mode === 'edit' 
+                                            ? 'w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed text-gray-500'
+                                            : 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent'"
+                                        placeholder="Enter image path or URL">
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        {{ config.mode === 'edit' ? 'Image link cannot be changed during edit' : 'Path to profile image in storage' }}
+                                    </p>
                                 </div>
 
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Specialization</label>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Languages</label>
                                     <input 
                                         type="text" 
-                                        formControlName="specialization"
+                                        formControlName="languages_input"
                                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                        placeholder="Enter specialization">
-                                </div>
-
-                                <div class="flex items-center">
-                                    <input 
-                                        type="checkbox" 
-                                        id="is_available"
-                                        formControlName="is_available"
-                                        class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
-                                    <label for="is_available" class="ml-2 block text-sm text-gray-900">Available for scheduling</label>
+                                        placeholder="Enter languages separated by commas">
+                                    <p class="text-xs text-gray-500 mt-1">Separate multiple languages with commas (e.g., English, Vietnamese, French)</p>
                                 </div>
                             </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Bio</label>
-                            <textarea 
-                                formControlName="bio"
-                                rows="4"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
-                                placeholder="Enter bio/description"></textarea>
                         </div>
                     </form>
                 </div>
@@ -313,7 +320,7 @@ import { StaffManagementUtilsService } from '../../services/staff-management-uti
         }
     `]
 })
-export class StaffModalComponent implements OnInit, OnDestroy {
+export class StaffModalComponent implements OnInit, OnDestroy, OnChanges {
     @Input() isOpen: boolean = false;
     @Input() staff: Staff | null = null;
     @Input() config: ModalConfig = {
@@ -331,11 +338,23 @@ export class StaffModalComponent implements OnInit, OnDestroy {
     constructor(
         private fb: FormBuilder,
         public utils: StaffManagementUtilsService
-    ) {}
+    ) { }
 
     ngOnInit() {
         this.initializeForm();
         if (this.staff && this.config.mode !== 'view') {
+            this.populateForm();
+        }
+    }
+
+    ngOnChanges(changes: SimpleChanges) {
+        // When config mode changes to edit, populate the form
+        if (changes['config'] && this.staffForm && this.config.mode === 'edit' && this.staff) {
+            this.populateForm();
+        }
+
+        // When staff data changes, populate the form if in edit mode
+        if (changes['staff'] && this.staffForm && this.config.mode !== 'view' && this.staff) {
             this.populateForm();
         }
     }
@@ -368,31 +387,30 @@ export class StaffModalComponent implements OnInit, OnDestroy {
             working_email: ['', [Validators.required, Validators.email]],
             role: ['', [Validators.required]],
             staff_status: ['active'],
-            phone_number: [''],
             years_experience: [0],
-            date_of_birth: [''],
+            hired_at: ['', [Validators.required]],
             gender: [''],
-            address: [''],
-            specialization: [''],
-            bio: [''],
+            image_link: [''],
+            languages_input: [''], // For comma-separated input
             is_available: [true]
         });
     }
 
     private populateForm() {
         if (this.staff) {
+            // Convert languages array to comma-separated string for editing
+            const languagesString = this.staff.languages ? this.staff.languages.join(', ') : '';
+
             this.staffForm.patchValue({
                 full_name: this.staff.full_name,
                 working_email: this.staff.working_email,
                 role: this.staff.role,
                 staff_status: this.staff.staff_status,
-                phone_number: this.staff.phone_number || this.staff.phone,
                 years_experience: this.staff.years_experience,
-                date_of_birth: this.staff.date_of_birth ? new Date(this.staff.date_of_birth).toISOString().split('T')[0] : '',
+                hired_at: this.staff.hired_at ? new Date(this.staff.hired_at).toISOString().split('T')[0] : '',
                 gender: this.staff.gender,
-                address: this.staff.address,
-                specialization: this.staff.specialization,
-                bio: this.staff.bio,
+                image_link: this.staff.image_link,
+                languages_input: languagesString,
                 is_available: this.staff.is_available
             });
         }
@@ -415,11 +433,25 @@ export class StaffModalComponent implements OnInit, OnDestroy {
     onSubmit() {
         if (this.staffForm.valid && !this.isSubmitting) {
             this.isSubmitting = true;
-            
+
             const formValue = this.staffForm.value;
+
+            // Process languages input: convert comma-separated string to array
+            const languagesArray = formValue.languages_input
+                ? formValue.languages_input.split(',').map((lang: string) => lang.trim()).filter((lang: string) => lang)
+                : [];
+
             const staffData: Partial<Staff> = {
-                ...formValue,
-                date_of_birth: formValue.date_of_birth ? new Date(formValue.date_of_birth).toISOString() : null
+                full_name: formValue.full_name,
+                working_email: formValue.working_email,
+                role: formValue.role,
+                staff_status: formValue.staff_status,
+                years_experience: formValue.years_experience || 0,
+                hired_at: formValue.hired_at,
+                gender: formValue.gender || null,
+                image_link: formValue.image_link || null,
+                languages: languagesArray.length > 0 ? languagesArray : null,
+                is_available: formValue.is_available
             };
 
             // Include ID for edit mode
@@ -428,11 +460,18 @@ export class StaffModalComponent implements OnInit, OnDestroy {
             }
 
             this.save.emit(staffData);
-            
+
             // Reset submitting state after a delay (will be handled by parent)
             setTimeout(() => {
                 this.isSubmitting = false;
             }, 1000);
         }
+    }    /**
+     * Handle image load error - fallback to placeholder
+     */
+    onImageError(event: any): void {
+        const img = event.target;
+        img.style.display = 'none';
+        // The div with initials will show instead due to *ngIf logic
     }
 }

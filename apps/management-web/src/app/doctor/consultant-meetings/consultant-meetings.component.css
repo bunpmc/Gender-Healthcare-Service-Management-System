@@ -237,6 +237,22 @@
   }
 }
 
+/* Slot status classes */
+.status-available {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.status-full {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.status-inactive {
+  background-color: #f3f4f6;
+  color: #4b5563;
+}
+
 /* Responsive adjustments */
 @media (max-width: 640px) {
   .calendar-day {

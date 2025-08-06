@@ -1,6 +1,8 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { SupabaseService } from '../../supabase.service';
+import { DatabaseService } from '../../Services/database.service';
 import { interval } from 'rxjs';
 import { startWith, switchMap } from 'rxjs/operators';
 
@@ -47,6 +49,8 @@ interface RecentActivity {
 
 export class DashboardContentComponent implements OnInit {
   private supabaseService = inject(SupabaseService);
+  private databaseService = inject(DatabaseService);
+  private router = inject(Router);
 
   // Loading and error states
   isLoading: boolean = true;
@@ -171,26 +175,57 @@ export class DashboardContentComponent implements OnInit {
       this.isLoading = true;
       this.hasError = false;
 
-      // Fetch real data from Supabase
-      const [patients, staff] = await Promise.all([
-        this.supabaseService.getPatients(1, 1000), // Get all patients
-        this.supabaseService.getStaffMembers()
+      // Fetch analytics data using database functions
+      const [
+        dashboardAnalytics,
+        patientStats,
+        appointmentStats,
+        revenueStats,
+        staffStats
+      ] = await Promise.all([
+        this.databaseService.getDashboardAnalytics().toPromise().catch(() => null),
+        this.databaseService.getPatientStats().toPromise().catch(() => null),
+        this.databaseService.getAppointmentStats().toPromise().catch(() => null),
+        this.databaseService.getRevenueStats().toPromise().catch(() => null),
+        this.databaseService.getStaffStats().toPromise().catch(() => null)
       ]);
 
-      // For appointments, we'll use mock data since the service method doesn't exist yet
-      const appointments: any[] = [];
+      // Use database function results or fallback to existing service
+      if (dashboardAnalytics && patientStats && appointmentStats && revenueStats && staffStats) {
+        console.log('📊 Using database function results for dashboard');
 
-      // Calculate dashboard statistics
-      this.dashboardStats = {
-        totalPatients: patients.total || patients.patients?.length || 0,
-        totalStaff: staff.length,
-        activeStaff: staff.filter((s: any) => s.staff_status === 'active').length,
-        todayAppointments: this.getTodayAppointments(appointments),
-        pendingAppointments: appointments.filter((a: any) => a.status === 'pending').length,
-        completedAppointments: appointments.filter((a: any) => a.status === 'completed').length,
-        newPatientsThisMonth: this.getNewPatientsThisMonth(patients.patients || []),
-        monthlyRevenue: this.calculateMonthlyRevenue(appointments)
-      };
+        this.dashboardStats = {
+          totalPatients: dashboardAnalytics.total_patients || patientStats.active_patients,
+          totalStaff: dashboardAnalytics.total_doctors || staffStats.total_doctors + staffStats.total_receptionists,
+          activeStaff: staffStats.active_staff,
+          todayAppointments: appointmentStats.pending_appointments,
+          pendingAppointments: appointmentStats.pending_appointments,
+          completedAppointments: appointmentStats.completed_appointments,
+          newPatientsThisMonth: patientStats.new_patients_this_month,
+          monthlyRevenue: revenueStats.monthly_revenue
+        };
+      } else {
+        console.log('⚠️ Database functions not available, using fallback service');
+
+        // Fallback to existing Supabase service
+        const [patients, staff] = await Promise.all([
+          this.supabaseService.getPatients(1, 1000), // Get all patients
+          this.supabaseService.getStaffMembers()
+        ]);
+
+        const appointments: any[] = [];
+
+        this.dashboardStats = {
+          totalPatients: patients.total || patients.patients?.length || 0,
+          totalStaff: staff.length,
+          activeStaff: staff.filter((s: any) => s.staff_status === 'active').length,
+          todayAppointments: this.getTodayAppointments(appointments),
+          pendingAppointments: appointments.filter((a: any) => a.status === 'pending').length,
+          completedAppointments: appointments.filter((a: any) => a.status === 'completed').length,
+          newPatientsThisMonth: this.getNewPatientsThisMonth(patients.patients || []),
+          monthlyRevenue: this.calculateMonthlyRevenue(appointments)
+        };
+      }
 
       // Update stats cards with real data
       this.updateStatsCards();
@@ -433,18 +468,56 @@ export class DashboardContentComponent implements OnInit {
   }
 
   navigateToAppointments(): void {
-    // Navigation logic for appointments
-    console.log('Navigating to appointments');
+    this.router.navigate(['/admin/appointment']);
   }
 
   navigateToPatients(): void {
-    // Navigation logic for patients
-    console.log('Navigating to patients');
+    this.router.navigate(['/admin/patient']);
   }
 
   navigateToStaff(): void {
-    // Navigation logic for staff
-    console.log('Navigating to staff');
+    this.router.navigate(['/admin/staff']);
+  }
+
+  navigateToServices(): void {
+    this.router.navigate(['/admin/services']);
+  }
+
+  navigateToAnalytics(): void {
+    this.router.navigate(['/admin/analytic']);
+  }
+
+  // Quick action handlers
+  addNewPatient(): void {
+    this.router.navigate(['/admin/patient'], { queryParams: { action: 'add' } });
+  }
+
+  scheduleAppointment(): void {
+    this.router.navigate(['/admin/appointment'], { queryParams: { action: 'schedule' } });
+  }
+
+  addNewStaff(): void {
+    this.router.navigate(['/admin/staff'], { queryParams: { action: 'add' } });
+  }
+
+  generateReport(): void {
+    this.router.navigate(['/admin/analytic'], { queryParams: { action: 'report' } });
+  }
+
+  // System management actions
+  viewSystemLogs(): void {
+    console.log('📋 Viewing system logs...');
+    // Could implement a modal or navigate to logs page
+  }
+
+  backupDatabase(): void {
+    console.log('💾 Initiating database backup...');
+    // Could implement backup functionality
+  }
+
+  optimizePerformance(): void {
+    console.log('⚡ Optimizing system performance...');
+    // Could implement performance optimization
   }
 
   refreshActivity(): void {

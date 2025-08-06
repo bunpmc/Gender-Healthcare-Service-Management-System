@@ -8,10 +8,15 @@ export interface Service {
     who?: string | null;
     how?: string | null;
   } | null;
-  service_cost: number | null;
-  duration_minutes: number | null;
-  is_active: boolean;
-  image_link: string | null;
-  excerpt: string | null;
+  service_cost?: number | null | undefined;
+  service_price?: number | null | undefined;
+  duration_minutes?: number | null | undefined;
+  is_active?: boolean | undefined;
+  image_link?: string | null | undefined;
+  excerpt?: string | null | undefined;
   category_name?: string; // Added from JOIN query for display purposes
+  created_at?: string | undefined;
+  updated_at?: string | undefined;
+  // Computed properties for UI
+  imageUrl?: string | undefined; // Constructed from image_link and Supabase storage
 }

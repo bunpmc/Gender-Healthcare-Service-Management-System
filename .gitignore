@@ -127,3 +127,4 @@ build/
 dist/
 *.tgz
 *.tar.gz
+.fake

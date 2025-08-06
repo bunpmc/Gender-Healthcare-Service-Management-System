@@ -4,6 +4,7 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
 import { SupabaseService } from '../../supabase.service';
 import { BlogPost, BlogStatus, CreateBlogPostRequest, UpdateBlogPostRequest } from '../../models/blog.interface';
 import { BlogEdgeFunctionService } from '../../blog-edge-function.service';
+import { BaseComponent } from '../../shared/base.component';
 
 interface BlogStats {
   totalPosts: number;
@@ -19,7 +20,7 @@ interface BlogStats {
   templateUrl: './blog-posts.component.html',
   styleUrls: ['./blog-posts.component.css']
 })
-export class BlogPostsComponent implements OnInit {
+export class BlogPostsComponent extends BaseComponent implements OnInit {
   @ViewChild('contentEditor') contentEditor!: ElementRef;
 
   // Data properties
@@ -72,6 +73,7 @@ export class BlogPostsComponent implements OnInit {
     private formBuilder: FormBuilder,
     private blogEdgeFunctionService: BlogEdgeFunctionService
   ) {
+    super();
     this.blogForm = this.createBlogForm();
   }
 
@@ -1100,30 +1102,6 @@ export class BlogPostsComponent implements OnInit {
 
   getExcerpt(content: string): string {
     return this.generateExcerpt(content);
-  }
-
-  formatDate(dateString: string | undefined): string {
-    if (!dateString) return 'Not published';
-
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-  }
-
-  getStatusBadgeClass(status: string): string {
-    switch (status) {
-      case BlogStatus.PUBLISHED:
-        return 'bg-green-100 text-green-800';
-      case BlogStatus.DRAFT:
-        return 'bg-yellow-100 text-yellow-800';
-      case BlogStatus.ARCHIVED:
-        return 'bg-gray-100 text-gray-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
   }
 
   // Error handling and reporting

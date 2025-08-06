@@ -1,4 +1,17 @@
-export interface BlogPost {
+// Re-export BlogPost from database.interface.ts for consistency  
+export type { BlogPost } from './database.interface';
+
+// Define BlogStatus enum for backward compatibility
+export const BlogStatus = {
+  DRAFT: 'draft' as const,
+  PUBLISHED: 'published' as const,
+  ARCHIVED: 'archived' as const
+} as const;
+
+export type BlogStatus = typeof BlogStatus[keyof typeof BlogStatus];
+
+// Keep legacy interface for backward compatibility if needed
+export interface LegacyBlogPost {
   blog_id: string;
   doctor_id: string;
   blog_title: string;
@@ -16,12 +29,6 @@ export interface BlogPost {
   staff_members?: {
     full_name: string;
   };
-}
-
-export enum BlogStatus {
-  DRAFT = 'draft',
-  PUBLISHED = 'published',
-  ARCHIVED = 'archived',
 }
 
 export interface BlogTag {

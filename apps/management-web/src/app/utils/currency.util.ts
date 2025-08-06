@@ -54,7 +54,7 @@ export class CurrencyUtil {
     } else if (amount >= 1000) {
       return `${(amount / 1000).toFixed(1)}K ₫`;
     }
-    
+
     return `${amount.toLocaleString('vi-VN')} ₫`;
   }
 
@@ -65,12 +65,12 @@ export class CurrencyUtil {
    */
   static parseVND(currencyString: string): number {
     if (!currencyString) return 0;
-    
+
     // Remove currency symbols and spaces
     const cleanString = currencyString
       .replace(/[₫đồng,\s]/g, '')
       .replace(/\./g, '');
-    
+
     const parsed = parseFloat(cleanString);
     return isNaN(parsed) ? 0 : parsed;
   }
@@ -103,6 +103,62 @@ export class CurrencyUtil {
       return this.formatVND(amount);
     }
   }
+
+  /**
+   * Format amount to thousands of VND for display
+   * @param amount - The amount in VND
+   * @returns Formatted string showing thousands of VND
+   */
+  static formatThousandsVND(amount: number | null | undefined): string {
+    if (amount === null || amount === undefined || isNaN(amount)) {
+      return '0 nghìn ₫';
+    }
+
+    const thousands = amount / 1000;
+
+    // Format with Vietnamese number formatting
+    const formatted = new Intl.NumberFormat('vi-VN', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 1
+    }).format(thousands);
+
+    return `${formatted} nghìn ₫`;
+  }
+
+  /**
+   * Format amount with comma-separated thousands (1,000 VND format)
+   * @param amount - The amount in VND
+   * @returns Formatted string with comma-separated thousands
+   */
+  static formatVNDWithCommas(amount: number | null | undefined): string {
+    if (amount === null || amount === undefined || isNaN(amount)) {
+      return '0 VND';
+    }
+
+    const formatted = new Intl.NumberFormat('en-US', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(amount);
+
+    return `${formatted} VND`;
+  }
+
+  /**
+   * Parse thousands VND string back to full VND number
+   * @param thousandsString - The thousands string to parse (e.g., "150 nghìn ₫")
+   * @returns Parsed number in full VND or 0 if invalid
+   */
+  static parseThousandsVND(thousandsString: string): number {
+    if (!thousandsString) return 0;
+
+    // Remove currency symbols and "nghìn" text
+    const cleanString = thousandsString
+      .replace(/[₫nghìn,\s]/g, '')
+      .replace(/\./g, '');
+
+    const parsed = parseFloat(cleanString);
+    return isNaN(parsed) ? 0 : parsed * 1000; // Convert back to full VND
+  }
 }
 
 /**
@@ -116,12 +172,16 @@ import { Pipe, PipeTransform } from '@angular/core';
   standalone: true
 })
 export class VndCurrencyPipe implements PipeTransform {
-  transform(value: number | null | undefined, format: 'standard' | 'custom' | 'compact' = 'standard'): string {
+  transform(value: number | null | undefined, format: 'standard' | 'custom' | 'compact' | 'thousands' | 'commas' = 'standard'): string {
     switch (format) {
       case 'custom':
         return CurrencyUtil.formatVNDCustom(value);
       case 'compact':
         return CurrencyUtil.formatCompact(value);
+      case 'thousands':
+        return CurrencyUtil.formatThousandsVND(value);
+      case 'commas':
+        return CurrencyUtil.formatVNDWithCommas(value);
       default:
         return CurrencyUtil.formatVND(value);
     }

@@ -1,10 +1,14 @@
-export interface Patient {
+// Re-export Patient from database.interface.ts for consistency
+export type { Patient } from './database.interface';
+
+// Keep legacy interface for backward compatibility if needed
+export interface LegacyPatient {
   id: string;
   full_name: string;
   phone: string;
   phone_number?: string; // Alias for phone for backward compatibility
   email: string;
-  date_of_birth: string | null;
+  date_of_birth: string | Date | undefined;
   gender: 'male' | 'female' | 'other' | '';
   allergies: any | null; // JSON field
   chronic_conditions: any | null; // JSON field

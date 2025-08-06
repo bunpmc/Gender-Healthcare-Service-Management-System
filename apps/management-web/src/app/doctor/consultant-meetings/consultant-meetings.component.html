@@ -223,15 +223,43 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 0V6a2 2 0 012-2h4a2 2 0 012 2v1m-6 0h6m-6 0l-.5 3.5M18 7l-.5 3.5M8 7l.5 3.5m9-3.5l.5 3.5m-10 0L8 14m10-3l-.5 3.5M8 14l.5 3.5m9-3.5L18 14m-10 0l-.5 3.5m10-3.5l.5 3.5m-9 0h8"></path>
               </svg>
             </div>
-            <h3 class="text-xl font-bold text-gray-900 mb-3">No Appointment Slots</h3>
-            <p class="text-gray-600 mb-4">You don't have any appointment slots assigned yet.</p>
-            <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 max-w-md mx-auto">
+            <h3 class="text-xl font-bold text-gray-900 mb-3">No Scheduled Appointments</h3>
+            <p class="text-gray-600 mb-4">You don't have any scheduled appointments in your assigned slots yet.</p>
+            <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 max-w-md mx-auto mb-6">
               <p class="text-sm text-blue-800">
                 <strong>💡 What you can do:</strong><br>
-                • Contact your administrator to assign appointment slots<br>
-                • Check back later for new slot assignments<br>
-                • Adjust your date filters to see past or future slots
+                • Wait for patients to book appointments in your available slots<br>
+                • Check back later for new appointments<br>
+                • Adjust your date filters to see different time periods<br>
+                • Use the demo data button to create sample appointments
               </p>
+            </div>
+            <!-- Demo Data Setup -->
+            <div class="flex justify-center space-x-4">
+              <button
+                (click)="setupDemoData()"
+                class="inline-flex items-center px-6 py-3 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 border border-transparent rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+                Setup Demo Data
+              </button>
+              <button
+                (click)="resetDemoData()"
+                class="inline-flex items-center px-6 py-3 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 border border-gray-300 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+                Reset Demo Data
+              </button>
+              <button
+                (click)="debugDatabaseState()"
+                class="inline-flex items-center px-6 py-3 text-sm font-medium text-purple-700 bg-purple-100 hover:bg-purple-200 border border-purple-300 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                Debug DB
+              </button>
             </div>
           </div>
 

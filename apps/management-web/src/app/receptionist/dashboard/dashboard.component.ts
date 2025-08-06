@@ -8,13 +8,11 @@ import { FormatNamePipe } from '../../utils/name.util';
 
 interface DashboardStats {
   todayAppointments: number;
-  pendingPayments: number;
+  pendingAppointments: number;
   totalPatients: number;
-  activePatients: number;
   availableDoctors: number;
-  pendingApprovals: number;
-  totalRevenue: number;
-  newPatientsThisMonth: number;
+  pendingPayments: number;
+  recentAppointments: any[];
 }
 
 interface RecentAppointment {
@@ -33,418 +31,267 @@ interface RecentAppointment {
   standalone: true,
   imports: [CommonModule, FormatNamePipe],
   template: `
-    <div class="space-y-6">
-      <!-- Modern Header -->
-      <div class="bg-gradient-to-r from-white via-blue-50 to-indigo-50 rounded-2xl p-6 shadow-xl border border-white/20 backdrop-blur-sm">
-        <div class="flex items-center justify-between">
-          <div>
-            <h1 class="text-3xl font-bold text-gray-900 mb-2">
-              Reception Dashboard
-            </h1>
-            <p class="text-gray-600">
-              Welcome back! Here's your overview for today.
-            </p>
-          </div>
-          <div class="flex items-center space-x-3">
-            <div
-              class="px-4 py-2 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-200"
-            >
-              <p class="text-sm font-medium text-indigo-700">
-                {{ getCurrentDate() }}
-              </p>
-            </div>
-          </div>
-        </div>
+    <div class="max-w-full overflow-hidden">
+      <!-- Header -->
+      <div class="mb-6 lg:mb-8">
+        <h1 class="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">Reception Dashboard</h1>
+        <p class="text-gray-600">Welcome back! Here's your overview for today.</p>
       </div>
 
       <!-- Loading State -->
       <div *ngIf="loading" class="flex justify-center items-center h-64">
-        <div class="relative">
-          <div
-            class="animate-spin rounded-full h-16 w-16 border-4 border-indigo-200"
-          ></div>
-          <div
-            class="animate-spin rounded-full h-16 w-16 border-4 border-indigo-600 border-t-transparent absolute top-0 left-0"
-          ></div>
-        </div>
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
 
       <!-- Error State -->
-      <div
-        *ngIf="error && !loading"
-        class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6"
-      >
+      <div *ngIf="error && !loading" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
         <strong class="font-bold">Error!</strong>
         <span class="block sm:inline"> {{ error }}</span>
-        <button
-          (click)="loadDashboardData()"
-          class="ml-4 bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600"
-        >
+        <button (click)="loadDashboardData()" class="ml-4 bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">
           Retry
         </button>
       </div>
 
       <!-- Dashboard Content -->
       <div *ngIf="!loading && !error">
-        <!-- Modern Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8">
           <!-- Today's Appointments -->
-          <div
-            class="bg-white rounded-2xl shadow-xl p-6 border border-gray-100 hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
-          >
-            <div class="flex items-center justify-between">
-              <div class="flex-1">
-                <div class="flex items-center space-x-2 mb-2">
-                  <div class="w-3 h-3 bg-indigo-500 rounded-full"></div>
-                  <h3
-                    class="text-sm font-bold text-gray-500 uppercase tracking-wide"
-                  >
-                    Today's Appointments
-                  </h3>
-                </div>
-                <p class="text-3xl font-bold text-gray-900 mb-1">
-                  {{ stats.todayAppointments }}
-                </p>
-                <p class="text-sm text-indigo-600 font-medium">
-                  +12% from yesterday
-                </p>
+          <div class="bg-white rounded-lg shadow-md p-4 lg:p-6 border-l-4 border-blue-500">
+            <div class="flex items-center">
+              <div class="flex-1 min-w-0">
+                <h3 class="text-xs lg:text-sm font-medium text-gray-500 uppercase tracking-wide">Today's Appointments</h3>
+                <p class="text-2xl lg:text-3xl font-bold text-gray-900">{{ stats.todayAppointments }}</p>
               </div>
-              <div class="flex-shrink-0">
-                <div
-                  class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg"
-                >
-                  <svg
-                    class="w-6 h-6 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                    ></path>
-                  </svg>
-                </div>
+              <div class="flex-shrink-0 ml-4">
+                <svg class="h-6 w-6 lg:h-8 lg:w-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
               </div>
             </div>
           </div>
 
-          <!-- Pending Check-ins -->
-          <div
-            class="bg-white rounded-2xl shadow-xl p-6 border border-gray-100 hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
-          >
-            <div class="flex items-center justify-between">
-              <div class="flex-1">
-                <div class="flex items-center space-x-2 mb-2">
-                  <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                  <h3
-                    class="text-sm font-bold text-gray-500 uppercase tracking-wide"
-                  >
-                    Pending Payments
-                  </h3>
-                </div>
-                <p class="text-3xl font-bold text-gray-900 mb-1">
-                  {{ stats.pendingPayments }}
-                </p>
-                <p class="text-sm text-yellow-600 font-medium">
-                  Awaiting payment
-                </p>
+          <!-- Pending Appointments -->
+          <div class="bg-white rounded-lg shadow-md p-4 lg:p-6 border-l-4 border-yellow-500">
+            <div class="flex items-center">
+              <div class="flex-1 min-w-0">
+                <h3 class="text-xs lg:text-sm font-medium text-gray-500 uppercase tracking-wide">Pending Appointments</h3>
+                <p class="text-2xl lg:text-3xl font-bold text-gray-900">{{ stats.pendingAppointments }}</p>
               </div>
-              <div class="flex-shrink-0">
-                <div
-                  class="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg"
-                >
-                  <svg
-                    class="w-6 h-6 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                    ></path>
-                  </svg>
-                </div>
+              <div class="flex-shrink-0 ml-4">
+                <svg class="h-6 w-6 lg:h-8 lg:w-8 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
               </div>
             </div>
           </div>
 
           <!-- Total Patients -->
-          <div
-            class="bg-white rounded-2xl shadow-xl p-6 border border-gray-100 hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
-          >
-            <div class="flex items-center justify-between">
-              <div class="flex-1">
-                <div class="flex items-center space-x-2 mb-2">
-                  <div class="w-3 h-3 bg-green-500 rounded-full"></div>
-                  <h3
-                    class="text-sm font-bold text-gray-500 uppercase tracking-wide"
-                  >
-                    Total Patients
-                  </h3>
-                </div>
-                <p class="text-3xl font-bold text-gray-900 mb-1">
-                  {{ stats.totalPatients }}
-                </p>
-                <p class="text-sm text-green-600 font-medium">
-                  Registered patients
-                </p>
+          <div class="bg-white rounded-lg shadow-md p-4 lg:p-6 border-l-4 border-green-500">
+            <div class="flex items-center">
+              <div class="flex-1 min-w-0">
+                <h3 class="text-xs lg:text-sm font-medium text-gray-500 uppercase tracking-wide">Total Patients</h3>
+                <p class="text-2xl lg:text-3xl font-bold text-gray-900">{{ stats.totalPatients }}</p>
               </div>
-              <div class="flex-shrink-0">
-                <div
-                  class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg"
-                >
-                  <svg
-                    class="w-6 h-6 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                    ></path>
-                  </svg>
-                </div>
+              <div class="flex-shrink-0 ml-4">
+                <svg class="h-6 w-6 lg:h-8 lg:w-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                </svg>
               </div>
             </div>
           </div>
 
           <!-- Available Doctors -->
-          <div
-            class="bg-white rounded-2xl shadow-xl p-6 border border-gray-100 hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
-          >
-            <div class="flex items-center justify-between">
-              <div class="flex-1">
-                <div class="flex items-center space-x-2 mb-2">
-                  <div class="w-3 h-3 bg-purple-500 rounded-full"></div>
-                  <h3
-                    class="text-sm font-bold text-gray-500 uppercase tracking-wide"
-                  >
-                    Available Doctors
-                  </h3>
-                </div>
-                <p class="text-3xl font-bold text-gray-900 mb-1">
-                  {{ stats.availableDoctors }}
-                </p>
-                <p class="text-sm text-purple-600 font-medium">
-                  Currently on duty
-                </p>
+          <div class="bg-white rounded-lg shadow-md p-4 lg:p-6 border-l-4 border-purple-500">
+            <div class="flex items-center">
+              <div class="flex-1 min-w-0">
+                <h3 class="text-xs lg:text-sm font-medium text-gray-500 uppercase tracking-wide">Available Doctors</h3>
+                <p class="text-2xl lg:text-3xl font-bold text-gray-900">{{ stats.availableDoctors }}</p>
               </div>
-              <div class="flex-shrink-0">
-                <div
-                  class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center shadow-lg"
-                >
-                  <svg
-                    class="w-6 h-6 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                    ></path>
-                  </svg>
-                </div>
+              <div class="flex-shrink-0 ml-4">
+                <svg class="h-6 w-6 lg:h-8 lg:w-8 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                </svg>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Recent Appointments -->
-        <div class="bg-white rounded-2xl shadow-xl border border-gray-100">
-          <div
-            class="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-t-2xl"
-          >
-            <div class="flex items-center justify-between">
-              <div class="flex items-center space-x-3">
-                <div
-                  class="w-8 h-8 bg-gradient-to-br from-indigo-600 to-purple-700 rounded-lg flex items-center justify-center"
-                >
-                  <svg
-                    class="w-4 h-4 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                    ></path>
-                  </svg>
-                </div>
-                <h2 class="text-lg font-bold text-gray-900">
-                  Recent Appointments
-                </h2>
-              </div>
-              <button
-                (click)="navigateToAppointments()"
-                class="text-sm font-medium text-indigo-600 hover:text-indigo-800 transition-colors"
-              >
-                View All
-              </button>
-            </div>
+        <!-- Recent Appointments Section -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden mb-6 lg:mb-8">
+          <div class="px-4 lg:px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <h2 class="text-lg font-semibold text-gray-900">Recent Appointments</h2>
           </div>
-          <div class="p-6">
-            <div
-              *ngIf="recentAppointments.length === 0"
-              class="text-center py-12"
-            >
-              <div
-                class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4"
-              >
-                <svg
-                  class="w-8 h-8 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                  ></path>
-                </svg>
-              </div>
-              <p class="text-gray-500 font-medium">
-                No recent appointments found.
-              </p>
-              <p class="text-sm text-gray-400 mt-1">
-                New appointments will appear here.
-              </p>
+          <div class="p-4 lg:p-6">
+            <div *ngIf="stats.recentAppointments.length === 0" class="text-center py-8">
+              <div class="text-gray-500 mb-4">No recent appointments found.</div>
             </div>
-            <div *ngIf="recentAppointments.length > 0" class="space-y-3">
-              <div
-                *ngFor="let appointment of recentAppointments"
-                class="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-indigo-50 rounded-xl hover:from-indigo-50 hover:to-purple-50 transition-all duration-300 transform hover:scale-102 border border-gray-100 hover:border-indigo-200"
-              >
-                <div class="flex-1">
-                  <div class="flex items-center space-x-4">
+            <div *ngIf="stats.recentAppointments.length > 0" class="space-y-3 lg:space-y-4">
+              <div *ngFor="let appointment of stats.recentAppointments"
+                   class="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 lg:p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors space-y-3 sm:space-y-0">
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center space-x-3">
                     <div class="flex-shrink-0">
-                      <div
-                        class="w-12 h-12 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-xl flex items-center justify-center"
-                      >
-                        <svg
-                          class="w-6 h-6 text-indigo-600"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                          ></path>
+                      <div class="h-8 w-8 lg:h-10 lg:w-10 bg-blue-100 rounded-full flex items-center justify-center">
+                        <svg class="h-4 w-4 lg:h-5 lg:w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                         </svg>
                       </div>
                     </div>
-                    <div>
-                      <p class="text-sm font-bold text-gray-900">
-                        {{ appointment.patient_name }}
-                      </p>
-                      <p class="text-sm text-indigo-600 font-medium">
-                        {{ appointment.visit_type | titlecase }}
-                      </p>
-                      <p class="text-xs text-gray-500">
-                        {{ appointment.doctor_name | formatName:'doctor' }}
-                      </p>
+                    <div class="min-w-0 flex-1">
+                      <p class="text-sm font-medium text-gray-900 truncate">{{ appointment.patient_name }}</p>
+                      <p class="text-sm text-gray-500 truncate">with {{ appointment.doctor_name }}</p>
+                      <p class="text-xs text-gray-400">{{ appointment.visit_type | titlecase }}</p>
                     </div>
                   </div>
                 </div>
-                <div class="flex items-center space-x-4">
-                  <div class="text-right">
-                    <p class="text-sm font-bold text-gray-900">
-                      {{ formatDate(appointment.appointment_date) }}
-                    </p>
-                    <p
-                      class="text-sm text-gray-500 font-medium"
-                      *ngIf="appointment.appointment_time"
-                    >
-                      {{ formatTime(appointment.appointment_time) }}
-                    </p>
+                <div class="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-2 sm:space-y-0">
+                  <div class="text-left sm:text-right">
+                    <p class="text-sm font-medium text-gray-900">{{ formatDate(appointment.appointment_date) }}</p>
+                    <p class="text-sm text-gray-500" *ngIf="appointment.appointment_time">{{ formatTime(appointment.appointment_time) }}</p>
                   </div>
-                  <span
-                    class="inline-flex items-center px-3 py-1 rounded-xl text-xs font-bold"
-                    [ngClass]="
-                      getStatusColorClass(appointment.appointment_status)
-                    "
-                  >
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium self-start sm:self-auto"
+                        [ngClass]="getStatusColor(appointment.appointment_status)">
                     {{ appointment.appointment_status | titlecase }}
                   </span>
                 </div>
               </div>
             </div>
+            <div *ngIf="stats.recentAppointments.length > 0" class="mt-6 text-center">
+              <button (click)="navigateToAppointments()"
+                      class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-blue-600 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                View All Appointments
+                <svg class="ml-2 -mr-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+              </button>
+            </div>
           </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+          <button (click)="navigateToAppointments()" 
+                  class="bg-white rounded-lg shadow-md p-4 lg:p-6 text-left hover:shadow-lg transition-shadow border-l-4 border-blue-500">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <svg class="h-6 w-6 lg:h-8 lg:w-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+              </div>
+              <div class="ml-4 min-w-0">
+                <h3 class="text-base lg:text-lg font-medium text-gray-900">Manage Appointments</h3>
+                <p class="text-sm text-gray-500 mt-1">Schedule and manage appointments</p>
+              </div>
+            </div>
+          </button>
+          
+          <button (click)="navigateToPatientManagement()" 
+                  class="bg-white rounded-lg shadow-md p-4 lg:p-6 text-left hover:shadow-lg transition-shadow border-l-4 border-green-500">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <svg class="h-6 w-6 lg:h-8 lg:w-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                </svg>
+              </div>
+              <div class="ml-4 min-w-0">
+                <h3 class="text-base lg:text-lg font-medium text-gray-900">Patient Management</h3>
+                <p class="text-sm text-gray-500 mt-1">Register and manage patients</p>
+              </div>
+            </div>
+          </button>
+          
+          <button (click)="navigateToPaymentManagement()" 
+                  class="bg-white rounded-lg shadow-md p-4 lg:p-6 text-left hover:shadow-lg transition-shadow border-l-4 border-yellow-500 sm:col-span-2 lg:col-span-1">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <svg class="h-6 w-6 lg:h-8 lg:w-8 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                </svg>
+              </div>
+              <div class="ml-4 min-w-0">
+                <h3 class="text-base lg:text-lg font-medium text-gray-900">Payment Management</h3>
+                <p class="text-sm text-gray-500 mt-1">Handle payments and billing</p>
+              </div>
+            </div>
+          </button>
         </div>
       </div>
     </div>
   `,
-  styles: [
-    `
-      /* Modern Reception Dashboard Styles */
-      .animate-spin {
-        animation: spin 1s linear infinite;
-      }
+  styles: [`
+    .animate-spin {
+      animation: spin 1s linear infinite;
+    }
 
-      @keyframes spin {
-        from {
-          transform: rotate(0deg);
-        }
-        to {
-          transform: rotate(360deg);
-        }
-      }
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
 
-      /* Hover scale effect */
-      .hover\\:scale-102:hover {
-        transform: scale(1.02);
-      }
+    /* Responsive design improvements */
+    .max-w-full {
+      max-width: 100%;
+    }
 
-      /* Card hover effects */
-      .hover\\:shadow-2xl:hover {
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-      }
+    /* Prevent text overflow */
+    .truncate {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
 
-      /* Gradient text */
-      .bg-clip-text {
-        -webkit-background-clip: text;
-        background-clip: text;
+    /* Ensure images and content don't overflow */
+    * {
+      box-sizing: border-box;
+    }
+
+    /* Mobile-first responsive breakpoints */
+    @media (max-width: 640px) {
+      .grid {
+        gap: 1rem;
       }
-    `,
-  ],
+      
+      .p-4 {
+        padding: 0.75rem;
+      }
+      
+      .text-2xl {
+        font-size: 1.5rem;
+      }
+      
+      .text-3xl {
+        font-size: 1.875rem;
+      }
+    }
+
+    /* Tablet breakpoint */
+    @media (min-width: 641px) and (max-width: 1024px) {
+      .grid {
+        gap: 1.25rem;
+      }
+    }
+
+    /* Desktop breakpoint */
+    @media (min-width: 1025px) {
+      .grid {
+        gap: 1.5rem;
+      }
+    }
+  `]
 })
 export class DashboardComponent implements OnInit, OnDestroy {
-  loading = true;
-  error: string | null = null;
-
   stats: DashboardStats = {
     todayAppointments: 0,
-    pendingPayments: 0,
+    pendingAppointments: 0,
     totalPatients: 0,
-    activePatients: 0,
     availableDoctors: 0,
-    pendingApprovals: 0,
-    totalRevenue: 0,
-    newPatientsThisMonth: 0,
+    pendingPayments: 0,
+    recentAppointments: []
   };
 
-  recentAppointments: RecentAppointment[] = [];
-  patients: Patient[] = [];
-  doctors: Staff[] = [];
+  loading = true;
+  error: string | null = null;
   refreshInterval: any;
 
   constructor(
@@ -492,7 +339,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     try {
       const result = await this.supabaseService.getAllPatients();
       if (result.success && result.data) {
-        this.patients = result.data;
+        this.stats.totalPatients = result.data.length;
       }
     } catch (error) {
       console.error('Error loading patients:', error);
@@ -503,7 +350,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     try {
       const result = await this.supabaseService.getAllStaff();
       if (result.success && result.data) {
-        this.doctors = result.data.filter((staff) => staff.role === 'doctor');
+        const doctors = result.data.filter((staff: Staff) => staff.role === 'doctor');
+        this.stats.availableDoctors = doctors.filter((d: Staff) => d.status === 'active').length;
       }
     } catch (error) {
       console.error('Error loading doctors:', error);
@@ -512,74 +360,47 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   async calculateStats(): Promise<void> {
     const today = new Date();
-    const currentMonth = today.getMonth();
-    const currentYear = today.getFullYear();
     const todayString = today.toISOString().split('T')[0];
 
     // Calculate today's appointments from real data
-    const todayAppointments = this.recentAppointments.filter(
+    const todayAppointments = this.stats.recentAppointments.filter(
       (apt) => apt.appointment_date === todayString
     ).length;
 
     // Calculate pending appointments
-    const pendingApprovals = this.recentAppointments.filter(
+    const pendingAppointments = this.stats.recentAppointments.filter(
       (apt) => apt.appointment_status === 'pending'
     ).length;
 
-    this.stats = {
-      totalPatients: this.patients.length,
-      activePatients: this.patients.filter((p) => p.patient_status === 'active')
-        .length,
-      availableDoctors: this.doctors.filter((d) => d.is_available).length,
-      newPatientsThisMonth: this.patients.filter((p) => {
-        const createdDate = new Date(p.created_at || '');
-        return (
-          createdDate.getMonth() === currentMonth &&
-          createdDate.getFullYear() === currentYear
-        );
-      }).length,
-      todayAppointments: todayAppointments,
-      pendingApprovals: pendingApprovals,
-      // Simulated data for payment/revenue - would be calculated from real payment data
-      pendingPayments: Math.floor(Math.random() * 15) + 3,
-      totalRevenue: Math.floor(Math.random() * 50000) + 25000,
-    };
+    this.stats.todayAppointments = todayAppointments;
+    this.stats.pendingAppointments = pendingAppointments;
+    this.stats.pendingPayments = pendingAppointments; // Using pending appointments as proxy for pending payments
   }
 
   async loadRecentAppointments(): Promise<void> {
     try {
-      // Get recent appointments from Supabase
-      const appointmentsResult =
-        await this.supabaseService.getAllAppointments();
+      const appointmentsResult = await this.supabaseService.getAllAppointmentsForReceptionist();
 
-      if (
-        appointmentsResult &&
-        appointmentsResult.success &&
-        appointmentsResult.data &&
-        appointmentsResult.data.length > 0
-      ) {
-        // Transform appointments data for display
-        this.recentAppointments = appointmentsResult.data
-          .slice(0, 6) // Get latest 6 appointments
+      if (appointmentsResult && appointmentsResult.success && appointmentsResult.data && appointmentsResult.data.length > 0) {
+        // Use the transformed data directly - service already provides patient_name and doctor_name
+        this.stats.recentAppointments = appointmentsResult.data
+          .slice(0, 10)
           .map((apt: any) => ({
-            appointment_id: apt.appointment_id || apt.guest_appointment_id,
-            patient_name:
-              apt.patient?.full_name ||
-              apt.guest?.full_name ||
-              'Unknown Patient',
-            doctor_name: apt.doctor?.staff?.full_name || 'Unknown Doctor',
+            appointment_id: apt.appointment_id,
+            patient_name: apt.patient_name || 'Unknown Patient',
+            doctor_name: apt.doctor_name || 'Unknown Doctor',
             appointment_date: apt.appointment_date,
             appointment_time: apt.appointment_time,
             appointment_status: apt.appointment_status,
-            visit_type: apt.visit_type,
-            type: apt.patient ? 'patient' : 'guest',
+            visit_type: apt.visit_type || 'General Consultation',
+            type: apt.appointment_type || (apt.patient_id ? 'patient' : 'guest'),
           }));
       } else {
-        this.recentAppointments = [];
+        this.stats.recentAppointments = [];
       }
     } catch (error) {
       console.error('Error loading recent appointments:', error);
-      this.recentAppointments = [];
+      this.stats.recentAppointments = [];
     }
   }
 
@@ -595,38 +416,25 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.router.navigate(['/receptionist/dashboard/payment-management']);
   }
 
-  formatDate(dateString: string): string {
-    return new Date(dateString).toLocaleDateString('vi-VN');
-  }
-
-  getActivityIcon(type: string): string {
-    switch (type) {
-      case 'appointment':
-        return 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z';
-      case 'payment':
-        return 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z';
-      case 'patient':
-        return 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z';
-      default:
-        return 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z';
-    }
-  }
-
-  getStatusColorClass(status: string): string {
+  getStatusColor(status: string): string {
     switch (status.toLowerCase()) {
       case 'pending':
-        return 'bg-yellow-100 text-yellow-800 border border-yellow-200';
+        return 'text-yellow-600 bg-yellow-100';
       case 'in_progress':
-        return 'bg-purple-100 text-purple-800 border border-purple-200';
+        return 'text-purple-600 bg-purple-100';
       case 'completed':
-        return 'bg-green-100 text-green-800 border border-green-200';
+        return 'text-green-600 bg-green-100';
       case 'confirmed':
-        return 'bg-blue-100 text-blue-800 border border-blue-200';
+        return 'text-blue-600 bg-blue-100';
       case 'cancelled':
-        return 'bg-red-100 text-red-800 border border-red-200';
+        return 'text-red-600 bg-red-100';
       default:
-        return 'bg-gray-100 text-gray-800 border border-gray-200';
+        return 'text-gray-600 bg-gray-100';
     }
+  }
+
+  formatDate(dateString: string): string {
+    return new Date(dateString).toLocaleDateString('vi-VN');
   }
 
   formatTime(timeString: string): string {
@@ -640,14 +448,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
       return timeString;
     }
   }
-
-  getCurrentDate(): string {
-    const today = new Date();
-    return today.toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  }
 }
+
+export default DashboardComponent;

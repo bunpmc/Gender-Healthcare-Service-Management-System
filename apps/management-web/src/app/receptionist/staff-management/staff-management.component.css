@@ -1,0 +1,198 @@
+/* Staff Management Component Styles */
+
+/* Avatar styles */
+.staff-avatar {
+    position: relative;
+    display: inline-block;
+}
+
+.staff-avatar img {
+    transition: transform 0.2s ease-in-out;
+}
+
+.staff-avatar:hover img {
+    transform: scale(1.05);
+}
+
+.avatar-fallback {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* Modal specific styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 1rem;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 1.5rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    max-width: 42rem;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+/* Custom scrollbar for modal */
+.modal-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Table improvements */
+.staff-table {
+    min-width: 100%;
+    table-layout: fixed;
+}
+
+.table-header {
+    background-color: #f9fafb;
+}
+
+.table-row:hover {
+    background-color: #f9fafb;
+    transition: background-color 0.15s ease-in-out;
+}
+
+/* Column width definitions */
+.staff-table th:nth-child(1),
+.staff-table td:nth-child(1) {
+    width: 16%;
+    min-width: 90px;
+}
+
+.staff-table th:nth-child(2),
+.staff-table td:nth-child(2) {
+    width: 16%;
+    min-width: 70px;
+}
+
+.staff-table th:nth-child(3),
+.staff-table td:nth-child(3) {
+    width: 13%;
+    min-width: 100px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.staff-table th:nth-child(4),
+.staff-table td:nth-child(4) {
+    width: 27.5%;
+    min-width: 200px;
+}
+
+.staff-table th:nth-child(5),
+.staff-table td:nth-child(5) {
+    width: 27.5%;
+    min-width: 180px;
+}
+
+/* Loading spinner */
+.loading-spinner {
+    animation: spin 1s linear infinite;
+    border-radius: 50%;
+    border: 4px solid #e5e7eb;
+    border-top: 4px solid #4f46e5;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Button hover effects */
+.action-button {
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    transition: all 0.2s ease-in-out;
+}
+
+.contact-button:hover {
+    background-color: #eef2ff;
+    color: #3730a3;
+}
+
+.view-button:hover {
+    background-color: #f9fafb;
+    color: #1f2937;
+}
+
+/* Stats cards hover effect */
+.stats-card {
+    transform: translateY(0);
+    transition: all 0.2s ease-in-out;
+}
+
+.stats-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Mobile card improvements */
+.mobile-staff-card {
+    transition: box-shadow 0.2s ease-in-out;
+}
+
+.mobile-staff-card:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Focus styles for accessibility */
+button:focus,
+input:focus,
+select:focus {
+    outline: 2px solid #4f46e5;
+    outline-offset: 2px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+    .stats-card:hover {
+        transform: translateY(0);
+        /* Disable hover transform on mobile */
+    }
+
+    .modal-overlay {
+        padding: 0.5rem;
+    }
+
+    .modal-content {
+        max-height: 95vh;
+    }
+}
+
+/* Smooth transitions for all elements */
+* {
+    transition-property: color, background-color, border-color, opacity, box-shadow, transform;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+}

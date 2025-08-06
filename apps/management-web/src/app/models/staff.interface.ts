@@ -1,26 +1,39 @@
 export interface Staff {
+  // Core database fields (matching schema)
   staff_id: string;
   full_name: string;
   working_email: string;
-  phone?: string; // Phone number
-  phone_number?: string; // Alternative phone field for compatibility
-  role: string; // Assuming staff_role_enum is a string-based enum
+  role: string; // staff_role_enum
   years_experience?: number;
   hired_at: string; // Date will be handled as string from Supabase
   is_available: boolean;
-  staff_status: string; // Assuming staff_status is a string-based enum
+  staff_status: string; // staff_status enum
   created_at?: string;
   updated_at?: string;
   image_link?: string;
-  gender?: string; // Assuming gender_enum is a string-based enum
-  languages?: string[];
-  password?: string; // For authentication purposes - handle securely
-  
-  // Additional fields for comprehensive staff management
-  date_of_birth?: string;
-  address?: string;
-  specialization?: string;
-  bio?: string;
+  gender?: string; // gender_enum
+  languages?: string[]; // json[] in database
+
+  // REMOVED: Fields not in database schema
+  // phone?: string; 
+  // phone_number?: string;
+  // date_of_birth?: string;
+  // address?: string;
+  // specialization?: string;
+  // bio?: string;
+  // password?: string;
+
+  // Avatar and display properties (computed from database fields)
+  avatar_url?: string;
+  imageUrl?: string; // Legacy compatibility
+  experience_display?: string;
+
+  // Legacy compatibility properties for old code
+  id?: string; // Alternative to staff_id
+  name?: string; // Alternative to full_name
+  email?: string; // Alternative to working_email
+  status?: string; // Alternative to staff_status
+  startDate?: string; // Alternative to hired_at
 }
 
 export interface Role {

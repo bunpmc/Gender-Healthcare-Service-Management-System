@@ -16,7 +16,7 @@
               Patient Management
             </h1>
             <p class="text-gray-600">
-              Create, read, and update patient records (CRU operations)
+              Manage registered patients and guest records (CRU operations)
             </p>
           </div>
           <div class="mt-4 lg:mt-0">
@@ -70,7 +70,7 @@
             </div>
           </div>
           <div class="ml-4">
-            <p class="text-sm font-medium text-gray-500">Total Patients</p>
+            <p class="text-sm font-medium text-gray-500">Total Records</p>
             <p class="text-2xl font-bold text-gray-900">
               {{ stats.totalPatients }}
             </p>
@@ -102,7 +102,7 @@
             </div>
           </div>
           <div class="ml-4">
-            <p class="text-sm font-medium text-gray-500">Active Patients</p>
+            <p class="text-sm font-medium text-gray-500">Active Records</p>
             <p class="text-2xl font-bold text-gray-900">
               {{ stats.activePatients }}
             </p>
@@ -166,7 +166,7 @@
             </div>
           </div>
           <div class="ml-4">
-            <p class="text-sm font-medium text-gray-500">Female Patients</p>
+            <p class="text-sm font-medium text-gray-500">Female Records</p>
             <p class="text-2xl font-bold text-gray-900">
               {{ stats.femalePatients }}
             </p>
@@ -180,7 +180,7 @@
       <div
         class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6"
       >
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
           <!-- Search -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2"
@@ -235,11 +235,31 @@
             </select>
           </div>
 
+          <!-- Patient Type Filter -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Type</label
+            >
+            <select
+              [(ngModel)]="selectedPatientType"
+              (change)="onPatientTypeFilterChange()"
+              class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            >
+              <option value="">All Types</option>
+              <option
+                *ngFor="let type of patientTypeOptions"
+                [value]="type.value"
+              >
+                {{ type.label }}
+              </option>
+            </select>
+          </div>
+
           <!-- Results Count -->
           <div class="flex items-end">
             <div class="text-sm text-gray-600">
               Showing {{ filteredPatients.length }} of
-              {{ patients.length }} patients
+              {{ patients.length }} records
             </div>
           </div>
         </div>
@@ -273,7 +293,7 @@
 
       <!-- Table Content -->
       <div *ngIf="!isLoading" class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
+        <table class="patient-table min-w-full divide-y divide-gray-200">
           <thead class="bg-gradient-to-r from-indigo-50 to-purple-50">
             <tr>
               <th
@@ -323,6 +343,13 @@
                   <div class="text-xs text-gray-400">
                     {{ formatDate(patient.created_at || "") }}
                   </div>
+                  <!-- Patient Type Badge -->
+                  <span
+                    [class]="getPatientTypeBadgeClass(patient.patient_type || 'patient')"
+                    class="inline-flex px-2 py-1 text-xs font-semibold rounded-full mt-1"
+                  >
+                    {{ (patient.patient_type || 'patient') | titlecase }}
+                  </span>
                 </div>
               </td>
 
@@ -350,10 +377,10 @@
                     years old
                   </div>
                   <span
-                    [class]="getGenderBadgeClass(patient.gender)"
+                    [class]="getGenderBadgeClass(patient.gender || '')"
                     class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
                   >
-                    {{ patient.gender | titlecase }}
+                    {{ (patient.gender || 'Unknown') | titlecase }}
                   </span>
                 </div>
               </td>
@@ -361,10 +388,10 @@
               <!-- Status -->
               <td class="px-6 py-4 whitespace-nowrap">
                 <span
-                  [class]="getStatusBadgeClass(patient.patient_status)"
+                  [class]="getStatusBadgeClass(patient.patient_status || 'active')"
                   class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
                 >
-                  {{ patient.patient_status | titlecase }}
+                  {{ (patient.patient_status || 'active') | titlecase }}
                 </span>
               </td>
 
@@ -456,10 +483,10 @@
             ></path>
           </svg>
           <h3 class="mt-2 text-sm font-medium text-gray-900">
-            No patients found
+            No records found
           </h3>
           <p class="mt-1 text-sm text-gray-500">
-            Get started by adding a new patient.
+            Get started by adding a new patient or guest.
           </p>
         </div>
       </div>
@@ -551,7 +578,7 @@
 <!-- Create Patient Modal -->
 <div
   *ngIf="showCreateModal"
-  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[1100] p-4"
 >
   <div
     class="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
@@ -918,6 +945,644 @@
                 ></path>
               </svg>
               Creating...
+            </span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- View Patient/Guest Modal -->
+<div
+  *ngIf="showViewModal && selectedPatient"
+  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[1100] p-4"
+>
+  <div
+    class="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+  >
+    <div class="p-8">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-2xl font-bold text-gray-900">
+            {{ selectedPatient.patient_type === 'guest' ? 'Guest' : 'Patient' }} Details
+          </h2>
+          <span
+            [class]="getPatientTypeBadgeClass(selectedPatient.patient_type || 'patient')"
+            class="inline-flex px-2 py-1 text-xs font-semibold rounded-full mt-2"
+          >
+            {{ (selectedPatient.patient_type || 'patient') | titlecase }}
+          </span>
+        </div>
+        <button
+          (click)="closeViewModal()"
+          class="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
+        >
+          <svg
+            class="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            ></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Patient/Guest Information -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Basic Information -->
+        <div class="space-y-4">
+          <h3 class="text-lg font-semibold text-gray-900 border-b pb-2">Basic Information</h3>
+          
+          <!-- Patient Image -->
+          <div *ngIf="selectedPatient.image_link">
+            <label class="block text-sm font-medium text-gray-700">Profile Image</label>
+            <div class="mt-2">
+              <img 
+                [src]="selectedPatient.image_link" 
+                [alt]="selectedPatient.full_name + ' profile'"
+                class="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
+                (error)="onImageError($event)"
+              />
+            </div>
+          </div>
+
+          <!-- IDs -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Patient ID</label>
+            <p class="mt-1 text-sm text-gray-900 font-mono">{{ selectedPatient.patient_id || selectedPatient.id || 'Not available' }}</p>
+          </div>
+
+          <div *ngIf="selectedPatient.patient_type === 'guest' && selectedPatient.guest_id">
+            <label class="block text-sm font-medium text-gray-700">Guest ID</label>
+            <p class="mt-1 text-sm text-gray-900 font-mono">{{ selectedPatient.guest_id }}</p>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Full Name</label>
+            <p class="mt-1 text-sm text-gray-900">{{ selectedPatient.full_name }}</p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Email</label>
+            <p class="mt-1 text-sm text-gray-900">{{ selectedPatient.email || 'Not provided' }}</p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Phone</label>
+            <p class="mt-1 text-sm text-gray-900">{{ selectedPatient.phone || selectedPatient.phone_number || 'Not provided' }}</p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Date of Birth</label>
+            <p class="mt-1 text-sm text-gray-900">{{ formatDate(selectedPatient.date_of_birth || '') || 'Not provided' }}</p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Age</label>
+            <p class="mt-1 text-sm text-gray-900">
+              {{
+                selectedPatient.date_of_birth
+                  ? calculateAge(selectedPatient.date_of_birth) + ' years old'
+                  : 'Not available'
+              }}
+            </p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Gender</label>
+            <p class="mt-1">
+              <span
+                [class]="getGenderBadgeClass(selectedPatient.gender || '')"
+                class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
+              >
+                {{ (selectedPatient.gender || 'Unknown') | titlecase }}
+              </span>
+            </p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Status</label>
+            <p class="mt-1">
+              <span
+                [class]="getStatusBadgeClass(selectedPatient.patient_status || 'active')"
+                class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
+              >
+                {{ (selectedPatient.patient_status || 'active') | titlecase }}
+              </span>
+            </p>
+          </div>
+
+          <!-- Address (for both patients and guests) -->
+          <div *ngIf="selectedPatient.address">
+            <label class="block text-sm font-medium text-gray-700">Address</label>
+            <p class="mt-1 text-sm text-gray-900">{{ selectedPatient.address }}</p>
+          </div>
+
+          <!-- Bio -->
+          <div *ngIf="selectedPatient.bio">
+            <label class="block text-sm font-medium text-gray-700">Bio</label>
+            <p class="mt-1 text-sm text-gray-900">{{ selectedPatient.bio }}</p>
+          </div>
+        </div>
+
+        <!-- Extended Information (Only for Patients) -->
+        <div class="space-y-4" *ngIf="selectedPatient.patient_type !== 'guest'">
+          <h3 class="text-lg font-semibold text-gray-900 border-b pb-2">Medical Information</h3>
+          
+          <!-- Emergency Contacts -->
+          <div *ngIf="selectedPatient.emergency_contact_name || selectedPatient.emergency_contact">
+            <label class="block text-sm font-medium text-gray-700">Emergency Contact</label>
+            <div class="mt-1 space-y-1">
+              <p *ngIf="selectedPatient.emergency_contact_name" class="text-sm text-gray-900">
+                <strong>Name:</strong> {{ selectedPatient.emergency_contact_name }}
+              </p>
+              <p *ngIf="selectedPatient.emergency_contact_phone" class="text-sm text-gray-900">
+                <strong>Phone:</strong> {{ selectedPatient.emergency_contact_phone }}
+              </p>
+              <p *ngIf="selectedPatient.emergency_contact && !selectedPatient.emergency_contact_name" class="text-sm text-gray-900">
+                {{ selectedPatient.emergency_contact }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Vaccination Status -->
+          <div *ngIf="selectedPatient.vaccination_status">
+            <label class="block text-sm font-medium text-gray-700">Vaccination Status</label>
+            <p class="mt-1">
+              <span
+                [class]="getVaccinationStatusBadgeClass(selectedPatient.vaccination_status)"
+                class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
+              >
+                {{ selectedPatient.vaccination_status.replace('_', ' ') | titlecase }}
+              </span>
+            </p>
+          </div>
+
+          <!-- Current Medications -->
+          <div *ngIf="selectedPatient.medications && selectedPatient.medications.length > 0">
+            <label class="block text-sm font-medium text-gray-700">Current Medications</label>
+            <div class="mt-1 flex flex-wrap gap-2">
+              <span
+                *ngFor="let medication of selectedPatient.medications"
+                class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-800"
+              >
+                {{ medication }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Allergies -->
+          <div *ngIf="selectedPatient.allergies && selectedPatient.allergies.length > 0">
+            <label class="block text-sm font-medium text-gray-700">Allergies</label>
+            <div class="mt-1 flex flex-wrap gap-2">
+              <span
+                *ngFor="let allergy of selectedPatient.allergies"
+                class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-red-100 text-red-800"
+              >
+                {{ allergy }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Chronic Conditions -->
+          <div *ngIf="selectedPatient.chronic_conditions && selectedPatient.chronic_conditions.length > 0">
+            <label class="block text-sm font-medium text-gray-700">Chronic Conditions</label>
+            <div class="mt-1 flex flex-wrap gap-2">
+              <span
+                *ngFor="let condition of selectedPatient.chronic_conditions"
+                class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-800"
+              >
+                {{ condition }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Past Surgeries -->
+          <div *ngIf="selectedPatient.past_surgeries && selectedPatient.past_surgeries.length > 0">
+            <label class="block text-sm font-medium text-gray-700">Past Surgeries</label>
+            <div class="mt-1 flex flex-wrap gap-2">
+              <span
+                *ngFor="let surgery of selectedPatient.past_surgeries"
+                class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800"
+              >
+                {{ surgery }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Medical History -->
+          <div *ngIf="selectedPatient.medical_history">
+            <label class="block text-sm font-medium text-gray-700">Medical History</label>
+            <div class="mt-1 bg-gray-50 border border-gray-200 rounded-lg p-3">
+              <div *ngIf="typeof selectedPatient.medical_history === 'string'">
+                <p class="text-sm text-gray-900">{{ selectedPatient.medical_history }}</p>
+              </div>
+              <div *ngIf="typeof selectedPatient.medical_history === 'object'">
+                <pre class="text-sm text-gray-900 whitespace-pre-wrap">{{ selectedPatient.medical_history | json }}</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Guest Extended Information -->
+        <div class="space-y-4" *ngIf="selectedPatient.patient_type === 'guest'">
+          <h3 class="text-lg font-semibold text-gray-900 border-b pb-2">Guest Information</h3>
+          
+          <!-- Emergency Contact for Guests -->
+          <div *ngIf="selectedPatient.emergency_contact">
+            <label class="block text-sm font-medium text-gray-700">Emergency Contact</label>
+            <p class="mt-1 text-sm text-gray-900">{{ selectedPatient.emergency_contact }}</p>
+          </div>
+          
+          <div class="bg-orange-50 border border-orange-200 rounded-lg p-4">
+            <div class="flex">
+              <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-orange-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                </svg>
+              </div>
+              <div class="ml-3">
+                <h3 class="text-sm font-medium text-orange-800">Guest Record</h3>
+                <div class="mt-2 text-sm text-orange-700">
+                  <p>This is a guest record with basic information only. Advanced medical information is not available for guest records.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Appointment History (For Patients Only) -->
+      <div class="mt-6" *ngIf="selectedPatient.patient_type !== 'guest'">
+        <h3 class="text-lg font-semibold text-gray-900 border-b pb-2 mb-4">Appointment History</h3>
+        
+        <!-- Loading State -->
+        <div *ngIf="loadingAppointments" class="flex items-center justify-center py-8">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+          <span class="ml-2 text-sm text-gray-600">Loading appointments...</span>
+        </div>
+
+        <!-- Appointments List -->
+        <div *ngIf="!loadingAppointments && patientAppointments.length > 0" class="space-y-3">
+          <div
+            *ngFor="let appointment of patientAppointments"
+            class="bg-gray-50 rounded-lg p-4 border border-gray-200"
+          >
+            <div class="flex justify-between items-start">
+              <div class="flex-1">
+                <div class="flex items-center space-x-2 mb-2">
+                  <span class="text-sm font-medium text-gray-900">
+                    {{ formatDate(appointment.appointment_date) }}
+                  </span>
+                  <span class="text-sm text-gray-500">
+                    {{ appointment.appointment_time }}
+                  </span>
+                  <span
+                    class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
+                    [class]="getAppointmentStatusBadgeClass(appointment.status)"
+                  >
+                    {{ appointment.status | titlecase }}
+                  </span>
+                </div>
+                <div class="text-sm text-gray-600">
+                  <p *ngIf="appointment.doctor">
+                    <strong>Doctor:</strong> {{ appointment.doctor.full_name }}
+                  </p>
+                  <p *ngIf="appointment.service">
+                    <strong>Service:</strong> {{ appointment.service.service_name }}
+                  </p>
+                  <p *ngIf="appointment.notes">
+                    <strong>Notes:</strong> {{ appointment.notes }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- No Appointments -->
+        <div *ngIf="!loadingAppointments && patientAppointments.length === 0" class="text-center py-8">
+          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 0a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V9a2 2 0 00-2-2m-6 0V5a2 2 0 012-2h4a2 2 0 012 2v2"></path>
+          </svg>
+          <h3 class="mt-2 text-sm font-medium text-gray-900">No appointments found</h3>
+          <p class="mt-1 text-sm text-gray-500">This patient has no appointment history.</p>
+        </div>
+      </div>
+
+      <!-- Guest Appointment Notice -->
+      <div class="mt-6" *ngIf="selectedPatient.patient_type === 'guest'">
+        <h3 class="text-lg font-semibold text-gray-900 border-b pb-2 mb-4">Appointment History</h3>
+        <div class="bg-orange-50 border border-orange-200 rounded-lg p-4">
+          <div class="flex">
+            <div class="flex-shrink-0">
+              <svg class="h-5 w-5 text-orange-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+              </svg>
+            </div>
+            <div class="ml-3">
+              <h3 class="text-sm font-medium text-orange-800">Guest Record</h3>
+              <div class="mt-2 text-sm text-orange-700">
+                <p>Appointment history is not available for guest records. Guest records only contain basic contact information.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Record Information -->
+      <div class="mt-6 pt-6 border-t border-gray-200">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Created At</label>
+            <p class="mt-1 text-sm text-gray-900">{{ formatDate(selectedPatient.created_at || '') }}</p>
+          </div>
+          <div *ngIf="selectedPatient.updated_at">
+            <label class="block text-sm font-medium text-gray-700">Last Updated</label>
+            <p class="mt-1 text-sm text-gray-900">{{ formatDate(selectedPatient.updated_at || '') }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Actions -->
+      <div class="flex justify-end space-x-4 mt-8 pt-6 border-t border-gray-200">
+        <button
+          (click)="closeViewModal()"
+          class="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors duration-200"
+        >
+          Close
+        </button>
+        <button
+          (click)="openEditModal(selectedPatient); closeViewModal()"
+          class="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-200"
+        >
+          Edit {{ selectedPatient.patient_type === 'guest' ? 'Guest' : 'Patient' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Patient/Guest Modal -->
+<div
+  *ngIf="showEditModal && selectedPatient"
+  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[1100] p-4"
+>
+  <div
+    class="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+  >
+    <div class="p-8">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-2xl font-bold text-gray-900">
+            Edit {{ selectedPatient.patient_type === 'guest' ? 'Guest' : 'Patient' }}
+          </h2>
+          <span
+            [class]="getPatientTypeBadgeClass(selectedPatient.patient_type || 'patient')"
+            class="inline-flex px-2 py-1 text-xs font-semibold rounded-full mt-2"
+          >
+            {{ (selectedPatient.patient_type || 'patient') | titlecase }}
+          </span>
+        </div>
+        <button
+          (click)="closeEditModal()"
+          class="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
+        >
+          <svg
+            class="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            ></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Edit Form -->
+      <form (ngSubmit)="updatePatient()" #editForm="ngForm">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Basic Information (Available for both patients and guests) -->
+          <div class="md:col-span-2">
+            <h3 class="text-lg font-semibold text-gray-900 border-b pb-2 mb-4">Basic Information</h3>
+          </div>
+
+          <!-- Full Name -->
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Full Name *</label
+            >
+            <input
+              type="text"
+              [(ngModel)]="selectedPatient.full_name"
+              name="editFullName"
+              required
+              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              placeholder="Enter full name"
+            />
+          </div>
+
+          <!-- Email -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Email</label
+            >
+            <input
+              type="email"
+              [(ngModel)]="selectedPatient.email"
+              name="editEmail"
+              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              placeholder="Enter email address"
+            />
+          </div>
+
+          <!-- Phone Number -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Phone Number *</label
+            >
+            <input
+              type="tel"
+              [(ngModel)]="selectedPatient.phone_number"
+              name="editPhoneNumber"
+              required
+              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              placeholder="Enter phone number"
+            />
+          </div>
+
+          <!-- Date of Birth -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Date of Birth *</label
+            >
+            <input
+              type="date"
+              [(ngModel)]="selectedPatient.date_of_birth"
+              name="editDateOfBirth"
+              required
+              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            />
+          </div>
+
+          <!-- Gender -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Gender *</label
+            >
+            <select
+              [(ngModel)]="selectedPatient.gender"
+              name="editGender"
+              required
+              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            >
+              <option value="">Select Gender</option>
+              <option
+                *ngFor="let gender of genderOptions"
+                [value]="gender.value"
+              >
+                {{ gender.label }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Extended Information (Only for Patients) -->
+          <div class="md:col-span-2" *ngIf="selectedPatient.patient_type !== 'guest'">
+            <h3 class="text-lg font-semibold text-gray-900 border-b pb-2 mb-4">Medical Information</h3>
+          </div>
+
+          <!-- Address (Patients only) -->
+          <div class="md:col-span-2" *ngIf="selectedPatient.patient_type !== 'guest'">
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Address</label
+            >
+            <textarea
+              [(ngModel)]="selectedPatient.address"
+              name="editAddress"
+              rows="3"
+              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
+              placeholder="Enter address"
+            ></textarea>
+          </div>
+
+          <!-- Emergency Contact (Patients only) -->
+          <div *ngIf="selectedPatient.patient_type !== 'guest'">
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Emergency Contact Name</label
+            >
+            <input
+              type="text"
+              [(ngModel)]="selectedPatient.emergency_contact_name"
+              name="editEmergencyContactName"
+              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              placeholder="Enter emergency contact name"
+            />
+          </div>
+
+          <div *ngIf="selectedPatient.patient_type !== 'guest'">
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Emergency Contact Phone</label
+            >
+            <input
+              type="tel"
+              [(ngModel)]="selectedPatient.emergency_contact_phone"
+              name="editEmergencyContactPhone"
+              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              placeholder="Enter emergency contact phone"
+            />
+          </div>
+
+          <!-- Patient Status (Patients only) -->
+          <div *ngIf="selectedPatient.patient_type !== 'guest'">
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Patient Status</label
+            >
+            <select
+              [(ngModel)]="selectedPatient.patient_status"
+              name="editPatientStatus"
+              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            >
+              <option
+                *ngFor="let status of statusOptions"
+                [value]="status.value"
+              >
+                {{ status.label }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Guest Information Notice -->
+        <div class="mt-6" *ngIf="selectedPatient.patient_type === 'guest'">
+          <div class="bg-orange-50 border border-orange-200 rounded-lg p-4">
+            <div class="flex">
+              <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-orange-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                </svg>
+              </div>
+              <div class="ml-3">
+                <h3 class="text-sm font-medium text-orange-800">Guest Record</h3>
+                <div class="mt-2 text-sm text-orange-700">
+                  <p>You are editing a guest record. Only basic information can be modified for guest records.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div
+          class="flex justify-end space-x-4 mt-8 pt-6 border-t border-gray-200"
+        >
+          <button
+            type="button"
+            (click)="closeEditModal()"
+            class="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors duration-200"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            [disabled]="isLoading || !editForm.form.valid"
+            class="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+          >
+            <span *ngIf="!isLoading">Update {{ selectedPatient.patient_type === 'guest' ? 'Guest' : 'Patient' }}</span>
+            <span *ngIf="isLoading" class="flex items-center">
+              <svg
+                class="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                ></circle>
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              Updating...
             </span>
           </button>
         </div>

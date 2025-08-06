@@ -62,7 +62,7 @@
               aria-label="Select all appointments"
             />
           </th>
-          <th class="w-48 px-3 py-3 text-left font-semibold text-gray-700">
+          <th class="w-32 px-3 py-3 text-left font-semibold text-gray-700">
             <button (click)="sort('patient_name')" class="flex items-center gap-1">
               Patient
               <svg class="w-4 h-4" [class.text-indigo-600]="sortField === 'patient_name'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -70,7 +70,7 @@
               </svg>
             </button>
           </th>
-          <th class="w-40 px-3 py-3 text-left font-semibold text-gray-700">
+          <th class="w-28 px-3 py-3 text-left font-semibold text-gray-700">
             <button (click)="sort('doctor_name')" class="flex items-center gap-1">
               Doctor
               <svg class="w-4 h-4" [class.text-indigo-600]="sortField === 'doctor_name'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -78,7 +78,7 @@
               </svg>
             </button>
           </th>
-          <th class="w-36 px-3 py-3 text-left font-semibold text-gray-700">
+          <th class="w-28 px-3 py-3 text-left font-semibold text-gray-700">
             <button (click)="sort('appointment_date')" class="flex items-center gap-1">
               Date & Time
               <svg class="w-4 h-4" [class.text-indigo-600]="sortField === 'appointment_date'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -86,8 +86,8 @@
               </svg>
             </button>
           </th>
-          <th class="w-28 px-3 py-3 text-left font-semibold text-gray-700">Visit Type</th>
-          <th class="w-24 px-3 py-3 text-left font-semibold text-gray-700">
+          <th class="w-20 px-3 py-3 text-left font-semibold text-gray-700">Visit Type</th>
+          <th class="w-16 px-3 py-3 text-left font-semibold text-gray-700">
             <button (click)="sort('appointment_status')" class="flex items-center gap-1">
               Status
               <svg class="w-4 h-4" [class.text-indigo-600]="sortField === 'appointment_status'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -95,8 +95,8 @@
               </svg>
             </button>
           </th>
-          <th class="w-32 px-3 py-3 text-left font-semibold text-gray-700">Contact</th>
-          <th class="w-24 px-3 py-3 text-left font-semibold text-gray-700">Actions</th>
+          <th class="w-24 px-3 py-3 text-left font-semibold text-gray-700">Contact</th>
+          <th class="w-32 px-3 py-3 text-left font-semibold text-gray-700">Actions</th>
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-100">
@@ -113,44 +113,44 @@
               [attr.aria-label]="'Select appointment for ' + appointment.patient_name"
             />
           </td>
-          <td class="px-3 py-3">
+          <td class="px-3 py-3 patient-cell">
             <div class="flex items-center space-x-2">
               <div class="flex-shrink-0">
-                <div class="w-8 h-8 bg-gradient-to-br rounded-full flex items-center justify-center"
+                <div class="w-7 h-7 bg-gradient-to-br rounded-full flex items-center justify-center"
                      [ngClass]="appointment.appointment_type === 'guest' ? 'from-green-100 to-emerald-100' : 'from-purple-100 to-indigo-100'">
-                  <svg *ngIf="appointment.appointment_type === 'patient'" class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg *ngIf="appointment.appointment_type === 'patient'" class="w-3 h-3 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                   </svg>
-                  <svg *ngIf="appointment.appointment_type === 'guest'" class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg *ngIf="appointment.appointment_type === 'guest'" class="w-3 h-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
                   </svg>
                 </div>
               </div>
               <div class="min-w-0 flex-1">
                 <div class="flex items-center space-x-1">
-                  <p class="text-sm font-medium text-gray-900 truncate">
+                  <p class="patient-name" [title]="appointment.display_name || appointment.patient_name || appointment.guest_name || 'N/A'">
                     {{ appointment.display_name || appointment.patient_name || appointment.guest_name || 'N/A' }}
                   </p>
-                  <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium"
+                  <span class="inline-flex items-center px-1 py-0.5 rounded text-xs font-medium"
                         [ngClass]="appointment.appointment_type === 'guest' ? 'bg-green-100 text-green-800' : 'bg-purple-100 text-purple-800'">
                     {{ appointment.appointment_type === 'guest' ? 'G' : 'P' }}
                   </span>
                 </div>
-                <p class="text-xs text-gray-500 truncate">
+                <p class="patient-id">
                   {{ appointment.appointment_id.substring(0, 6) }}
                 </p>
               </div>
             </div>
           </td>
-          <td class="px-3 py-3">
+          <td class="px-3 py-3 doctor-cell">
             <div class="flex items-center space-x-2">
-              <div class="w-7 h-7 bg-gradient-to-br from-green-100 to-emerald-100 rounded-full flex items-center justify-center">
+              <div class="w-6 h-6 bg-gradient-to-br from-green-100 to-emerald-100 rounded-full flex items-center justify-center">
                 <svg class="w-3 h-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
               </div>
               <div class="min-w-0 flex-1">
-                <p class="text-sm font-medium text-gray-900 truncate">
+                <p class="doctor-name" [title]="appointment.doctor_name || 'Unassigned'">
                   {{ appointment.doctor_name || 'Unassigned' }}
                 </p>
               </div>
@@ -181,17 +181,17 @@
               {{ formatStatus(appointment.appointment_status) }}
             </span>
           </td>
-          <td class="px-3 py-3">
+          <td class="px-3 py-3 contact-cell">
             <div class="text-xs">
-              <div class="text-gray-900 truncate">{{ appointment.patient_phone || appointment.phone }}</div>
-              <div class="text-gray-500 truncate">{{ appointment.patient_email || appointment.email }}</div>
+              <div class="contact-info text-gray-900" [title]="appointment.patient_phone || appointment.phone">{{ appointment.patient_phone || appointment.phone }}</div>
+              <div class="contact-info text-gray-500" [title]="appointment.patient_email || appointment.email">{{ appointment.patient_email || appointment.email }}</div>
             </div>
           </td>
           <td class="px-3 py-3">
             <div class="flex items-center space-x-1">
               <button
                 (click)="viewAppointment(appointment)"
-                class="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-600 transition-colors duration-200"
+                class="inline-flex items-center justify-center w-6 h-6 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-600 transition-colors duration-200"
                 title="View appointment details"
               >
                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -201,7 +201,7 @@
               </button>
               <button
                 (click)="editAppointment(appointment)"
-                class="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-600 transition-colors duration-200"
+                class="inline-flex items-center justify-center w-6 h-6 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-600 transition-colors duration-200"
                 title="Edit appointment"
               >
                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -209,8 +209,15 @@
                 </svg>
               </button>
               <button
+                (click)="updateStatus(appointment)"
+                class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-lg bg-yellow-50 hover:bg-yellow-100 text-yellow-700 transition-colors duration-200"
+                title="Update appointment status"
+              >
+                Update Status
+              </button>
+              <button
                 (click)="deleteAppointment(appointment)"
-                class="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 transition-colors duration-200"
+                class="inline-flex items-center justify-center w-6 h-6 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 transition-colors duration-200"
                 title="Delete appointment"
               >
                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">

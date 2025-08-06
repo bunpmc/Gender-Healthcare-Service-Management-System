@@ -3,48 +3,16 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Patient } from '../../models/patient.interface';
 import { Service } from '../../models/service.interface';
+import { Transaction, TransactionStatus } from '../../models/transaction.interface';
 import { SupabaseService } from '../../supabase.service';
 import { CurrencyUtil } from '../../utils/currency.util';
 
-interface PaymentRecord {
-  payment_id: string;
-  patient_id: string;
-  patient_name: string;
-  patient_email: string;
-  patient_phone: string;
-  services: ServiceUsage[];
-  total_amount: number;
-  paid_amount: number;
-  payment_status: 'pending' | 'paid' | 'partial' | 'overdue';
-  payment_date?: string;
-  due_date: string;
-  created_at: string;
-  updated_at: string;
-  payment_method?: string;
-  notes?: string;
-}
-
-interface ServiceUsage {
+interface TransactionService {
   service_id: string;
   service_name: string;
   service_price: number;
   quantity: number;
-  usage_date: string;
-  appointment_id?: string;
-}
-
-interface MockPatient {
-  id: string;
-  full_name: string;
-  email: string;
-  phone: string;
-}
-
-interface MockService {
-  id: string;
-  name: string;
-  price: number;
-  category: string;
+  category?: string;
 }
 
 @Component({
@@ -57,8 +25,8 @@ interface MockService {
 })
 export class PaymentManagementComponent implements OnInit {
   // Data properties
-  paymentRecords: PaymentRecord[] = [];
-  filteredRecords: PaymentRecord[] = [];
+  paymentRecords: Transaction[] = [];
+  filteredRecords: Transaction[] = [];
   patients: Patient[] = [];
   services: Service[] = [];
   isLoading = false;
@@ -75,13 +43,13 @@ export class PaymentManagementComponent implements OnInit {
   // Modal states
   showPaymentModal = false;
   showServiceModal = false;
-  selectedRecord: PaymentRecord | null = null;
+  selectedRecord: Transaction | null = null;
 
   // New payment form
   newPayment = {
     patient_id: '',
-    services: [] as ServiceUsage[],
-    payment_status: 'pending' as 'pending' | 'paid' | 'partial' | 'overdue',
+    services: [] as TransactionService[],
+    status: 'pending' as string,
   };
 
   // Service selection
@@ -96,16 +64,17 @@ export class PaymentManagementComponent implements OnInit {
     overduePayments: 0,
   };
 
-  // Status options
+  // Status options for transactions
   statusOptions = [
     {
       value: 'pending',
       label: 'Pending',
       color: 'bg-yellow-100 text-yellow-800',
     },
-    { value: 'paid', label: 'Paid', color: 'bg-green-100 text-green-800' },
-    { value: 'partial', label: 'Partial', color: 'bg-blue-100 text-blue-800' },
-    { value: 'overdue', label: 'Overdue', color: 'bg-red-100 text-red-800' },
+    { value: 'completed', label: 'Completed', color: 'bg-green-100 text-green-800' },
+    { value: 'failed', label: 'Failed', color: 'bg-red-100 text-red-800' },
+    { value: 'cancelled', label: 'Cancelled', color: 'bg-gray-100 text-gray-800' },
+    { value: 'refunded', label: 'Refunded', color: 'bg-blue-100 text-blue-800' },
   ];
 
   // Error handling
@@ -117,6 +86,11 @@ export class PaymentManagementComponent implements OnInit {
   async ngOnInit() {
     await this.loadInitialData();
     await this.calculateStats();
+
+    // Temporary: Create sample data if no transactions exist
+    if (this.paymentRecords.length === 0) {
+      await this.createSampleDataInDatabase();
+    }
   }
 
   async loadInitialData() {
@@ -137,18 +111,50 @@ export class PaymentManagementComponent implements OnInit {
 
   async loadPaymentRecords() {
     try {
-      // This would be a custom query to get payment records with patient info
-      // For now, we'll simulate the data structure
-      const result = await this.supabaseService.getAllPatients();
-      if (result.success && result.data) {
-        // Transform patient data into payment records
-        this.paymentRecords = this.generatePaymentRecords(result.data);
+      this.isLoading = true;
+      console.log('🔄 Loading payment records from database...');
+
+      // Load transactions data from database ONLY
+      const result = await this.supabaseService.getAllTransactions();
+      console.log('📊 Transaction result:', result);
+
+      if (result.success && result.data && result.data.length > 0) {
+        console.log('✅ Raw transactions data:', result.data);
+        this.paymentRecords = result.data.map((transaction: any) => ({
+          id: transaction.id,
+          order_id: transaction.order_id,
+          patient_id: transaction.patient_id,
+          patient_name: transaction.patient_name || 'Guest',
+          patient_email: transaction.patient_email || '',
+          patient_phone: transaction.patient_phone || '',
+          services: transaction.services_list || [],
+          amount: transaction.amount,
+          status: transaction.status,
+          created_at: transaction.created_at,
+          updated_at: transaction.updated_at,
+          vnpay_response: transaction.vnpay_response,
+          order_info: transaction.order_info,
+          payment_method: transaction.payment_method
+        }));
+
+        console.log('✅ Mapped payment records:', this.paymentRecords.length, 'records');
         this.filteredRecords = [...this.paymentRecords];
         this.applyFilters();
+      } else {
+        console.log('📭 No transactions found in database');
+        this.paymentRecords = [];
+        this.filteredRecords = [];
+        if (result.error) {
+          this.showError(`Database error: ${result.error}`);
+        }
       }
     } catch (error) {
-      console.error('Error loading payment records:', error);
-      this.showError('Failed to load payment records');
+      console.error('❌ Error loading payment records:', error);
+      this.showError('Failed to load payment records from database');
+      this.paymentRecords = [];
+      this.filteredRecords = [];
+    } finally {
+      this.isLoading = false;
     }
   }
 
@@ -174,79 +180,49 @@ export class PaymentManagementComponent implements OnInit {
     }
   }
 
-  generatePaymentRecords(patients: Patient[]): PaymentRecord[] {
-    // Simulate payment records based on patients
-    return patients.map((patient, index) => {
-      const totalAmount = Math.floor(Math.random() * 500) + 100;
-      const paidAmount =
-        Math.random() > 0.3
-          ? totalAmount
-          : Math.floor(totalAmount * Math.random());
-
-      return {
-        payment_id: `PAY-${Date.now()}-${index}`,
-        patient_id: patient.id,
-        patient_name: patient.full_name,
-        patient_email: patient.email || '',
-        patient_phone: patient.phone || patient.phone_number || '',
-        services: this.generateRandomServices(),
-        total_amount: totalAmount,
-        paid_amount: paidAmount,
-        payment_status: this.getRandomStatus(),
-        payment_date:
-          Math.random() > 0.5 ? new Date().toISOString() : undefined,
-        due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
-        created_at: patient.created_at || new Date().toISOString(),
-        updated_at: patient.updated_at || new Date().toISOString(),
-      };
-    });
-  }
-
-  generateRandomServices(): ServiceUsage[] {
-    const serviceCount = Math.floor(Math.random() * 3) + 1;
-    const randomServices: ServiceUsage[] = [];
-
-    for (let i = 0; i < serviceCount; i++) {
-      randomServices.push({
-        service_id: `SRV-${i}`,
-        service_name: ['Consultation', 'Blood Test', 'X-Ray', 'Ultrasound'][
-          Math.floor(Math.random() * 4)
-        ],
-        service_price: Math.floor(Math.random() * 200) + 50,
-        quantity: Math.floor(Math.random() * 2) + 1,
-        usage_date: new Date().toISOString(),
-        appointment_id: `APT-${Date.now()}-${i}`,
-      });
-    }
-
-    return randomServices;
-  }
-
-  getRandomStatus(): 'pending' | 'paid' | 'partial' | 'overdue' {
-    const statuses: ('pending' | 'paid' | 'partial' | 'overdue')[] = [
-      'pending',
-      'paid',
-      'partial',
-      'overdue',
-    ];
-    return statuses[Math.floor(Math.random() * statuses.length)];
-  }
-
   async calculateStats() {
-    this.stats = {
-      totalRevenue: this.paymentRecords
-        .filter((r) => r.payment_status === 'paid')
-        .reduce((sum, r) => sum + r.total_amount, 0),
-      pendingPayments: this.paymentRecords.filter(
-        (r) => r.payment_status === 'pending'
-      ).length,
-      paidToday: this.paymentRecords.filter(
-        (r) => r.payment_status === 'paid' && this.isToday(r.payment_date)
-      ).length,
-      overduePayments: this.paymentRecords.filter(
-        (r) => r.payment_status === 'overdue'
-      ).length,
-    };
+    try {
+      console.log('📊 Calculating stats from database...');
+
+      // Get stats from database
+      const result = await this.supabaseService.getTransactionStats();
+
+      if (result.success && result.data) {
+        this.stats = {
+          totalRevenue: result.data.total_amount || 0,
+          pendingPayments: result.data.pending_transactions || 0,
+          paidToday: result.data.today_transactions || 0,
+          overduePayments: result.data.failed_transactions || 0,
+        };
+        console.log('✅ Stats loaded from database:', this.stats);
+      } else {
+        // Fallback to local calculation if database stats fail
+        this.stats = {
+          totalRevenue: this.paymentRecords
+            .filter((r) => r.status === 'completed')
+            .reduce((sum, r) => sum + r.amount, 0),
+          pendingPayments: this.paymentRecords.filter(
+            (r) => r.status === 'pending'
+          ).length,
+          paidToday: this.paymentRecords.filter(
+            (r) => r.status === 'completed' && this.isToday(r.created_at)
+          ).length,
+          overduePayments: this.paymentRecords.filter(
+            (r) => r.status === 'failed'
+          ).length,
+        };
+        console.log('⚠️ Using local stats calculation:', this.stats);
+      }
+    } catch (error) {
+      console.error('❌ Error calculating stats:', error);
+      // Reset stats on error
+      this.stats = {
+        totalRevenue: 0,
+        pendingPayments: 0,
+        paidToday: 0,
+        overduePayments: 0,
+      };
+    }
   }
 
   isToday(dateString?: string): boolean {
@@ -257,7 +233,7 @@ export class PaymentManagementComponent implements OnInit {
   }
 
   // Pagination methods
-  get paginatedRecords(): PaymentRecord[] {
+  get paginatedRecords(): Transaction[] {
     const startIndex = (this.currentPage - 1) * this.pageSize;
     return this.filteredRecords.slice(startIndex, startIndex + this.pageSize);
   }
@@ -277,18 +253,21 @@ export class PaymentManagementComponent implements OnInit {
     this.filteredRecords = this.paymentRecords.filter((record) => {
       const matchesSearch =
         !this.searchQuery ||
-        record.patient_name
+        (record.patient_name || '')
           .toLowerCase()
           .includes(this.searchQuery.toLowerCase()) ||
-        record.patient_email
+        (record.patient_email || '')
           .toLowerCase()
           .includes(this.searchQuery.toLowerCase()) ||
-        record.payment_id
+        record.id
+          .toLowerCase()
+          .includes(this.searchQuery.toLowerCase()) ||
+        record.order_id
           .toLowerCase()
           .includes(this.searchQuery.toLowerCase());
 
       const matchesStatus =
-        !this.selectedStatus || record.payment_status === this.selectedStatus;
+        !this.selectedStatus || record.status === this.selectedStatus;
 
       const matchesDateRange =
         !this.selectedDateRange ||
@@ -335,12 +314,17 @@ export class PaymentManagementComponent implements OnInit {
   }
 
   // Modal methods
-  openPaymentModal(record?: PaymentRecord) {
+  openPaymentModal(record?: Transaction) {
     if (record) {
       this.selectedRecord = record;
     } else {
       this.resetNewPaymentForm();
     }
+    this.showPaymentModal = true;
+  }
+
+  viewPaymentDetails(record: Transaction) {
+    this.selectedRecord = record;
     this.showPaymentModal = true;
   }
 
@@ -364,19 +348,19 @@ export class PaymentManagementComponent implements OnInit {
     this.newPayment = {
       patient_id: '',
       services: [],
-      payment_status: 'pending' as 'pending' | 'paid' | 'partial' | 'overdue',
+      status: 'pending',
     };
   }
 
   // Service management
   addServiceToPayment() {
     if (this.selectedService) {
-      const serviceUsage: ServiceUsage = {
+      const serviceUsage: TransactionService = {
         service_id: this.selectedService.service_id,
         service_name: this.selectedService.service_name,
         service_price: this.selectedService.service_cost || 0,
         quantity: this.serviceQuantity,
-        usage_date: new Date().toISOString(),
+        category: this.selectedService.category_name
       };
 
       this.newPayment.services.push(serviceUsage);
@@ -396,28 +380,19 @@ export class PaymentManagementComponent implements OnInit {
   }
 
   // Payment operations
-  async updatePaymentStatus(record: PaymentRecord, event: any) {
+  async updatePaymentStatus(record: Transaction, event: any) {
     const newStatus = event.target.value;
     if (!newStatus) return;
     try {
       this.isLoading = true;
 
-      // Update the record
-      const updatedRecord = { ...record, payment_status: newStatus as any };
-      if (newStatus === 'paid') {
-        updatedRecord.payment_date = new Date().toISOString();
-      }
+      // Update transaction status in database
+      await this.supabaseService.updateTransactionStatus(record.id, newStatus);
 
-      // Update in the array
-      const index = this.paymentRecords.findIndex(
-        (r) => r.payment_id === record.payment_id
-      );
-      if (index !== -1) {
-        this.paymentRecords[index] = updatedRecord;
-        this.applyFilters();
-        await this.calculateStats();
-        this.showSuccess('Payment status updated successfully');
-      }
+      // Reload payment records to reflect changes
+      await this.loadPaymentRecords();
+
+      this.showSuccess('Payment status updated successfully');
     } catch (error) {
       console.error('Error updating payment status:', error);
       this.showError('Failed to update payment status');
@@ -444,29 +419,39 @@ export class PaymentManagementComponent implements OnInit {
       }
 
       const totalAmount = this.getTotalAmount();
-      const newRecord: PaymentRecord = {
-        payment_id: `PAY-${Date.now()}`,
+
+      // Create transaction data for database
+      const transactionData = {
         patient_id: this.newPayment.patient_id,
-        patient_name: patient.full_name,
-        patient_email: patient.email || '',
-        patient_phone: patient.phone || patient.phone_number || '',
-        services: [...this.newPayment.services],
-        total_amount: totalAmount,
-        paid_amount:
-          this.newPayment.payment_status === 'paid' ? totalAmount : 0,
-        payment_status: this.newPayment.payment_status,
-        due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        amount: totalAmount,
+        status: this.newPayment.status === 'pending' ? TransactionStatus.PENDING :
+          this.newPayment.status === 'completed' ? TransactionStatus.COMPLETED : TransactionStatus.FAILED,
+        services: this.newPayment.services,
+        order_id: `ORDER-${Date.now()}`,
+        order_info: `Payment for ${patient.full_name}`,
+        vnpay_response: {} // Empty for manual payments
       };
 
-      this.paymentRecords.unshift(newRecord);
-      this.applyFilters();
-      await this.calculateStats();
-      this.closePaymentModal();
-      this.showSuccess('Payment record created successfully');
+      console.log('💳 Creating transaction in database:', transactionData);
+
+      // Insert into database via Supabase
+      const result = await this.supabaseService.createTransaction(transactionData);
+
+      if (result.success) {
+        console.log('✅ Transaction created successfully:', result.data);
+
+        // Reload payment records from database to get fresh data
+        await this.loadPaymentRecords();
+        await this.calculateStats();
+
+        this.closePaymentModal();
+        this.showSuccess('Payment record created successfully');
+      } else {
+        console.error('❌ Failed to create transaction:', result.error);
+        this.showError(`Failed to create payment record: ${result.error}`);
+      }
     } catch (error) {
-      console.error('Error creating payment:', error);
+      console.error('❌ Error creating payment:', error);
       this.showError('Failed to create payment record');
     } finally {
       this.isLoading = false;
@@ -480,7 +465,11 @@ export class PaymentManagementComponent implements OnInit {
   }
 
   formatCurrency(amount: number): string {
-    return CurrencyUtil.formatVND(amount);
+    return CurrencyUtil.formatVNDWithCommas(amount);
+  }
+
+  formatCurrencyThousands(amount: number): string {
+    return CurrencyUtil.formatVNDWithCommas(amount);
   }
 
   formatDate(dateString: string): string {
@@ -502,5 +491,162 @@ export class PaymentManagementComponent implements OnInit {
   clearMessages() {
     this.errorMessage = '';
     this.successMessage = '';
+  }
+
+  /**
+   * Debug method to test database connection and data
+   */
+  async debugDatabase() {
+    try {
+      console.log('🔍 Starting database debug...');
+      this.showSuccess('Starting database debug - check console');
+
+      // Test 1: Check Supabase service
+      console.log('📋 SupabaseService instance:', this.supabaseService);
+
+      // Test 2: Get all transactions
+      console.log('📊 Testing getAllTransactions...');
+      const transactionsResult = await this.supabaseService.getAllTransactions();
+      console.log('📊 Transactions result:', transactionsResult);
+
+      // Test 3: Get transaction stats
+      console.log('📈 Testing getTransactionStats...');
+      const statsResult = await this.supabaseService.getTransactionStats();
+      console.log('📈 Stats result:', statsResult);
+
+      // Test 4: Get patients
+      console.log('👥 Testing getAllPatients...');
+      const patientsResult = await this.supabaseService.getAllPatients();
+      console.log('👥 Patients result:', patientsResult);
+
+      // Test 5: Get services
+      console.log('🔧 Testing getAllServices...');
+      const servicesResult = await this.supabaseService.getAllServices();
+      console.log('🔧 Services result:', servicesResult);
+
+      // Display results
+      const summary = {
+        transactions: transactionsResult?.data?.length || 0,
+        patients: patientsResult?.data?.length || 0,
+        services: servicesResult?.data?.length || 0,
+        current_records: this.paymentRecords.length
+      };
+
+      console.log('📋 Database Summary:', summary);
+      this.showSuccess(`DB Debug: ${summary.transactions} transactions, ${summary.patients} patients, ${summary.services} services`);
+
+    } catch (error) {
+      console.error('❌ Database debug error:', error);
+      this.showError(`Database debug failed: ${error}`);
+    }
+  }
+
+  /**
+   * Temporary method to create sample data in database for testing
+   */
+  async createSampleDataInDatabase() {
+    try {
+      console.log('🎲 Creating sample transactions in database...');
+
+      // Sample transaction data
+      const sampleTransactions = [
+        {
+          patient_id: 'patient-1',
+          amount: 250000,
+          status: TransactionStatus.COMPLETED,
+          services: [
+            {
+              service_id: 'service-1',
+              service_name: 'Khám tổng quát',
+              service_price: 150000,
+              quantity: 1,
+              category: 'Khám bệnh'
+            },
+            {
+              service_id: 'service-2',
+              service_name: 'Xét nghiệm máu',
+              service_price: 100000,
+              quantity: 1,
+              category: 'Xét nghiệm'
+            }
+          ],
+          order_id: `ORDER-${Date.now()}-1`,
+          order_info: 'Khám sức khỏe tổng quát',
+          vnpay_response: { vnp_ResponseCode: '00', vnp_TransactionStatus: '00' }
+        },
+        {
+          patient_id: 'patient-2',
+          amount: 180000,
+          status: TransactionStatus.PENDING,
+          services: [
+            {
+              service_id: 'service-3',
+              service_name: 'Khám chuyên khoa',
+              service_price: 180000,
+              quantity: 1,
+              category: 'Khám bệnh'
+            }
+          ],
+          order_id: `ORDER-${Date.now()}-2`,
+          order_info: 'Khám chuyên khoa sản phụ',
+          vnpay_response: {}
+        },
+        {
+          patient_id: 'patient-3',
+          amount: 350000,
+          status: TransactionStatus.COMPLETED,
+          services: [
+            {
+              service_id: 'service-4',
+              service_name: 'Siêu âm thai',
+              service_price: 200000,
+              quantity: 1,
+              category: 'Chẩn đoán hình ảnh'
+            },
+            {
+              service_id: 'service-5',
+              service_name: 'Tư vấn dinh dưỡng',
+              service_price: 150000,
+              quantity: 1,
+              category: 'Tư vấn'
+            }
+          ],
+          order_id: `ORDER-${Date.now()}-3`,
+          order_info: 'Khám thai và tư vấn',
+          vnpay_response: { vnp_ResponseCode: '00', vnp_TransactionStatus: '00' }
+        }
+      ];
+
+      // Insert each transaction
+      console.log('🔄 Starting to insert transactions...');
+      this.isLoading = true;
+
+      for (let i = 0; i < sampleTransactions.length; i++) {
+        const transaction = sampleTransactions[i];
+        console.log(`📝 Inserting transaction ${i + 1}:`, transaction);
+
+        const result = await this.supabaseService.createTransaction(transaction);
+        console.log(`📝 Transaction ${i + 1} result:`, result);
+
+        if (result.success) {
+          console.log(`✅ Sample transaction ${i + 1} created:`, result.data?.id);
+        } else {
+          console.error(`❌ Failed to create sample transaction ${i + 1}:`, result.error);
+          this.showError(`Failed to create transaction ${i + 1}: ${result.error}`);
+        }
+      }
+
+      // Reload data after creating samples
+      console.log('🔄 Reloading payment records...');
+      await this.loadPaymentRecords();
+      await this.calculateStats();
+
+      this.showSuccess(`Đã tạo ${sampleTransactions.length} giao dịch mẫu trong database`);
+    } catch (error) {
+      console.error('❌ Error creating sample data:', error);
+      this.showError(`Failed to create sample data: ${error}`);
+    } finally {
+      this.isLoading = false;
+    }
   }
 }

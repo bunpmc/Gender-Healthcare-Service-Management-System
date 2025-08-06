@@ -5,8 +5,9 @@ import { ServiceSearchBarComponent } from './service-search-bar/service-search-b
 import { ServiceTableComponent } from './service-table/service-table.component';
 import { Service } from '../../models/service.interface';
 import { CategoryService } from '../../Services/category.service';
-import { ServiceManagementService } from '../../Services/service-management.service';
+import { MedicalServicesDataService } from '../../Services/medical-services-data.service';
 import { Category } from '../../models/category.interface';
+import { MedicalService } from '../../models/database.interface';
 
 @Component({
   selector: 'app-service-management',
@@ -74,17 +75,22 @@ export class ServiceManagementComponent implements OnInit {
     service_cost: boolean;
     duration_minutes: boolean;
   } = {
-    service_name: false,
-    category_id: false,
-    service_cost: false,
-    duration_minutes: false
-  };
+      service_name: false,
+      category_id: false,
+      service_cost: false,
+      duration_minutes: false
+    };
 
   categoryErrors: {
     category_name: boolean;
   } = {
-    category_name: false
-  };
+      category_name: false
+    };
+
+  // Image upload properties
+  selectedImageFile: File | null = null;
+  imagePreviewUrl: string | null = null;
+  isUploadingImage = false;
 
   // Filtering and sorting
   currentFilters: {
@@ -92,10 +98,10 @@ export class ServiceManagementComponent implements OnInit {
     selectedCategory: string;
     selectedStatus: string;
   } = {
-    searchTerm: '',
-    selectedCategory: '',
-    selectedStatus: ''
-  };
+      searchTerm: '',
+      selectedCategory: '',
+      selectedStatus: ''
+    };
 
   // Notification state
   showNotification = false;
@@ -106,28 +112,56 @@ export class ServiceManagementComponent implements OnInit {
   Math = Math;
 
   constructor(
-    private serviceManagementService: ServiceManagementService,
-    private categoryService: CategoryService
-  ) {}
+    private categoryService: CategoryService,
+    private medicalServicesDataService: MedicalServicesDataService
+  ) { }
 
   async ngOnInit() {
     await this.loadData();
+    // Check if default image exists
+    await this.medicalServicesDataService.ensureDefaultImageExists();
   }
 
   async loadData() {
     this.isLoading = true;
     try {
-      const [services, categories] = await Promise.all([
-        this.serviceManagementService.getMedicalServices(),
-        this.categoryService.getServiceCategories()
+      // Use new MedicalServicesDataService to fetch services with proper image URLs
+      const [servicesResult, categoriesResult] = await Promise.all([
+        this.medicalServicesDataService.fetchServices({ includeInactive: true }),
+        this.medicalServicesDataService.fetchCategories()
       ]);
-      this.services = services;
-      this.categories = categories;
+
+      if (servicesResult.success && servicesResult.data) {
+        this.services = servicesResult.data;
+        console.log('✅ Services loaded successfully:', this.services.length, 'services');
+        // Debug log for image URLs
+        this.services.forEach(service => {
+          if (service.imageUrl) {
+            console.log(`Service "${service.service_name}" has image URL:`, service.imageUrl);
+          }
+        });
+      } else {
+        console.error('❌ Error loading services:', servicesResult.error);
+        this.showErrorNotification('Failed to load services');
+      }
+
+      if (categoriesResult.success && categoriesResult.data) {
+        this.categories = categoriesResult.data.map((cat: any) => ({
+          category_id: cat.category_id,
+          category_name: cat.category_name,
+          description: cat.category_description
+        }));
+        console.log('✅ Categories loaded successfully:', this.categories.length, 'categories');
+      } else {
+        console.error('❌ Error loading categories:', categoriesResult.error);
+        this.showErrorNotification('Failed to load categories');
+      }
+
       this.filteredServices = [...this.services];
-      console.log('✅ Services and categories loaded successfully');
+
     } catch (error) {
       console.error('❌ Error fetching data:', error);
-      // You can implement a toast notification here
+      this.showErrorNotification('Failed to load data');
     } finally {
       this.isLoading = false;
     }
@@ -196,7 +230,7 @@ export class ServiceManagementComponent implements OnInit {
 
       const matchesCategory = !filters.selectedCategory || service.category_id === filters.selectedCategory;
 
-      const matchesStatus = !filters.selectedStatus || service.is_active.toString() === filters.selectedStatus;
+      const matchesStatus = !filters.selectedStatus || (service.is_active ?? false).toString() === filters.selectedStatus;
 
       return matchesSearch && matchesCategory && matchesStatus;
     });
@@ -287,13 +321,21 @@ export class ServiceManagementComponent implements OnInit {
         this.isLoading = true;
 
         if (service.is_active) {
-          // Soft delete - just deactivate the service
-          await this.serviceManagementService.toggleMedicalServiceStatus(service.service_id, false);
-          this.showSuccessNotification('Service deactivated successfully!');
+          // Soft delete - just deactivate the service by updating is_active to false
+          const result = await this.medicalServicesDataService.updateService(service.service_id, { is_active: false });
+          if (result.success) {
+            this.showSuccessNotification('Service deactivated successfully!');
+          } else {
+            throw new Error(result.error || 'Failed to deactivate service');
+          }
         } else {
           // Hard delete - permanently remove the service
-          await this.serviceManagementService.deleteMedicalService(service.service_id);
-          this.showSuccessNotification('Service permanently deleted!');
+          const result = await this.medicalServicesDataService.deleteService(service.service_id);
+          if (result.success) {
+            this.showSuccessNotification('Service permanently deleted!');
+          } else {
+            throw new Error(result.error || 'Failed to delete service');
+          }
         }
 
         await this.loadData();
@@ -309,9 +351,18 @@ export class ServiceManagementComponent implements OnInit {
   async onToggleServiceStatus(event: { service: Service; isActive: boolean }) {
     try {
       this.isLoading = true;
-      await this.serviceManagementService.toggleMedicalServiceStatus(event.service.service_id, event.isActive);
-      await this.loadData();
-      this.showSuccessNotification(`Service ${event.isActive ? 'activated' : 'deactivated'} successfully!`);
+
+      // Use new MedicalServicesDataService to update the status
+      const result = await this.medicalServicesDataService.updateService(event.service.service_id, {
+        is_active: event.isActive
+      });
+
+      if (result.success) {
+        await this.loadData();
+        this.showSuccessNotification(`Service ${event.isActive ? 'activated' : 'deactivated'} successfully!`);
+      } else {
+        throw new Error(result.error || 'Failed to update service status');
+      }
     } catch (error) {
       console.error('❌ Error toggling service status:', error);
       this.showErrorNotification('Failed to update service status. Please try again.');
@@ -357,6 +408,7 @@ export class ServiceManagementComponent implements OnInit {
 
   closeAddServiceModal() {
     this.showAddModal = false;
+    this.clearImageSelection();
     this.errors = {
       service_name: false,
       category_id: false,
@@ -379,6 +431,17 @@ export class ServiceManagementComponent implements OnInit {
 
     try {
       this.isLoading = true;
+
+      // Upload image first if a file is selected
+      let uploadedImagePath = null;
+      if (this.selectedImageFile) {
+        uploadedImagePath = await this.uploadImageIfSelected();
+        if (!uploadedImagePath) {
+          // Upload failed, method already shows error message
+          return;
+        }
+      }
+
       const serviceToAdd = {
         ...this.newService,
         service_description: this.descriptionKeys.reduce((acc, key) => {
@@ -387,13 +450,28 @@ export class ServiceManagementComponent implements OnInit {
         }, {} as { [key in DescriptionKey]: string | null })
       };
 
-      // Remove service_id for creation
+      // Remove service_id for creation and convert null to undefined
       const { service_id, ...serviceData } = serviceToAdd;
 
-      await this.serviceManagementService.addMedicalService(serviceData);
-      await this.loadData();
-      this.closeAddServiceModal();
-      this.showSuccessNotification('Service added successfully!');
+      // Convert null values to undefined for compatibility and set image_link if uploaded
+      const processedServiceData = {
+        ...serviceData,
+        service_cost: serviceData.service_cost === null ? undefined : serviceData.service_cost,
+        duration_minutes: serviceData.duration_minutes === null ? undefined : serviceData.duration_minutes,
+        image_link: uploadedImagePath || undefined, // Let service handle default image if no upload
+        excerpt: serviceData.excerpt === null ? undefined : serviceData.excerpt
+      };
+
+      // Use new MedicalServicesDataService
+      const result = await this.medicalServicesDataService.createService(processedServiceData);
+
+      if (result.success) {
+        await this.loadData();
+        this.closeAddServiceModal();
+        this.showSuccessNotification('Service added successfully!');
+      } else {
+        throw new Error(result.error || 'Failed to create service');
+      }
     } catch (error) {
       console.error('❌ Error adding service:', error);
       this.showErrorNotification('Failed to add service. Please try again.');
@@ -421,6 +499,7 @@ export class ServiceManagementComponent implements OnInit {
 
   closeEditServiceModal() {
     this.showEditModal = false;
+    this.clearImageSelection();
     this.errors = {
       service_name: false,
       category_id: false,
@@ -443,6 +522,17 @@ export class ServiceManagementComponent implements OnInit {
 
     try {
       this.isLoading = true;
+
+      // Upload new image if a file is selected
+      let uploadedImagePath = null;
+      if (this.selectedImageFile) {
+        uploadedImagePath = await this.uploadImageIfSelected();
+        if (!uploadedImagePath) {
+          // Upload failed, method already shows error message
+          return;
+        }
+      }
+
       const serviceToUpdate: Service = {
         ...this.selectedService,
         service_description: this.descriptionKeys.reduce((acc, key) => {
@@ -450,10 +540,26 @@ export class ServiceManagementComponent implements OnInit {
           return acc;
         }, {} as { [key in DescriptionKey]: string | null })
       };
-      await this.serviceManagementService.updateMedicalService(serviceToUpdate);
-      await this.loadData();
-      this.closeEditServiceModal();
-      this.showSuccessNotification('Service updated successfully!');
+
+      // Convert null values to undefined for compatibility and set image_link if uploaded
+      const processedServiceData = {
+        ...serviceToUpdate,
+        service_cost: serviceToUpdate.service_cost === null ? undefined : serviceToUpdate.service_cost,
+        duration_minutes: serviceToUpdate.duration_minutes === null ? undefined : serviceToUpdate.duration_minutes,
+        image_link: uploadedImagePath || (serviceToUpdate.image_link === null ? undefined : serviceToUpdate.image_link),
+        excerpt: serviceToUpdate.excerpt === null ? undefined : serviceToUpdate.excerpt
+      };
+
+      // Use new MedicalServicesDataService
+      const result = await this.medicalServicesDataService.updateService(this.selectedService.service_id, processedServiceData);
+
+      if (result.success) {
+        await this.loadData();
+        this.closeEditServiceModal();
+        this.showSuccessNotification('Service updated successfully!');
+      } else {
+        throw new Error(result.error || 'Failed to update service');
+      }
     } catch (error) {
       console.error('❌ Error updating service:', error);
       this.showErrorNotification('Failed to update service. Please try again.');
@@ -508,10 +614,17 @@ export class ServiceManagementComponent implements OnInit {
     try {
       this.isLoading = true;
       const { category_id, ...categoryData } = this.newCategory;
-      await this.categoryService.createServiceCategory(categoryData);
-      await this.loadData();
-      this.closeAddCategoryModal();
-      this.showSuccessNotification('Category added successfully!');
+
+      // Use new MedicalServicesDataService to create category
+      const result = await this.medicalServicesDataService.createCategory(categoryData);
+
+      if (result.success) {
+        await this.loadData();
+        this.closeAddCategoryModal();
+        this.showSuccessNotification('Category added successfully!');
+      } else {
+        throw new Error(result.error || 'Failed to create category');
+      }
     } catch (error) {
       console.error('❌ Error adding category:', error);
       this.showErrorNotification('Failed to add category. Please try again.');
@@ -520,36 +633,119 @@ export class ServiceManagementComponent implements OnInit {
     }
   }
 
+  // Image upload methods
+  onImageFileSelected(event: any, context: 'new' | 'edit') {
+    const file = event.target.files[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        this.showErrorNotification('Please select a valid image file.');
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        this.showErrorNotification('Image file size must be less than 5MB.');
+        return;
+      }
+
+      this.selectedImageFile = file;
+
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.imagePreviewUrl = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  clearImageSelection() {
+    this.selectedImageFile = null;
+    this.imagePreviewUrl = null;
+  }
+
+  async uploadImageIfSelected(): Promise<string | null> {
+    if (!this.selectedImageFile) return null;
+
+    try {
+      this.isUploadingImage = true;
+      const result = await this.medicalServicesDataService.uploadServiceImage(this.selectedImageFile);
+
+      if (result.success && result.data) {
+        console.log('✅ Image uploaded successfully:', result.data);
+        return result.data;
+      } else {
+        throw new Error(result.error || 'Failed to upload image');
+      }
+    } catch (error) {
+      console.error('❌ Error uploading image:', error);
+      this.showErrorNotification('Failed to upload image. Please try again.');
+      return null;
+    } finally {
+      this.isUploadingImage = false;
+    }
+  }
+
   // Notification methods
+  private notificationTimeout: any;
+
   showSuccessNotification(message: string) {
+    this.clearNotificationTimeout();
     this.notificationMessage = message;
     this.notificationType = 'success';
     this.showNotification = true;
-    setTimeout(() => {
-      this.showNotification = false;
+    this.notificationTimeout = setTimeout(() => {
+      this.hideNotification();
     }, 5000);
   }
 
   showErrorNotification(message: string) {
+    this.clearNotificationTimeout();
     this.notificationMessage = message;
     this.notificationType = 'error';
     this.showNotification = true;
-    setTimeout(() => {
-      this.showNotification = false;
+    this.notificationTimeout = setTimeout(() => {
+      this.hideNotification();
     }, 7000);
   }
 
   showWarningNotification(message: string) {
+    this.clearNotificationTimeout();
     this.notificationMessage = message;
     this.notificationType = 'warning';
     this.showNotification = true;
-    setTimeout(() => {
-      this.showNotification = false;
+    this.notificationTimeout = setTimeout(() => {
+      this.hideNotification();
     }, 6000);
   }
 
+  hideNotification() {
+    // Add slide-out animation
+    const notificationElement = document.querySelector('.notification-toast');
+    if (notificationElement) {
+      notificationElement.classList.add('animate-slide-out-right');
+      setTimeout(() => {
+        this.showNotification = false;
+        if (notificationElement) {
+          notificationElement.classList.remove('animate-slide-out-right');
+        }
+      }, 300); // Wait for animation to complete
+    } else {
+      this.showNotification = false;
+    }
+  }
+
   closeNotification() {
-    this.showNotification = false;
+    this.clearNotificationTimeout();
+    this.hideNotification();
+  }
+
+  private clearNotificationTimeout() {
+    if (this.notificationTimeout) {
+      clearTimeout(this.notificationTimeout);
+      this.notificationTimeout = null;
+    }
   }
 }
 

@@ -233,7 +233,7 @@ describe('AdminStaffManagementComponent', () => {
     const mockLink = { setAttribute: jasmine.createSpy(), click: jasmine.createSpy() };
     spyOn(document, 'createElement').and.returnValue(mockLink as any);
 
-    component.handleExportData(staffList);
+    component.handleExportData();
 
     expect(document.createElement).toHaveBeenCalledWith('a');
     expect(mockLink.click).toHaveBeenCalled();

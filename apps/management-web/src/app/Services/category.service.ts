@@ -1,85 +1,83 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
-import { SupabaseService } from '../supabase.service';
-import { Category } from '../models/category.interface';
+import { Observable, of } from 'rxjs';
+import { MedicalServiceCategory } from '../models/database.interface';
 
 @Injectable({
-  providedIn: 'root'
+    providedIn: 'root'
 })
 export class CategoryService {
 
-  constructor(private supabaseService: SupabaseService) {}
+    private categories: MedicalServiceCategory[] = [
+        {
+            category_id: '1',
+            category_name: 'Consultation',
+            category_description: 'General medical consultation',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+        },
+        {
+            category_id: '2',
+            category_name: 'Emergency',
+            category_description: 'Emergency medical services',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+        },
+        {
+            category_id: '3',
+            category_name: 'Surgery',
+            category_description: 'Surgical procedures',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+        }
+    ];
 
-  async getServiceCategories(): Promise<Category[]> {
-    try {
-      const result = await this.supabaseService.getServiceCategories();
-      if (result.success && result.data) {
-        return result.data;
-      } else {
-        console.error('Error fetching service categories:', result.error);
-        throw new Error(result.error || 'Failed to fetch service categories');
-      }
-    } catch (error) {
-      console.error('Error in getServiceCategories:', error);
-      throw error;
+    getCategories(): Observable<MedicalServiceCategory[]> {
+        return of(this.categories);
     }
-  }
 
-  async getServiceCategoryById(categoryId: string): Promise<Category> {
-    try {
-      const result = await this.supabaseService.getServiceCategoryById(categoryId);
-      if (result.success && result.data) {
-        return result.data;
-      } else {
-        console.error('Error fetching service category:', result.error);
-        throw new Error(result.error || 'Failed to fetch service category');
-      }
-    } catch (error) {
-      console.error('Error in getServiceCategoryById:', error);
-      throw error;
+    getServiceCategories(): Observable<MedicalServiceCategory[]> {
+        return this.getCategories();
     }
-  }
 
-  async createServiceCategory(category: Omit<Category, 'category_id'>): Promise<Category> {
-    try {
-      const result = await this.supabaseService.createServiceCategory(category);
-      if (result.success && result.data) {
-        return result.data;
-      } else {
-        console.error('Error creating service category:', result.error);
-        throw new Error(result.error || 'Failed to create service category');
-      }
-    } catch (error) {
-      console.error('Error in createServiceCategory:', error);
-      throw error;
+    getCategoryById(id: string): Observable<MedicalServiceCategory | undefined> {
+        const category = this.categories.find(c => c.category_id === id);
+        return of(category);
     }
-  }
 
-  async updateServiceCategory(category: Category): Promise<Category> {
-    try {
-      const result = await this.supabaseService.updateServiceCategory(category);
-      if (result.success && result.data) {
-        return result.data;
-      } else {
-        console.error('Error updating service category:', result.error);
-        throw new Error(result.error || 'Failed to update service category');
-      }
-    } catch (error) {
-      console.error('Error in updateServiceCategory:', error);
-      throw error;
+    addCategory(category: Omit<MedicalServiceCategory, 'category_id' | 'created_at' | 'updated_at'>): Observable<MedicalServiceCategory> {
+        const newCategory: MedicalServiceCategory = {
+            ...category,
+            category_id: (this.categories.length + 1).toString(),
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+        };
+        this.categories.push(newCategory);
+        return of(newCategory);
     }
-  }
 
-  async deleteServiceCategory(categoryId: string): Promise<void> {
-    try {
-      const result = await this.supabaseService.deleteServiceCategory(categoryId);
-      if (!result.success) {
-        console.error('Error deleting service category:', result.error);
-        throw new Error(result.error || 'Failed to delete service category');
-      }
-    } catch (error) {
-      console.error('Error in deleteServiceCategory:', error);
-      throw error;
+    updateCategory(id: string, category: Partial<MedicalServiceCategory>): Observable<MedicalServiceCategory | null> {
+        const index = this.categories.findIndex(c => c.category_id === id);
+        if (index !== -1) {
+            this.categories[index] = {
+                ...this.categories[index],
+                ...category,
+                updated_at: new Date().toISOString()
+            };
+            return of(this.categories[index]);
+        }
+        return of(null);
     }
-  }
+
+    deleteCategory(id: string): Observable<boolean> {
+        const index = this.categories.findIndex(c => c.category_id === id);
+        if (index !== -1) {
+            this.categories.splice(index, 1);
+            return of(true);
+        }
+        return of(false);
+    }
+
+    createServiceCategory(category: Omit<MedicalServiceCategory, 'category_id' | 'created_at' | 'updated_at'>): Observable<MedicalServiceCategory> {
+        return this.addCategory(category);
+    }
 }

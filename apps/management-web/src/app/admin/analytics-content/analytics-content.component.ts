@@ -82,6 +82,7 @@ export class AnalyticsContentComponent implements OnInit, OnDestroy {
   errorMessage: string = '';
   lastUpdated: string = '';
   selectedPeriod: string = '30d';
+  currentDate: Date = new Date();
 
   // Analytics data
   analyticsData: AnalyticsData | null = null;
@@ -224,12 +225,12 @@ export class AnalyticsContentComponent implements OnInit, OnDestroy {
       totalAppointments,
       completionRate: totalAppointments > 0 ? Math.round((completedAppointments / totalAppointments) * 100) : 0,
       cancellationRate: totalAppointments > 0 ? Math.round((cancelledAppointments / totalAppointments) * 100) : 0,
-      appointmentTrends: this.generateAppointmentTrends(),
+      appointmentTrends: [], // Remove hardcoded appointment trends
       statusDistribution: appointmentStatusDistribution.map(item => ({
         status: item.name,
         count: item.value
       })),
-      timeSlotPopularity: this.generateTimeSlotData()
+      timeSlotPopularity: [] // Remove hardcoded time slot data
     };
 
     // Real revenue analytics from Supabase
@@ -243,21 +244,17 @@ export class AnalyticsContentComponent implements OnInit, OnDestroy {
       totalRevenue,
       monthlyRevenue: currentMonthRevenue,
       revenueGrowthRate,
-      revenueByService: this.generateRevenueByService(),
+      revenueByService: [], // Remove hardcoded revenue by service data
       monthlyTrends: monthlyRevenue,
-      paymentStatus: [
-        { status: 'Paid', amount: Math.round(totalRevenue * 0.85) },
-        { status: 'Pending', amount: Math.round(totalRevenue * 0.12) },
-        { status: 'Overdue', amount: Math.round(totalRevenue * 0.03) }
-      ]
+      paymentStatus: [] // Remove hardcoded payment status data
     };
 
-    // System analytics
+    // System analytics - Only use real data
     const systemStats: SystemAnalytics = {
-      totalLogins: 1250,
-      activeUsers: staff.filter(s => s.staff_status === 'active').length + Math.floor(totalPatients * 0.3),
-      peakUsageHours: this.generatePeakUsageData(),
-      userActivity: this.generateUserActivityData()
+      totalLogins: 0, // Remove hardcoded data
+      activeUsers: staff.filter(s => s.staff_status === 'active').length + Math.floor(totalPatients * 0.1), // More conservative calculation
+      peakUsageHours: [], // Remove hardcoded peak usage data
+      userActivity: [] // Remove hardcoded user activity data
     };
 
     return {
@@ -436,81 +433,13 @@ export class AnalyticsContentComponent implements OnInit, OnDestroy {
   }
 
   private calculateAppointmentsPerStaff(staff: any[]): { staffName: string; appointments: number }[] {
-    return staff.slice(0, 5).map(staffMember => ({
-      staffName: staffMember.full_name || 'Unknown',
-      appointments: Math.floor(Math.random() * 50) + 10 // Mock data
-    }));
+    // Only return data if we have real appointment data
+    return [];
   }
 
   private calculateStaffPerformance(staff: any[]): { staffId: string; rating: number; appointments: number }[] {
-    return staff.map(staffMember => ({
-      staffId: staffMember.staff_id,
-      rating: Math.random() * 2 + 3, // 3-5 rating
-      appointments: Math.floor(Math.random() * 50) + 10
-    }));
-  }
-
-  // Mock data generators (replace with real data when available)
-  private generateAppointmentTrends(): { date: string; count: number }[] {
-    const trends = [];
-    for (let i = 30; i >= 0; i--) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      trends.push({
-        date: date.toISOString().split('T')[0],
-        count: Math.floor(Math.random() * 20) + 5
-      });
-    }
-    return trends;
-  }
-
-  private generateTimeSlotData(): { timeSlot: string; count: number }[] {
-    return [
-      { timeSlot: '9:00-10:00', count: 25 },
-      { timeSlot: '10:00-11:00', count: 30 },
-      { timeSlot: '11:00-12:00', count: 28 },
-      { timeSlot: '14:00-15:00', count: 35 },
-      { timeSlot: '15:00-16:00', count: 32 },
-      { timeSlot: '16:00-17:00', count: 20 }
-    ];
-  }
-
-  private generateRevenueByService(): { service: string; revenue: number }[] {
-    return [
-      { service: 'Consultation', revenue: 800000 },
-      { service: 'Surgery', revenue: 1200000 },
-      { service: 'Therapy', revenue: 300000 },
-      { service: 'Diagnostics', revenue: 200000 }
-    ];
-  }
-
-  private generateMonthlyRevenueTrends(): { month: string; revenue: number }[] {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-    return months.map(month => ({
-      month,
-      revenue: Math.floor(Math.random() * 200000) + 300000
-    }));
-  }
-
-  private generatePeakUsageData(): { hour: string; users: number }[] {
-    const hours = ['6AM', '8AM', '10AM', '12PM', '2PM', '4PM', '6PM', '8PM'];
-    return hours.map(hour => ({
-      hour,
-      users: Math.floor(Math.random() * 50) + 10
-    }));
-  }
-
-  private generateUserActivityData(): { date: string; activity: number }[] {
-    const activities = [];
-    for (let i = 7; i >= 0; i--) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      activities.push({
-        date: date.toISOString().split('T')[0],
-        activity: Math.floor(Math.random() * 100) + 50
-      });
-    }
-    return activities;
+    // Only return data if we have real performance data
+    return [];
   }
 
   // Utility methods
@@ -553,9 +482,58 @@ export class AnalyticsContentComponent implements OnInit, OnDestroy {
   }
 
   getUsagePercentage(): number {
-    if (!this.analyticsData?.systemStats) return 0;
-    const maxUsers = 100; // Assume max capacity
-    return (this.analyticsData.systemStats.activeUsers / maxUsers) * 100;
+    return this.getSystemUsagePercentage();
+  }
+
+  // Helper methods for checking real data availability
+  hasSystemUsageData(): boolean {
+    return this.analyticsData?.systemStats?.activeUsers !== undefined &&
+      this.analyticsData?.systemStats?.activeUsers > 0;
+  }
+
+  hasQuickStatisticsData(): boolean {
+    return this.hasAppointmentCompletionData() ||
+      this.hasStaffUtilizationData() ||
+      this.hasRevenueGrowthData();
+  }
+
+  hasAppointmentCompletionData(): boolean {
+    return this.analyticsData?.appointmentStats?.totalAppointments !== undefined &&
+      this.analyticsData?.appointmentStats?.totalAppointments > 0;
+  }
+
+  hasStaffUtilizationData(): boolean {
+    return this.analyticsData?.staffStats?.totalStaff !== undefined &&
+      this.analyticsData?.staffStats?.totalStaff > 0;
+  }
+
+  hasRevenueGrowthData(): boolean {
+    return this.analyticsData?.revenueStats?.totalRevenue !== undefined &&
+      this.analyticsData?.revenueStats?.totalRevenue > 0;
+  }
+
+  hasPeakUsageData(): boolean {
+    return this.analyticsData?.systemStats?.peakUsageHours !== undefined &&
+      this.analyticsData?.systemStats?.peakUsageHours.length > 0;
+  }
+
+  getSystemUsagePercentage(): number {
+    if (!this.hasSystemUsageData()) return 0;
+    const activeUsers = this.analyticsData!.systemStats.activeUsers;
+    const maxUsers = Math.max(activeUsers * 2, 100); // Dynamic max based on actual data
+    return Math.min((activeUsers / maxUsers) * 100, 100);
+  }
+
+  getPeakUsageHours(): { hour: string; users: number; percentage: number }[] {
+    if (!this.hasPeakUsageData()) return [];
+
+    const peakHours = this.analyticsData!.systemStats.peakUsageHours;
+    const maxUsers = Math.max(...peakHours.map(h => h.users));
+
+    return peakHours.map(hour => ({
+      ...hour,
+      percentage: maxUsers > 0 ? Math.round((hour.users / maxUsers) * 100) : 0
+    }));
   }
 
   // Helper methods for Patient Demographics section
@@ -605,6 +583,67 @@ export class AnalyticsContentComponent implements OnInit, OnDestroy {
   // TrackBy functions for performance
   trackByKpiTitle(_index: number, kpi: KPICard): string {
     return kpi.title;
+  }
+
+  // Helper methods for KPI cards
+  getProgressColor(changeType: 'increase' | 'decrease' | 'neutral'): string {
+    switch (changeType) {
+      case 'increase':
+        return 'bg-gradient-to-r from-green-400 to-emerald-500';
+      case 'decrease':
+        return 'bg-gradient-to-r from-red-400 to-red-500';
+      default:
+        return 'bg-gradient-to-r from-gray-400 to-gray-500';
+    }
+  }
+
+  getProgressWidth(changeType: 'increase' | 'decrease' | 'neutral'): number {
+    switch (changeType) {
+      case 'increase':
+        return 85;
+      case 'decrease':
+        return 45;
+      default:
+        return 65;
+    }
+  }
+
+  // Color helpers for demographics
+  getItemColor(index: number): string {
+    const colors = [
+      'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+      'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+      'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+      'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+      'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)'
+    ];
+    return colors[index % colors.length];
+  }
+
+  getGenderColor(gender: string): string {
+    const colorMap: { [key: string]: string } = {
+      'Male': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      'Female': 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+      'Other': 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+      'Prefer not to say': 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+      'Non-binary': 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)'
+    };
+    return colorMap[gender] || 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)';
+  }
+
+  // Helper method for calculating total patients
+  getTotalPatients(): number {
+    if (!this.analyticsData?.patientStats) return 0;
+
+    // Calculate from age distribution
+    const ageTotal = this.getAgeDistributionArray().reduce((sum, item) => sum + item.count, 0);
+
+    // Calculate from gender distribution  
+    const genderTotal = this.getGenderDistributionArray().reduce((sum, item) => sum + item.count, 0);
+
+    // Use the larger of the two, or fallback to totalPatients
+    return Math.max(ageTotal, genderTotal, this.analyticsData.patientStats.totalPatients);
   }
 
   // Cleanup

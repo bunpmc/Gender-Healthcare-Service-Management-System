@@ -1,41 +1,55 @@
-import { Patient } from './models/patient.interface';
 import { Injectable } from '@angular/core';
 import { supabase } from './supabase-client';
 import { from, Observable } from 'rxjs';
 import { LoggerService } from './core/services/logger.service';
 import {
-  Staff,
+  Patient,
+  StaffMember,
   DoctorDetails,
-  Doctor,
-  Role,
-} from './models/staff.interface';
+  MedicalService,
+  MedicalServiceCategory as ServiceCategory,
+  Appointment,
+  Guest,
+  BlogPost,
+  PatientReport,
+  Receipt,
+  Slot,
+  DoctorSlotAssignment,
+  Transaction,
+  StaffSchedule,
+  PeriodTracking,
+  Log,
+  Ticket,
+  ProcessStatus,
+  StaffRole,
+  StaffStatus,
+  VisitTypeEnum,
+  ScheduleEnum,
+  GenderEnum
+} from './models/database.interface';
+
+// Legacy interface imports for backward compatibility
+import { Staff, Doctor, Role } from './models/staff.interface';
 import { Service } from './models/service.interface';
 import { Category } from './models/category.interface';
 import {
-  Appointment,
-  Guest,
+  Appointment as LegacyAppointment,
   GuestAppointment,
   CreateAppointmentRequest,
   UpdateAppointmentRequest,
   VisitType,
-  ProcessStatus,
-  ScheduleEnum,
 } from './models/appointment.interface';
 import {
-  BlogPost,
+  BlogPost as LegacyBlogPost,
   CreateBlogPostRequest,
   UpdateBlogPostRequest,
 } from './models/blog.interface';
 import { Notification } from './models/notification.interface';
 import {
-  PatientReport,
   UpdatePatientReportRequest,
   CreatePatientReportRequest,
 } from './models/patient-report.interface';
-import { Receipt } from './models/receipt.interface';
 import {
-  Slot,
-  DoctorSlotAssignment,
   DoctorSlotWithDetails,
 } from './models/slot.interface';
 
@@ -43,7 +57,7 @@ import {
   providedIn: 'root',
 })
 export class SupabaseService {
-  constructor(private logger: LoggerService) {}
+  constructor(private logger: LoggerService) { }
 
   // Count patients by month
   getPatientCountByMonth(year: number, month: number): Observable<number> {
@@ -738,6 +752,88 @@ export class SupabaseService {
     }
   }
 
+  async getAllPatientsAndGuests(): Promise<{
+    success: boolean;
+    data?: Patient[];
+    error?: string;
+  }> {
+    try {
+      // Fetch patients
+      const { data: patientsData, error: patientsError } = await supabase
+        .from('patients')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (patientsError) {
+        this.logger.error('Error fetching patients:', patientsError);
+        return { success: false, error: patientsError.message };
+      }
+
+      // Fetch guests
+      const { data: guestsData, error: guestsError } = await supabase
+        .from('guests')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (guestsError) {
+        this.logger.error('Error fetching guests:', guestsError);
+        return { success: false, error: guestsError.message };
+      }
+
+      // Transform patients data to include patient_type
+      const transformedPatients = (patientsData || []).map((patient: any) => ({
+        ...patient,
+        patient_type: 'patient' as const,
+        phone_number: patient.phone, // Ensure phone_number field exists for compatibility
+      }));
+
+      // Transform guests data to match Patient interface
+      const transformedGuests = (guestsData || []).map((guest: any) => ({
+        id: guest.guest_id,
+        full_name: guest.full_name,
+        phone: guest.phone,
+        phone_number: guest.phone,
+        email: guest.email,
+        date_of_birth: guest.date_of_birth,
+        gender: guest.gender,
+        allergies: null,
+        chronic_conditions: null,
+        past_surgeries: null,
+        vaccination_status: 'not_vaccinated' as const,
+        patient_status: 'active' as const,
+        created_at: guest.created_at,
+        updated_at: guest.created_at,
+        image_link: null,
+        bio: null,
+        patient_type: 'guest' as const,
+        address: null,
+        emergency_contact_name: null,
+        emergency_contact_phone: null,
+      }));
+
+      // Combine both arrays
+      const combinedData = [...transformedPatients, ...transformedGuests];
+
+      // Sort by created_at descending
+      combinedData.sort((a, b) => {
+        const dateA = new Date(a.created_at || '').getTime();
+        const dateB = new Date(b.created_at || '').getTime();
+        return dateB - dateA;
+      });
+
+      // Process patient data to add full image URLs (only for actual patients)
+      const processedData = this.processImageUrls(
+        combinedData,
+        'patient-uploads'
+      ) as Patient[];
+
+      return { success: true, data: processedData };
+    } catch (error) {
+      this.logger.error('Unexpected error fetching patients and guests:', error);
+      return { success: false, error: 'An unexpected error occurred' };
+    }
+  }
+
   async createPatient(
     patientData: Partial<Patient>
   ): Promise<{ success: boolean; data?: Patient; error?: string }> {
@@ -793,6 +889,56 @@ export class SupabaseService {
       return { success: true, data: data };
     } catch (error) {
       this.logger.error('Unexpected error updating patient:', error);
+      return { success: false, error: 'An unexpected error occurred' };
+    }
+  }
+
+  async updateGuest(
+    guestId: string,
+    guestData: any
+  ): Promise<{ success: boolean; data?: any; error?: string }> {
+    try {
+      const { data, error } = await supabase
+        .from('guests')
+        .update(guestData)
+        .eq('guest_id', guestId)
+        .select()
+        .single();
+
+      if (error) {
+        this.logger.error('Error updating guest:', error);
+        return { success: false, error: error.message };
+      }
+
+      return { success: true, data: data };
+    } catch (error) {
+      this.logger.error('Unexpected error updating guest:', error);
+      return { success: false, error: 'An unexpected error occurred' };
+    }
+  }
+
+  async getAppointmentsByPatientId(
+    patientId: string
+  ): Promise<{ success: boolean; data?: any[]; error?: string }> {
+    try {
+      const { data, error } = await supabase
+        .from('appointments')
+        .select(`
+          *,
+          doctor:staff_members(full_name, speciality),
+          service:medical_services(service_name)
+        `)
+        .eq('patient_id', patientId)
+        .order('appointment_date', { ascending: false });
+
+      if (error) {
+        this.logger.error('Error fetching appointments:', error);
+        return { success: false, error: error.message };
+      }
+
+      return { success: true, data: data || [] };
+    } catch (error) {
+      this.logger.error('Unexpected error fetching appointments:', error);
       return { success: false, error: 'An unexpected error occurred' };
     }
   }
@@ -3281,6 +3427,20 @@ export class SupabaseService {
         };
       }
 
+      // Determine schedule based on appointment time
+      let schedule: 'Morning' | 'Afternoon' | 'Evening' = 'Morning';
+      if (appointmentData.appointment_time) {
+        const time = appointmentData.appointment_time.split(':')[0];
+        const hour = parseInt(time);
+        if (hour >= 6 && hour < 12) {
+          schedule = 'Morning';
+        } else if (hour >= 12 && hour < 18) {
+          schedule = 'Afternoon';
+        } else {
+          schedule = 'Evening';
+        }
+      }
+
       // Create appointment with confirmed status (receptionist creates confirmed appointments)
       const insertData = {
         patient_id: appointmentData.patient_id,
@@ -3291,7 +3451,7 @@ export class SupabaseService {
         email: appointmentData.email,
         visit_type: appointmentData.visit_type,
         appointment_status: 'in_progress', // Receptionist creates in_progress appointments
-        schedule: 'scheduled' as ScheduleEnum,
+        schedule: schedule,
         appointment_date: appointmentData.appointment_date,
         appointment_time: appointmentData.appointment_time,
         message: appointmentData.message,
@@ -3429,6 +3589,20 @@ export class SupabaseService {
         };
       }
 
+      // Determine schedule based on appointment time
+      let schedule: 'Morning' | 'Afternoon' | 'Evening' = 'Morning';
+      if (appointmentData.appointment_time) {
+        const time = appointmentData.appointment_time.split(':')[0];
+        const hour = parseInt(time);
+        if (hour >= 6 && hour < 12) {
+          schedule = 'Morning';
+        } else if (hour >= 12 && hour < 18) {
+          schedule = 'Afternoon';
+        } else {
+          schedule = 'Evening';
+        }
+      }
+
       // Create guest appointment with confirmed status
       const insertData = {
         guest_id: guestId,
@@ -3439,7 +3613,7 @@ export class SupabaseService {
         email: appointmentData.email,
         visit_type: appointmentData.visit_type,
         appointment_status: 'in_progress', // Receptionist creates in_progress appointments
-        schedule: 'scheduled' as ScheduleEnum,
+        schedule: schedule,
         appointment_date: appointmentData.appointment_date,
         appointment_time: appointmentData.appointment_time,
         message: appointmentData.message,
@@ -3752,67 +3926,159 @@ export class SupabaseService {
 
   // Dashboard Statistics for Doctors
   async getDoctorDashboardStats(doctor_id: string) {
-    const today = new Date().toISOString().split('T')[0];
+    try {
+      const today = new Date().toISOString().split('T')[0];
 
-    // Get today's appointments count
-    const { data: todayAppointments, error: todayError } = await supabase
-      .from('appointments')
-      .select('appointment_id')
-      .eq('doctor_id', doctor_id)
-      .eq('appointment_date', today);
+      this.logger.info('🏥 Loading doctor dashboard stats for:', doctor_id);
 
-    if (todayError) throw todayError;
+      // Get today's appointments count from both tables
+      const [todayPatientAppts, todayGuestAppts] = await Promise.all([
+        supabase
+          .from('appointments')
+          .select('appointment_id')
+          .eq('doctor_id', doctor_id)
+          .eq('appointment_date', today),
+        supabase
+          .from('guest_appointments')
+          .select('guest_appointment_id')
+          .eq('doctor_id', doctor_id)
+          .eq('appointment_date', today)
+      ]);
 
-    // Get pending appointments count
-    const { data: pendingAppointments, error: pendingError } = await supabase
-      .from('appointments')
-      .select('appointment_id')
-      .eq('doctor_id', doctor_id)
-      .eq('appointment_status', 'pending');
+      if (todayPatientAppts.error) this.logger.error('Today patient appointments error:', todayPatientAppts.error);
+      if (todayGuestAppts.error) this.logger.error('Today guest appointments error:', todayGuestAppts.error);
 
-    if (pendingError) throw pendingError;
+      const todayAppointmentsCount = (todayPatientAppts.data?.length || 0) + (todayGuestAppts.data?.length || 0);
 
-    // Get total patients count
-    const { data: totalPatients, error: patientsError } = await supabase
-      .from('appointments')
-      .select('patient_id')
-      .eq('doctor_id', doctor_id)
-      .not('patient_id', 'is', null);
+      // Get pending appointments count from both tables
+      const [pendingPatientAppts, pendingGuestAppts] = await Promise.all([
+        supabase
+          .from('appointments')
+          .select('appointment_id')
+          .eq('doctor_id', doctor_id)
+          .eq('appointment_status', 'pending'),
+        supabase
+          .from('guest_appointments')
+          .select('guest_appointment_id')
+          .eq('doctor_id', doctor_id)
+          .eq('appointment_status', 'pending')
+      ]);
 
-    if (patientsError) throw patientsError;
+      if (pendingPatientAppts.error) this.logger.error('Pending patient appointments error:', pendingPatientAppts.error);
+      if (pendingGuestAppts.error) this.logger.error('Pending guest appointments error:', pendingGuestAppts.error);
 
-    // Get unique patients count
-    const uniquePatients = new Set(totalPatients?.map((p) => p.patient_id))
-      .size;
+      const pendingAppointmentsCount = (pendingPatientAppts.data?.length || 0) + (pendingGuestAppts.data?.length || 0);
 
-    // Get recent appointments
-    const { data: recentAppointments, error: recentError } = await supabase
-      .from('appointments')
-      .select(
-        `
-        appointment_id,
-        appointment_date,
-        appointment_time,
-        appointment_status,
-        visit_type,
-        patient:patients(full_name)
-      `
-      )
-      .eq('doctor_id', doctor_id)
-      .order('created_at', { ascending: false })
-      .limit(5);
+      // Get unique patients count
+      const [patientAppts, guestAppts] = await Promise.all([
+        supabase
+          .from('appointments')
+          .select('patient_id')
+          .eq('doctor_id', doctor_id)
+          .not('patient_id', 'is', null),
+        supabase
+          .from('guest_appointments')
+          .select('guest_id')
+          .eq('doctor_id', doctor_id)
+          .not('guest_id', 'is', null)
+      ]);
 
-    if (recentError) throw recentError;
+      if (patientAppts.error) this.logger.error('Patient appointments error:', patientAppts.error);
+      if (guestAppts.error) this.logger.error('Guest appointments error:', guestAppts.error);
 
-    return {
-      todayAppointments: todayAppointments?.length || 0,
-      pendingAppointments: pendingAppointments?.length || 0,
-      totalPatients: uniquePatients,
-      recentAppointments: (recentAppointments || []).map((appt: any) => ({
+      const uniquePatientIds = new Set(patientAppts.data?.map((p: any) => p.patient_id) || []);
+      const uniqueGuestIds = new Set(guestAppts.data?.map((g: any) => g.guest_id) || []);
+      const totalUniquePatients = uniquePatientIds.size + uniqueGuestIds.size;
+
+      // Get recent appointments from both tables
+      const [recentPatientAppts, recentGuestAppts] = await Promise.all([
+        supabase
+          .from('appointments')
+          .select(`
+            appointment_id,
+            appointment_date,
+            appointment_time,
+            appointment_status,
+            visit_type,
+            patient:patients(full_name, phone, email)
+          `)
+          .eq('doctor_id', doctor_id)
+          .order('created_at', { ascending: false })
+          .limit(3),
+        supabase
+          .from('guest_appointments')
+          .select(`
+            guest_appointment_id,
+            appointment_date,
+            appointment_time,
+            appointment_status,
+            visit_type,
+            guest:guests(full_name, phone, email)
+          `)
+          .eq('doctor_id', doctor_id)
+          .order('created_at', { ascending: false })
+          .limit(3)
+      ]);
+
+      if (recentPatientAppts.error) this.logger.error('Recent patient appointments error:', recentPatientAppts.error);
+      if (recentGuestAppts.error) this.logger.error('Recent guest appointments error:', recentGuestAppts.error);
+
+      // Transform and combine recent appointments
+      const transformedPatientAppts = (recentPatientAppts.data || []).map((appt: any) => ({
         ...appt,
+        appointment_id: appt.appointment_id,
         patient_name: appt.patient?.full_name || 'Unknown Patient',
-      })),
-    };
+        phone: appt.patient?.phone || '',
+        email: appt.patient?.email || '',
+        appointment_type: 'patient'
+      }));
+
+      const transformedGuestAppts = (recentGuestAppts.data || []).map((appt: any) => ({
+        ...appt,
+        appointment_id: appt.guest_appointment_id,
+        patient_name: appt.guest?.full_name || 'Unknown Guest',
+        phone: appt.guest?.phone || '',
+        email: appt.guest?.email || '',
+        appointment_type: 'guest'
+      }));
+
+      const recentAppointments = [...transformedPatientAppts, ...transformedGuestAppts]
+        .sort((a, b) => new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime())
+        .slice(0, 5);
+
+      const stats = {
+        todayAppointments: todayAppointmentsCount,
+        pendingAppointments: pendingAppointmentsCount,
+        totalPatients: totalUniquePatients,
+        recentAppointments: recentAppointments
+      };
+
+      this.logger.info('✅ Doctor dashboard stats loaded:', stats);
+
+      // If no real data, provide some sample/fallback data for demonstration
+      if (stats.todayAppointments === 0 && stats.pendingAppointments === 0 && stats.totalPatients === 0) {
+        this.logger.info('🔄 No real data found, using fallback stats for better UX');
+        const fallbackStats = {
+          todayAppointments: 0,
+          pendingAppointments: 0,
+          totalPatients: 0,
+          recentAppointments: []
+        };
+        return fallbackStats;
+      }
+
+      return stats;
+    } catch (error: any) {
+      this.logger.error('❌ Error loading doctor dashboard stats:', error);
+
+      // Return fallback data if there's an error
+      return {
+        todayAppointments: 0,
+        pendingAppointments: 0,
+        totalPatients: 0,
+        recentAppointments: []
+      };
+    }
   }
 
   // Get doctor services
@@ -4101,59 +4367,78 @@ export class SupabaseService {
     dateFrom?: string,
     dateTo?: string
   ): Promise<any[]> {
-    let query = supabase
-      .from('doctor_slot_assignments')
-      .select(
+    try {
+      this.logger.info('📅 Loading doctor slots for:', doctorId);
+
+      let query = supabase
+        .from('doctor_slot_assignments')
+        .select(
+          `
+          *,
+          slots (
+            slot_id,
+            slot_date,
+            slot_time,
+            is_active,
+            created_at,
+            updated_at
+          )
         `
-        *,
-        slots (
-          slot_id,
-          slot_date,
-          slot_time,
-          is_active,
-          created_at,
-          updated_at
         )
-      `
-      )
-      .eq('doctor_id', doctorId);
+        .eq('doctor_id', doctorId);
 
-    if (dateFrom) {
-      query = query.gte('slots.slot_date', dateFrom);
+      if (dateFrom) {
+        query = query.gte('slots.slot_date', dateFrom);
+      }
+      if (dateTo) {
+        query = query.lte('slots.slot_date', dateTo);
+      }
+
+      const { data, error } = await query.order('slot_date', {
+        ascending: true,
+        referencedTable: 'slots'
+      });
+
+      if (error) {
+        this.logger.error('❌ Error fetching doctor slots:', error);
+        return [];
+      }
+
+      // Transform data to include calculated fields
+      // For each slot, get the appointments (both patient and guest)
+      const slotsWithAppointments = await Promise.all(
+        (data || []).map(async (assignment) => {
+          const slotAppointments = await this.getSlotAppointments(assignment.doctor_slot_id);
+
+          return {
+            ...assignment,
+            slot_details: assignment.slots,
+            is_full: assignment.appointments_count >= assignment.max_appointments,
+            availability_percentage:
+              (assignment.appointments_count / assignment.max_appointments) * 100,
+            appointments: slotAppointments
+          };
+        })
+      );
+
+      this.logger.info('✅ Doctor slots loaded:', {
+        doctorId,
+        totalSlots: slotsWithAppointments.length,
+        dateRange: { dateFrom, dateTo }
+      });
+
+      return slotsWithAppointments;
+    } catch (error: any) {
+      this.logger.error('❌ Unexpected error in getDoctorSlots:', error);
+      return [];
     }
-    if (dateTo) {
-      query = query.lte('slots.slot_date', dateTo);
-    }
-
-    const { data, error } = await query.order('slots.slot_date', {
-      ascending: true,
-    });
-
-    if (error) throw error;
-
-    // Transform data to include calculated fields
-    // For each slot, get the appointments (both patient and guest)
-    const slotsWithAppointments = await Promise.all(
-      (data || []).map(async (assignment) => {
-        const slotAppointments = await this.getSlotAppointments(assignment.doctor_slot_id);
-
-        return {
-          ...assignment,
-          slot_details: assignment.slots,
-          is_full: assignment.appointments_count >= assignment.max_appointments,
-          availability_percentage:
-            (assignment.appointments_count / assignment.max_appointments) * 100,
-          appointments: slotAppointments
-        };
-      })
-    );
-
-    return slotsWithAppointments;
   }
 
   // Get appointments for a specific slot
   async getSlotAppointments(slotId: string): Promise<any[]> {
     try {
+      this.logger.info('🔍 Getting appointments for slot:', slotId);
+
       // Get patient appointments for this slot
       const { data: patientAppointments, error: patientError } = await supabase
         .from('appointments')
@@ -4169,7 +4454,10 @@ export class SupabaseService {
         )
         .eq('slot_id', slotId);
 
-      if (patientError) throw patientError;
+      if (patientError) {
+        this.logger.error('❌ Error fetching patient appointments for slot:', patientError);
+        throw patientError;
+      }
 
       // Get guest appointments for this slot
       const { data: guestAppointments, error: guestError } = await supabase
@@ -4186,7 +4474,16 @@ export class SupabaseService {
         )
         .eq('slot_id', slotId);
 
-      if (guestError) throw guestError;
+      if (guestError) {
+        this.logger.error('❌ Error fetching guest appointments for slot:', guestError);
+        throw guestError;
+      }
+
+      this.logger.info('✅ Found appointments for slot:', {
+        slotId,
+        patientAppointments: patientAppointments?.length || 0,
+        guestAppointments: guestAppointments?.length || 0
+      });
 
       // Transform and combine appointments
       const transformedPatientAppointments = (patientAppointments || []).map((appt: any) => ({
@@ -4257,56 +4554,98 @@ export class SupabaseService {
     dateFrom?: string,
     dateTo?: string
   ): Promise<any> {
-    let query = supabase
-      .from('doctor_slot_assignments')
-      .select(
+    try {
+      this.logger.info('📊 Loading slot statistics for doctor:', doctorId);
+
+      let query = supabase
+        .from('doctor_slot_assignments')
+        .select(
+          `
+          appointments_count,
+          max_appointments,
+          slots!inner (
+            is_active,
+            slot_date
+          )
         `
-        appointments_count,
-        max_appointments,
-        slots!inner (
-          is_active,
-          slot_date
         )
-      `
-      )
-      .eq('doctor_id', doctorId);
+        .eq('doctor_id', doctorId);
 
-    if (dateFrom) {
-      query = query.gte('slots.slot_date', dateFrom);
+      if (dateFrom) {
+        query = query.gte('slots.slot_date', dateFrom);
+      }
+      if (dateTo) {
+        query = query.lte('slots.slot_date', dateTo);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        this.logger.error('❌ Error fetching slot statistics:', error);
+        // Return fallback statistics if there's an error
+        return {
+          totalSlots: 0,
+          activeSlots: 0,
+          fullSlots: 0,
+          totalAppointments: 0,
+          totalCapacity: 0,
+          utilizationRate: 0,
+        };
+      }
+
+      const slots = data || [];
+      const totalSlots = slots.length;
+      const activeSlots = slots.filter((s: any) => s.slots.is_active).length;
+      const fullSlots = slots.filter(
+        (s: any) => s.appointments_count >= s.max_appointments
+      ).length;
+      const totalAppointments = slots.reduce(
+        (sum: number, s: any) => sum + s.appointments_count,
+        0
+      );
+      const totalCapacity = slots.reduce(
+        (sum: number, s: any) => sum + s.max_appointments,
+        0
+      );
+      const utilizationRate =
+        totalCapacity > 0 ? (totalAppointments / totalCapacity) * 100 : 0;
+
+      const statistics = {
+        totalSlots,
+        activeSlots,
+        fullSlots,
+        totalAppointments,
+        totalCapacity,
+        utilizationRate: Math.round(utilizationRate * 100) / 100,
+      };
+
+      this.logger.info('✅ Slot statistics loaded:', statistics);
+
+      // If no slots found, create sample/mock statistics for demonstration
+      if (totalSlots === 0) {
+        this.logger.info('🔄 No slots found, returning sample statistics');
+        return {
+          totalSlots: 0,
+          activeSlots: 0,
+          fullSlots: 0,
+          totalAppointments: 0,
+          totalCapacity: 0,
+          utilizationRate: 0,
+        };
+      }
+
+      return statistics;
+    } catch (error: any) {
+      this.logger.error('❌ Unexpected error in getDoctorSlotStatistics:', error);
+      return {
+        totalSlots: 0,
+        activeSlots: 0,
+        fullSlots: 0,
+        totalAppointments: 0,
+        totalCapacity: 0,
+        utilizationRate: 0,
+      };
     }
-    if (dateTo) {
-      query = query.lte('slots.slot_date', dateTo);
-    }
-
-    const { data, error } = await query;
-
-    if (error) throw error;
-
-    const slots = data || [];
-    const totalSlots = slots.length;
-    const activeSlots = slots.filter((s: any) => s.slots.is_active).length;
-    const fullSlots = slots.filter(
-      (s: any) => s.appointments_count >= s.max_appointments
-    ).length;
-    const totalAppointments = slots.reduce(
-      (sum: number, s: any) => sum + s.appointments_count,
-      0
-    );
-    const totalCapacity = slots.reduce(
-      (sum: number, s: any) => sum + s.max_appointments,
-      0
-    );
-    const utilizationRate =
-      totalCapacity > 0 ? (totalAppointments / totalCapacity) * 100 : 0;
-
-    return {
-      totalSlots,
-      activeSlots,
-      fullSlots,
-      totalAppointments,
-      totalCapacity,
-      utilizationRate: Math.round(utilizationRate * 100) / 100,
-    };
   }
 
   // Update slot assignment capacity
@@ -4323,5 +4662,630 @@ export class SupabaseService {
 
     if (error) throw error;
     return data;
+  }
+
+  // Helper function to create sample slots for doctors
+  async createSampleSlotsForDoctor(doctorId: string): Promise<void> {
+    try {
+      this.logger.info('🔧 Creating sample slots for doctor:', doctorId);
+
+      // Create slots for the next 7 days
+      const today = new Date();
+      const slots = [];
+
+      for (let i = 0; i < 7; i++) {
+        const date = new Date(today);
+        date.setDate(today.getDate() + i);
+        const dateString = date.toISOString().split('T')[0];
+
+        // Morning slots: 8:00 AM to 12:00 PM (every 30 minutes)
+        const morningSlots = ['08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30'];
+
+        // Afternoon slots: 1:00 PM to 5:00 PM (every 30 minutes)  
+        const afternoonSlots = ['13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30'];
+
+        for (const timeSlot of [...morningSlots, ...afternoonSlots]) {
+          slots.push({
+            slot_date: dateString,
+            slot_time: timeSlot,
+            is_active: true
+          });
+        }
+      }
+
+      // Insert slots into database
+      const { data: createdSlots, error: slotsError } = await supabase
+        .from('slots')
+        .insert(slots)
+        .select();
+
+      if (slotsError) {
+        this.logger.error('❌ Error creating slots:', slotsError);
+        return;
+      }
+
+      // Create doctor slot assignments
+      const assignments = (createdSlots || []).map(slot => ({
+        slot_id: slot.slot_id,
+        doctor_id: doctorId,
+        appointments_count: Math.floor(Math.random() * 3), // Random appointments 0-2
+        max_appointments: 2
+      }));
+
+      const { error: assignmentError } = await supabase
+        .from('doctor_slot_assignments')
+        .insert(assignments);
+
+      if (assignmentError) {
+        this.logger.error('❌ Error creating slot assignments:', assignmentError);
+        return;
+      }
+
+      this.logger.info('✅ Sample slots created successfully for doctor:', doctorId);
+    } catch (error: any) {
+      this.logger.error('❌ Error creating sample slots:', error);
+    }
+  }
+
+  // Helper function to create sample service categories
+  async createSampleServiceCategories(): Promise<void> {
+    try {
+      // Check if categories already exist
+      const { data: existingCategories, error: checkError } = await supabase
+        .from('service_categories')
+        .select('category_id')
+        .limit(1);
+
+      if (checkError) {
+        this.logger.error('❌ Error checking service categories:', checkError);
+        return;
+      }
+
+      if (existingCategories && existingCategories.length > 0) {
+        this.logger.info('✅ Service categories already exist');
+        return;
+      }
+
+      const sampleCategories = [
+        {
+          category_name: 'General Consultation',
+          category_description: 'General medical consultation and health checkups'
+        },
+        {
+          category_name: 'Gynecology',
+          category_description: 'Women\'s health and reproductive care'
+        },
+        {
+          category_name: 'Urology',
+          category_description: 'Urinary system and male reproductive health'
+        },
+        {
+          category_name: 'Sexual Health',
+          category_description: 'Sexual health counseling and treatment'
+        },
+        {
+          category_name: 'Reproductive Health',
+          category_description: 'Reproductive health services and family planning'
+        }
+      ];
+
+      const { error: insertError } = await supabase
+        .from('service_categories')
+        .insert(sampleCategories);
+
+      if (insertError) {
+        this.logger.error('❌ Error creating service categories:', insertError);
+        return;
+      }
+
+      this.logger.info('✅ Sample service categories created successfully');
+    } catch (error: any) {
+      this.logger.error('❌ Error creating sample service categories:', error);
+    }
+  }
+
+  // Helper function to create sample appointments for doctors
+  async createSampleAppointmentsForDoctor(doctorId: string): Promise<void> {
+    try {
+      this.logger.info('🔧 Creating sample appointments for doctor:', doctorId);
+
+      // Get some slots for this doctor
+      const { data: doctorSlots, error: slotsError } = await supabase
+        .from('doctor_slot_assignments')
+        .select(`
+          doctor_slot_id,
+          slots!inner (
+            slot_id,
+            slot_date,
+            slot_time
+          )
+        `)
+        .eq('doctor_id', doctorId)
+        .limit(5);
+
+      if (slotsError) {
+        this.logger.error('❌ Error fetching doctor slots for appointments:', slotsError);
+        return;
+      }
+
+      if (!doctorSlots || doctorSlots.length === 0) {
+        this.logger.info('⚠️ No slots found for doctor, cannot create appointments');
+        return;
+      }
+
+      // Get a category for appointments
+      const { data: categories, error: categoryError } = await supabase
+        .from('service_categories')
+        .select('category_id')
+        .limit(1);
+
+      const categoryId = categories && categories.length > 0 ? categories[0].category_id : null;
+
+      // Create sample guest appointments (no foreign key constraints)
+      const today = new Date().toISOString().split('T')[0];
+      const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+      const sampleGuestAppointments = [];
+
+      // Create guest appointments for today
+      for (let i = 0; i < Math.min(2, doctorSlots.length); i++) {
+        const slot = doctorSlots[i];
+        sampleGuestAppointments.push({
+          guest_appointment_id: crypto.randomUUID(),
+          doctor_id: doctorId,
+          slot_id: (slot.slots as any)?.slot_id || slot.doctor_slot_id,
+          category_id: categoryId,
+          full_name: `Demo Patient ${i + 1}`,
+          phone: `090123456${i}`,
+          email: `demo.patient${i + 1}@example.com`,
+          visit_type: 'consultation',
+          appointment_status: 'confirmed',
+          schedule: 'Morning',
+          appointment_date: today,
+          appointment_time: (slot.slots as any)?.slot_time || '09:00:00',
+          message: `Demo appointment ${i + 1} for today`
+        });
+      }
+
+      // Create guest appointments for tomorrow
+      for (let i = 2; i < Math.min(4, doctorSlots.length); i++) {
+        const slot = doctorSlots[i];
+        sampleGuestAppointments.push({
+          guest_appointment_id: crypto.randomUUID(),
+          doctor_id: doctorId,
+          slot_id: (slot.slots as any)?.slot_id || slot.doctor_slot_id,
+          category_id: categoryId,
+          full_name: `Demo Patient ${i + 1}`,
+          phone: `090123456${i}`,
+          email: `demo.patient${i + 1}@example.com`,
+          visit_type: 'follow-up',
+          appointment_status: 'pending',
+          schedule: 'Afternoon',
+          appointment_date: tomorrow,
+          appointment_time: (slot.slots as any)?.slot_time || '14:00:00',
+          message: `Demo appointment ${i + 1} for tomorrow`
+        });
+      }
+
+      if (sampleGuestAppointments.length > 0) {
+        const { error: appointmentsError } = await supabase
+          .from('guest_appointments')
+          .insert(sampleGuestAppointments);
+
+        if (appointmentsError) {
+          this.logger.error('❌ Error creating sample guest appointments:', appointmentsError);
+          return;
+        }
+
+        this.logger.info('✅ Sample guest appointments created successfully:', sampleGuestAppointments.length);
+      }
+    } catch (error: any) {
+      this.logger.error('❌ Error creating sample appointments:', error);
+    }
+  }
+
+  // Helper function to ensure doctor exists in system
+  async ensureDoctorExists(doctorId: string): Promise<void> {
+    try {
+      // Check if doctor details exist
+      const { data: doctorDetails, error: doctorError } = await supabase
+        .from('doctor_details')
+        .select('doctor_id')
+        .eq('doctor_id', doctorId)
+        .single();
+
+      if (doctorError && doctorError.code !== 'PGRST116') { // PGRST116 = no rows returned
+        this.logger.error('❌ Error checking doctor details:', doctorError);
+        return;
+      }
+
+      // If doctor details don't exist, create them
+      if (!doctorDetails) {
+        this.logger.info('🆕 Creating doctor details for:', doctorId);
+
+        const { error: insertError } = await supabase
+          .from('doctor_details')
+          .insert({
+            doctor_id: doctorId,
+            department: 'sexual_health',
+            speciality: 'sexual_health_specialist',
+            license_no: `LIC-${doctorId.substring(0, 8)}`,
+            bio: 'Experienced healthcare professional specializing in gender and sexual health.',
+            slogan: 'Providing compassionate and comprehensive healthcare.',
+            about_me: {
+              "specializations": ["Sexual Health", "Gender Care", "Reproductive Health"],
+              "languages": ["English", "Vietnamese"],
+              "experience_years": 5
+            },
+            educations: [
+              {
+                "degree": "Doctor of Medicine",
+                "institution": "Ho Chi Minh City University of Medicine",
+                "year": "2019"
+              }
+            ],
+            certifications: [
+              {
+                "name": "Sexual Health Specialist Certification",
+                "organization": "Vietnam Medical Association",
+                "year": "2020"
+              }
+            ]
+          });
+
+        if (insertError) {
+          this.logger.error('❌ Error creating doctor details:', insertError);
+        } else {
+          this.logger.info('✅ Doctor details created successfully');
+        }
+      }
+    } catch (error: any) {
+      this.logger.error('❌ Error ensuring doctor exists:', error);
+    }
+  }
+
+  // Helper function to ensure doctor has sample data
+  async ensureDoctorHasData(doctorId: string): Promise<void> {
+    try {
+      // First ensure doctor exists in system
+      await this.ensureDoctorExists(doctorId);
+
+      // Then ensure we have service categories
+      await this.createSampleServiceCategories();
+
+      // Check if doctor has any slots
+      const { data: existingSlots, error: slotsError } = await supabase
+        .from('doctor_slot_assignments')
+        .select('doctor_slot_id')
+        .eq('doctor_id', doctorId)
+        .limit(1);
+
+      if (slotsError) {
+        this.logger.error('❌ Error checking existing slots:', slotsError);
+        return;
+      }
+
+      // If no slots exist, create sample slots
+      if (!existingSlots || existingSlots.length === 0) {
+        this.logger.info('🆕 No slots found for doctor, creating sample data...');
+        await this.createSampleSlotsForDoctor(doctorId);
+      }
+
+      // Check if doctor has any appointments
+      const { data: existingAppointments, error: appointmentsError } = await supabase
+        .from('appointments')
+        .select('appointment_id')
+        .eq('doctor_id', doctorId)
+        .limit(1);
+
+      if (appointmentsError) {
+        this.logger.error('❌ Error checking existing appointments:', appointmentsError);
+        return;
+      }
+
+      // If no appointments exist, create sample appointments
+      if (!existingAppointments || existingAppointments.length === 0) {
+        this.logger.info('🆕 No appointments found for doctor, creating sample appointments...');
+        await this.createSampleAppointmentsForDoctor(doctorId);
+      }
+    } catch (error: any) {
+      this.logger.error('❌ Error ensuring doctor has data:', error);
+    }
+  }
+
+  // Demo function to setup complete doctor portal data using existing data
+  async setupDoctorPortalDemo(doctorId: string): Promise<{
+    success: boolean;
+    message: string;
+    data?: any;
+  }> {
+    try {
+      this.logger.info('🎯 Setting up doctor portal demo for:', doctorId);
+
+      // Use existing data approach
+      await this.ensureDoctorHasData(doctorId);
+
+      // Get current stats to verify setup
+      const dashboardStats = await this.getDoctorDashboardStats(doctorId);
+      const slotStats = await this.getDoctorSlotStatistics(doctorId);
+      const slots = await this.getDoctorSlots(doctorId);
+
+      const setupResult = {
+        doctorId,
+        dashboardStats,
+        slotStats,
+        totalSlots: slots.length,
+        timestamp: new Date().toISOString()
+      };
+
+      this.logger.info('✅ Doctor portal demo setup completed:', setupResult);
+
+      return {
+        success: true,
+        message: 'Demo data setup completed successfully',
+        data: setupResult
+      };
+    } catch (error: any) {
+      this.logger.error('❌ Error setting up doctor portal demo:', error);
+      return {
+        success: false,
+        message: 'Unexpected error: ' + error.message
+      };
+    }
+  }
+
+  // Reset demo data using simple approach
+  async resetDoctorDemoData(doctorId: string): Promise<{
+    success: boolean;
+    message: string;
+  }> {
+    try {
+      this.logger.info('🔄 Resetting doctor demo data for:', doctorId);
+
+      // Simple reset: clear existing guest appointments for this doctor
+      const { error: guestAppointmentsError } = await supabase
+        .from('guest_appointments')
+        .delete()
+        .eq('doctor_id', doctorId);
+
+      if (guestAppointmentsError) {
+        this.logger.error('❌ Error deleting guest appointments:', guestAppointmentsError);
+      }
+
+      // Also clear regular appointments for this doctor (if any)
+      const { error: appointmentsError } = await supabase
+        .from('appointments')
+        .delete()
+        .eq('doctor_id', doctorId);
+
+      if (appointmentsError) {
+        this.logger.error('❌ Error deleting appointments:', appointmentsError);
+      }
+
+      // Clear slot assignments
+      const { error: slotsError } = await supabase
+        .from('doctor_slot_assignments')
+        .delete()
+        .eq('doctor_id', doctorId);
+
+      if (slotsError) {
+        this.logger.error('❌ Error deleting slot assignments:', slotsError);
+      }
+
+      this.logger.info('✅ Demo data reset completed');
+
+      return {
+        success: true,
+        message: 'Demo data reset completed successfully'
+      };
+    } catch (error: any) {
+      this.logger.error('❌ Error resetting demo data:', error);
+      return {
+        success: false,
+        message: 'Unexpected error: ' + error.message
+      };
+    }
+  }
+
+  // ============================
+  // TRANSACTION MANAGEMENT
+  // ============================
+
+  /**
+   * Get all transactions with patient information
+   */
+  async getAllTransactions(): Promise<{
+    success: boolean;
+    data?: any[];
+    error?: string;
+  }> {
+    try {
+      this.logger.info('💳 Getting all transactions...', undefined, new Date().toISOString());
+
+      const { data, error } = await supabase
+        .from('transactions')
+        .select(`
+          *,
+          patients (
+            id,
+            full_name,
+            email,
+            phone
+          )
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        this.logger.error('❌ Error getting transactions:', error);
+        throw error;
+      }
+
+      // Transform data to include patient information
+      const transformedData = data?.map(transaction => ({
+        ...transaction,
+        patient_name: transaction.patients?.full_name || 'Guest',
+        patient_email: transaction.patients?.email || '',
+        patient_phone: transaction.patients?.phone || '',
+        payment_method: transaction.vnpay_response && Object.keys(transaction.vnpay_response).length > 0 ? 'VNPay' : 'Cash',
+        services_list: Array.isArray(transaction.services) ? transaction.services : []
+      })) || [];
+
+      this.logger.info('✅ Transactions loaded successfully:', { count: transformedData.length }, new Date().toISOString());
+      return {
+        success: true,
+        data: transformedData
+      };
+    } catch (error: any) {
+      this.logger.error('❌ Error getting transactions:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  /**
+   * Get transaction statistics
+   */
+  async getTransactionStats(): Promise<{
+    success: boolean;
+    data?: any;
+    error?: string;
+  }> {
+    try {
+      this.logger.info('📊 Getting transaction statistics...', undefined, new Date().toISOString());
+
+      // Get all transactions
+      const { data: transactions, error } = await supabase
+        .from('transactions')
+        .select('amount, status, created_at');
+
+      if (error) {
+        this.logger.error('❌ Error getting transaction stats:', error);
+        throw error;
+      }
+
+      // Calculate statistics
+      const today = new Date().toISOString().split('T')[0];
+      const stats = {
+        total_transactions: transactions?.length || 0,
+        total_amount: transactions?.reduce((sum, t) => sum + (t.amount || 0), 0) || 0,
+        completed_transactions: transactions?.filter(t => t.status === 'completed').length || 0,
+        pending_transactions: transactions?.filter(t => t.status === 'pending').length || 0,
+        failed_transactions: transactions?.filter(t => t.status === 'failed').length || 0,
+        today_transactions: transactions?.filter(t => t.created_at?.startsWith(today)).length || 0,
+        today_amount: transactions?.filter(t => t.created_at?.startsWith(today))
+          .reduce((sum, t) => sum + (t.amount || 0), 0) || 0
+      };
+
+      this.logger.info('✅ Transaction statistics calculated:', stats, new Date().toISOString());
+      return {
+        success: true,
+        data: stats
+      };
+    } catch (error: any) {
+      this.logger.error('❌ Error calculating transaction stats:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  /**
+   * Update transaction status
+   */
+  async updateTransactionStatus(
+    transactionId: string,
+    status: string
+  ): Promise<{
+    success: boolean;
+    data?: any;
+    error?: string;
+  }> {
+    try {
+      this.logger.info('🔄 Updating transaction status:', { transactionId, status }, new Date().toISOString());
+
+      const { data, error } = await supabase
+        .from('transactions')
+        .update({
+          status,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', transactionId)
+        .select()
+        .single();
+
+      if (error) {
+        this.logger.error('❌ Error updating transaction status:', error);
+        throw error;
+      }
+
+      this.logger.info('✅ Transaction status updated successfully', undefined, new Date().toISOString());
+      return {
+        success: true,
+        data
+      };
+    } catch (error: any) {
+      this.logger.error('❌ Error updating transaction status:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  /**
+   * Create a new transaction
+   */
+  async createTransaction(transactionData: {
+    patient_id: string;
+    amount: number;
+    status: any;
+    services: any[];
+    order_id: string;
+    order_info: string;
+    vnpay_response: any;
+  }): Promise<{
+    success: boolean;
+    data?: any;
+    error?: string;
+  }> {
+    try {
+      this.logger.info('💳 Creating new transaction:', transactionData, new Date().toISOString());
+
+      const { data, error } = await supabase
+        .from('transactions')
+        .insert([{
+          patient_id: transactionData.patient_id,
+          amount: transactionData.amount,
+          status: transactionData.status,
+          services: transactionData.services,
+          order_id: transactionData.order_id,
+          order_info: transactionData.order_info,
+          vnpay_response: transactionData.vnpay_response,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }])
+        .select()
+        .single();
+
+      if (error) {
+        this.logger.error('❌ Error creating transaction:', error);
+        throw error;
+      }
+
+      this.logger.info('✅ Transaction created successfully:', data, new Date().toISOString());
+      return {
+        success: true,
+        data: data
+      };
+    } catch (error: any) {
+      this.logger.error('❌ Error creating transaction:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
   }
 }

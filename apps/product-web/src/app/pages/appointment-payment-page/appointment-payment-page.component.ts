@@ -117,8 +117,7 @@ export class AppointmentPaymentPageComponent implements OnInit, OnDestroy {
       amount: this.appointmentData.payment_amount,
       orderInfo: `Thanh toán lịch hẹn - ${this.appointmentData.doctor_name} - ${this.appointmentData.appointment_date} ${this.appointmentData.appointment_time}`,
       patientId:
-        this.appointmentData.appointment_data.email ||
-        this.appointmentData.appointment_data.phone,
+        JSON.parse(localStorage.getItem('current_user') || '{}')?.id,
       orderId: orderId,
       appointment_data: this.appointmentData.appointment_data,
       doctor_name: this.appointmentData.doctor_name,

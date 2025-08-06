@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
+import { catchError, tap } from 'rxjs/operators';
 import { environment } from '../environments/environment';
 import {
   VNPayPaymentRequest,
@@ -9,44 +10,8 @@ import {
   PaymentTransaction,
   PaymentResult,
 } from '../models/payment.model';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-/**
- * Enhanced VNPay Service for handling VNPay payment integration
- *
- * Usage Examples:
- *
- * 1. In a Payment Result Component (handling VNPay callback):
- * ```typescript
- * export class PaymentResultComponent implements OnInit {
- *   constructor(
- *     private route: ActivatedRoute,
- *     private vnpayService: VnpayService
- *   ) {}
- *
- *   ngOnInit(): void {
- *     this.route.queryParams.subscribe(params => {
- *       // Method 1: Use the convenience method
- *       this.vnpayService.verifyCallbackFromParams(params).subscribe({
- *         next: (result) => console.log('Payment result:', result),
- *         error: (error) => console.error('Payment error:', error)
- *       });
- *
- *       // Method 2: Parse manually then verify
- *       const callbackData = this.vnpayService.parseCallbackFromQueryParams(params);
- *       if (callbackData) {
- *         this.vnpayService.verifyCallback(callbackData).subscribe(...);
- *       }
- *     });
- *   }
- * }
- * ```
- *
- * 2. For direct URL parsing:
- * ```typescript
- * const callbackUrl = 'https://yourapp.com/payment-result?vnp_Amount=100000&vnp_TxnRef=ORDER123...';
- * this.vnpayService.verifyCallbackFromUrl(callbackUrl).subscribe(...);
- * ```
- */
 @Injectable({
   providedIn: 'root',
 })
@@ -55,47 +20,118 @@ export class VnpayService {
     'https://xzxxodxplyetecrsbxmc.supabase.co/functions/v1/vnpay-payment';
   private readonly vnpayCallbackUrl =
     'https://xzxxodxplyetecrsbxmc.supabase.co/functions/v1/vnpay-callback';
-  private readonly vnp_TmnCode = '4Q0AGO8S'; // Must match vnpay-callback and vnpay-payment config
+  private readonly vnp_TmnCode = '4Q0AGO8S';
 
-  constructor(private http: HttpClient) {}
+  private supabase: SupabaseClient;
 
-  // Get HTTP headers
+  constructor(private http: HttpClient) {
+    this.supabase = createClient(
+      environment.supabaseUrl,
+      environment.supabaseKey
+    );
+  }
+
   private getHeaders(): HttpHeaders {
     return new HttpHeaders({
       'Content-Type': 'application/json',
     });
   }
 
-  // Create VNPay payment URL
+  private async createTransaction(payload: any): Promise<any> {
+    try {
+      const { data, error } = await this.supabase
+        .from('transactions')
+        .insert({
+          order_id: payload.order_id,
+          amount: payload.amount,
+          order_info: payload.order_info,
+          services: payload.services,
+          status: 'pending',
+          patient_id: payload.patient_id || null,
+          created_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error creating transaction:', error);
+        throw new Error(`Failed to create transaction: ${error.message}`);
+      }
+
+      console.log('Transaction created successfully:', data);
+      return data;
+    } catch (error) {
+      console.error('Transaction creation failed:', error);
+      throw error;
+    }
+  }
+
+  async updateTransactionStatus(
+    orderId: string,
+    status: 'pending' | 'completed' | 'failed' | 'cancelled',
+    vnpayResponse?: any
+  ): Promise<any> {
+    try {
+      const updateData: any = {
+        status,
+        updated_at: new Date().toISOString()
+      };
+
+      if (vnpayResponse) {
+        updateData.vnpay_response = vnpayResponse;
+      }
+
+      const { data, error } = await this.supabase
+        .from('transactions')
+        .update(updateData)
+        .eq('order_id', orderId)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error updating transaction:', error);
+        throw new Error(`Failed to update transaction: ${error.message}`);
+      }
+
+      console.log('Transaction updated successfully:', data);
+      return data;
+    } catch (error) {
+      console.error('Transaction update failed:', error);
+      throw error;
+    }
+  }
+
   createPayment(
     paymentRequest: VNPayPaymentRequest
   ): Observable<VNPayPaymentResponse> {
+    const orderId = this.generateOrderId();
+
     const payload = {
-      amount: this.formatAmountForVNPay(paymentRequest.amount), // Format amount for VNPay
-      orderInfo: paymentRequest.orderInfo,
-      patientId: paymentRequest.patientId,
+      order_id: orderId,
+      amount: this.formatAmountForVNPay(paymentRequest.amount),
+      order_info: paymentRequest.orderInfo,
+      patient_id: paymentRequest.patientId,
       services: paymentRequest.services,
     };
 
-    console.log('Creating payment with payload:', payload); // Log payload for debugging
+    this.createTransaction(payload).catch(error => {
+      console.error('Failed to create transaction record:', error);
+    });
+
+    console.log('Creating payment with payload:', payload);
 
     return this.http.post<VNPayPaymentResponse>(this.vnpayPaymentUrl, payload, {
       headers: this.getHeaders(),
-    });
+    }).pipe(
+      tap(response => console.log('Payment creation response:', response)),
+      catchError(error => {
+        console.error('Payment creation failed:', error);
+        return throwError(() => error);
+      })
+    );
   }
 
-  // Verify VNPay callback - Enhanced version with URL parsing support
   verifyCallback(callbackData: VNPayCallbackData): Observable<PaymentResult> {
-    console.log('Callback data sent to edge function:', callbackData);
-
-    // Validate required parameters
-    if (!this.validateCallbackData(callbackData)) {
-      throw new Error(
-        'Invalid VNPay callback data: Missing or invalid required parameters'
-      );
-    }
-
-    // Ensure we're sending all required VNPay parameters
     const payload = {
       vnp_Amount: callbackData.vnp_Amount,
       vnp_BankCode: callbackData.vnp_BankCode,
@@ -111,69 +147,111 @@ export class VnpayService {
       vnp_SecureHash: callbackData.vnp_SecureHash,
     };
 
+    this.updateTransactionStatusFromCallback(payload).catch(error => {
+      console.error('Failed to update transaction status:', error);
+    });
+
     console.log('Payload being sent to VNPay callback edge function:', payload);
 
     return this.http.post<PaymentResult>(this.vnpayCallbackUrl, payload, {
       headers: this.getHeaders(),
-    });
+    }).pipe(
+      catchError(error => {
+        console.error('Callback verification failed:', error);
+        return throwError(() => error);
+      })
+    );
   }
 
-  // Verify VNPay callback from URL - Convenience method for direct URL parsing
+  private async updateTransactionStatusFromCallback(payload: any): Promise<void> {
+    let status: 'completed' | 'failed' | 'cancelled';
+
+    if (payload.vnp_TransactionStatus === '00') {
+      status = 'completed';
+    } else if (payload.vnp_TransactionStatus === '01') {
+      status = 'failed';
+    } else {
+      status = 'cancelled';
+    }
+
+    await this.updateTransactionStatus(payload.vnp_TxnRef, status, payload);
+  }
+
   verifyCallbackFromUrl(callbackUrl: string): Observable<PaymentResult> {
     const callbackData = this.parseCallbackParams(callbackUrl);
     if (!callbackData) {
-      throw new Error('Failed to parse VNPay callback URL parameters');
+      return throwError(() => new Error('Failed to parse VNPay callback URL parameters'));
     }
     return this.verifyCallback(callbackData);
   }
 
-  // Verify VNPay callback from query parameters - For Angular Router usage
   verifyCallbackFromParams(queryParams: {
     [key: string]: any;
   }): Observable<PaymentResult> {
     const callbackData = this.parseCallbackFromQueryParams(queryParams);
     if (!callbackData) {
-      throw new Error('Failed to parse VNPay callback query parameters');
+      return throwError(() => new Error('Failed to parse VNPay callback query parameters'));
     }
     return this.verifyCallback(callbackData);
   }
 
-  // Get transaction by ID
-  getTransaction(transactionId: string): Observable<PaymentTransaction> {
-    return this.http.get<PaymentTransaction>(
-      `${environment.apiEndpoint}/get-transaction/${transactionId}`,
-      { headers: this.getHeaders() }
-    );
+  async getTransactionByOrderId(orderId: string): Promise<any> {
+    try {
+      const { data, error } = await this.supabase
+        .from('transactions')
+        .select('*')
+        .eq('order_id', orderId)
+        .single();
+
+      if (error) {
+        throw new Error(`Failed to get transaction: ${error.message}`);
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Get transaction failed:', error);
+      throw error;
+    }
   }
 
-  // Get user transactions
-  getUserTransactions(userId: string): Observable<PaymentTransaction[]> {
-    return this.http.get<PaymentTransaction[]>(
-      `${environment.apiEndpoint}/get-user-transactions/${userId}`,
-      { headers: this.getHeaders() }
-    );
+  async getUserTransactionsByPatientId(patientId: string): Promise<any[]> {
+    try {
+      const { data, error } = await this.supabase
+        .from('transactions')
+        .select('*')
+        .eq('patient_id', patientId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        throw new Error(`Failed to get user transactions: ${error.message}`);
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error('Get user transactions failed:', error);
+      throw error;
+    }
   }
 
-  // Generate return URL for VNPay
   generateReturnUrl(): string {
     const baseUrl = window.location.origin;
     return `${baseUrl}/payment-result`;
   }
 
-  // Get client IP (simplified version)
+  private generateOrderId(): string {
+    const timestamp = Date.now();
+    const randomNum = Math.floor(Math.random() * 1000);
+    return `ORDER_${timestamp}_${randomNum}`;
+  }
+
   private getClientIP(): string {
-    // In a real application, you might want to get the actual client IP
-    // For now, return a default value
     return '127.0.0.1';
   }
 
-  // Format amount for VNPay (VNPay requires amount in VND without decimal)
   formatAmountForVNPay(amount: number): number {
-    // VNPay expects amount in VND without decimals (amount is already in VND)
-    return Math.round(amount);
+    return Math.round(Math.max(0, amount));
   }
 
-  // Validate VNPay callback data
   private validateCallbackData(callbackData: VNPayCallbackData): boolean {
     const requiredFields = [
       'vnp_Amount',
@@ -184,13 +262,13 @@ export class VnpayService {
     ];
 
     for (const field of requiredFields) {
-      if (!callbackData[field as keyof VNPayCallbackData]) {
-        console.error(`Missing required VNPay parameter: ${field}`);
+      const value = callbackData[field as keyof VNPayCallbackData];
+      if (!value || (typeof value === 'string' && value.trim() === '')) {
+        console.error(`Missing or empty required VNPay parameter: ${field}`);
         return false;
       }
     }
 
-    // Validate vnp_TmnCode matches expected value
     if (callbackData.vnp_TmnCode !== this.vnp_TmnCode) {
       console.error(
         `Invalid vnp_TmnCode: expected ${this.vnp_TmnCode}, received ${callbackData.vnp_TmnCode}`
@@ -201,42 +279,28 @@ export class VnpayService {
     return true;
   }
 
-  // Parse VNPay callback from Angular Router query parameters
   parseCallbackFromQueryParams(queryParams: {
     [key: string]: any;
   }): VNPayCallbackData | null {
     try {
       const callbackData: VNPayCallbackData = {
-        vnp_Amount: queryParams['vnp_Amount'] || '',
-        vnp_BankCode: queryParams['vnp_BankCode'] || '',
-        vnp_BankTranNo: queryParams['vnp_BankTranNo'] || '',
-        vnp_CardType: queryParams['vnp_CardType'] || '',
-        vnp_OrderInfo: queryParams['vnp_OrderInfo'] || '',
-        vnp_PayDate: queryParams['vnp_PayDate'] || '',
-        vnp_ResponseCode: queryParams['vnp_ResponseCode'] || '',
-        vnp_TmnCode: queryParams['vnp_TmnCode'] || '',
-        vnp_TransactionNo: queryParams['vnp_TransactionNo'] || '',
-        vnp_TransactionStatus: queryParams['vnp_TransactionStatus'] || '',
-        vnp_TxnRef: queryParams['vnp_TxnRef'] || '',
-        vnp_SecureHash: queryParams['vnp_SecureHash'] || '',
+        vnp_Amount: this.sanitizeParam(queryParams['vnp_Amount']),
+        vnp_BankCode: this.sanitizeParam(queryParams['vnp_BankCode']),
+        vnp_BankTranNo: this.sanitizeParam(queryParams['vnp_BankTranNo']),
+        vnp_CardType: this.sanitizeParam(queryParams['vnp_CardType']),
+        vnp_OrderInfo: this.sanitizeParam(queryParams['vnp_OrderInfo']),
+        vnp_PayDate: this.sanitizeParam(queryParams['vnp_PayDate']),
+        vnp_ResponseCode: this.sanitizeParam(queryParams['vnp_ResponseCode']),
+        vnp_TmnCode: this.sanitizeParam(queryParams['vnp_TmnCode']),
+        vnp_TransactionNo: this.sanitizeParam(queryParams['vnp_TransactionNo']),
+        vnp_TransactionStatus: this.sanitizeParam(queryParams['vnp_TransactionStatus']),
+        vnp_TxnRef: this.sanitizeParam(queryParams['vnp_TxnRef']),
+        vnp_SecureHash: this.sanitizeParam(queryParams['vnp_SecureHash']),
       };
 
       console.log('Parsed callback data from query parameters:', callbackData);
 
-      // Log missing critical parameters for debugging
-      if (!callbackData.vnp_TxnRef) {
-        console.warn('No vnp_TxnRef found in callback query parameters');
-      }
-      if (!callbackData.vnp_SecureHash) {
-        console.warn('No vnp_SecureHash found in callback query parameters');
-      }
-      if (!callbackData.vnp_TmnCode) {
-        console.warn('No vnp_TmnCode found in callback query parameters');
-      } else if (callbackData.vnp_TmnCode !== this.vnp_TmnCode) {
-        console.warn(
-          `Invalid vnp_TmnCode: expected ${this.vnp_TmnCode}, received ${callbackData.vnp_TmnCode}`
-        );
-      }
+      this.logMissingCriticalParams(callbackData);
 
       return callbackData;
     } catch (error) {
@@ -245,10 +309,15 @@ export class VnpayService {
     }
   }
 
-  // Parse VNPay callback URL parameters (Enhanced version)
   parseCallbackParams(url: string): VNPayCallbackData | null {
     try {
-      const urlParams = new URLSearchParams(url.split('?')[1]);
+      const urlParts = url.split('?');
+      if (urlParts.length < 2) {
+        console.error('Invalid URL format: no query parameters found');
+        return null;
+      }
+
+      const urlParams = new URLSearchParams(urlParts[1]);
 
       const callbackData: VNPayCallbackData = {
         vnp_Amount: urlParams.get('vnp_Amount') || '',
@@ -267,20 +336,7 @@ export class VnpayService {
 
       console.log('Parsed callback data from URL:', callbackData);
 
-      // Log missing critical parameters for debugging
-      if (!callbackData.vnp_TxnRef) {
-        console.warn('No vnp_TxnRef found in callback URL parameters');
-      }
-      if (!callbackData.vnp_SecureHash) {
-        console.warn('No vnp_SecureHash found in callback URL parameters');
-      }
-      if (!callbackData.vnp_TmnCode) {
-        console.warn('No vnp_TmnCode found in callback URL parameters');
-      } else if (callbackData.vnp_TmnCode !== this.vnp_TmnCode) {
-        console.warn(
-          `Invalid vnp_TmnCode: expected ${this.vnp_TmnCode}, received ${callbackData.vnp_TmnCode}`
-        );
-      }
+      this.logMissingCriticalParams(callbackData);
 
       return callbackData;
     } catch (error) {
@@ -289,12 +345,33 @@ export class VnpayService {
     }
   }
 
-  // Check if payment was successful based on response code
+  private sanitizeParam(param: any): string {
+    if (param === null || param === undefined) {
+      return '';
+    }
+    return String(param).trim();
+  }
+
+  private logMissingCriticalParams(callbackData: VNPayCallbackData): void {
+    if (!callbackData.vnp_TxnRef) {
+      console.warn('No vnp_TxnRef found in callback parameters');
+    }
+    if (!callbackData.vnp_SecureHash) {
+      console.warn('No vnp_SecureHash found in callback parameters');
+    }
+    if (!callbackData.vnp_TmnCode) {
+      console.warn('No vnp_TmnCode found in callback parameters');
+    } else if (callbackData.vnp_TmnCode !== this.vnp_TmnCode) {
+      console.warn(
+        `Invalid vnp_TmnCode: expected ${this.vnp_TmnCode}, received ${callbackData.vnp_TmnCode}`
+      );
+    }
+  }
+
   isPaymentSuccessful(responseCode: string): boolean {
     return responseCode === '00';
   }
 
-  // Get payment status message
   getPaymentStatusMessage(responseCode: string): string {
     const statusMessages: { [key: string]: string } = {
       '00': 'Giao dịch thành công',

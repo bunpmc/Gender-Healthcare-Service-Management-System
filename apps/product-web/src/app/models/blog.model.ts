@@ -16,7 +16,7 @@ export interface BlogDetail {
   blog_title: string;
   blog_content: string;
   image_link?: string | null;
-  blog_tags: string[] | string; // CHỖ NÀY nè, hỗ trợ luôn string
+  blog_tags: string[] | string;
   blog_status: string;
   created_at: string;
   updated_at: string;

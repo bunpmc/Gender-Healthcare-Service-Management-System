@@ -5,10 +5,11 @@ import { TranslateModule } from '@ngx-translate/core';
 import { Subject, forkJoin } from 'rxjs';
 import { takeUntil, finalize } from 'rxjs/operators';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-
 import { HeaderComponent } from '../../components/header/header.component';
 import { FooterComponent } from '../../components/footer/footer.component';
-import { AppointmentHistoryComponent } from '../../components/appointment-history/appointment-history.component';
+
+
+import { Router } from '@angular/router';
 import {
   AuthService,
   EdgeFunctionUserProfile,
@@ -26,10 +27,9 @@ import { environment } from '../../environments/environment';
   imports: [
     CommonModule,
     FormsModule,
+    TranslateModule,
     HeaderComponent,
     FooterComponent,
-    TranslateModule,
-    AppointmentHistoryComponent,
   ],
   templateUrl: './dashboard-page.component.html',
   styleUrl: './dashboard-page.component.css',
@@ -43,7 +43,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   isUploadingAvatar = false;
   selectedAvatarFile: File | null = null;
   avatarPreviewUrl: string | null = null;
-  showAppointmentHistory = false;
+
 
   // Calendar properties
   currentDate = new Date();
@@ -53,15 +53,34 @@ export class DashboardComponent implements OnInit, OnDestroy {
   calendarView: 'month' | 'week' | 'day' = 'month';
   showDatePicker = false;
 
+  // Dashboard section management
+  currentSection: 'dashboard' | 'appointments' | 'profile' | 'settings' = 'dashboard';
+  selectedAppointment: DashboardAppointment | null = null;
+  appointmentFilter: 'all' | 'upcoming' | 'past' | 'cancelled' = 'all';
+
   // dashboard data - will be populated from authenticated user
   dashboard = {
     name: '',
+    firstName: '',
+    lastName: '',
     bio: '',
     phone: '',
+    countryCode: '+1',
+    phoneType: 'mobile',
     email: '',
     dateOfBirth: '',
     gender: 'other' as 'male' | 'female' | 'other',
     imageLink: '',
+    // Additional fields
+    emergencyContact: '',
+    bloodType: '',
+    allergies: '',
+    medicalHistory: '',
+    // Preferences
+    emailReminders: false,
+    smsReminders: false,
+    // Status
+    status: 'inactive' as 'active' | 'inactive',
   };
 
   // Temporary data for editing
@@ -101,7 +120,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
     confirmedAppointments: 0,
   };
 
-  constructor(private authService: AuthService, private http: HttpClient) {}
+  constructor(
+    private authService: AuthService,
+    private http: HttpClient,
+    private router: Router
+  ) { }
 
   // Appointment mapping to dates (day of month)
   appointmentMapping: { [key: number]: DashboardAppointment[] } = {};
@@ -151,14 +174,31 @@ export class DashboardComponent implements OnInit, OnDestroy {
   loadUserProfile(): void {
     const currentPatient = this.authService.getCurrentPatient();
     if (currentPatient) {
+      const fullName = currentPatient.full_name || '';
+      const nameParts = fullName.split(' ');
+
       this.dashboard = {
-        name: currentPatient.full_name || '',
-        bio: currentPatient.bio || '',
+        name: fullName,
+        firstName: nameParts[0] || '',
+        lastName: nameParts[1] || '',
+        bio: '', // Patient type doesn't have bio
         phone: currentPatient.phone || '',
+        countryCode: '+1', // Default value, not in Patient type
+        phoneType: 'mobile', // Default value, not in Patient type
         email: currentPatient.email || '',
         dateOfBirth: currentPatient.date_of_birth || '',
         gender: currentPatient.gender || 'other',
         imageLink: currentPatient.image_link || '',
+        // Additional fields - use defaults since not in Patient type
+        emergencyContact: '',
+        bloodType: '',
+        allergies: typeof currentPatient.allergies === 'string' ? currentPatient.allergies : '',
+        medicalHistory: '',
+        // Preferences - use defaults since not in Patient type
+        emailReminders: false,
+        smsReminders: false,
+        // Status - use default since not in Patient type
+        status: 'inactive' as 'active' | 'inactive',
       };
       this.editdashboard = { ...this.dashboard };
     }
@@ -182,17 +222,34 @@ export class DashboardComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (profile) => {
           this.edgeFunctionProfile = profile;
-          console.log('Edge function profile loaded:', profile);
+
 
           // Update dashboard with edge function data
+          const fullName = profile.full_name || '';
+          const nameParts = fullName.split(' ');
+
           this.dashboard = {
-            name: profile.full_name || '',
+            name: fullName,
+            firstName: nameParts[0] || '',
+            lastName: nameParts[1] || '',
             bio: '', // Edge function doesn't provide bio
             phone: profile.phone || '',
+            countryCode: '+1', // Default value, not in EdgeFunctionUserProfile
+            phoneType: 'mobile', // Default value, not in EdgeFunctionUserProfile
             email: profile.email || '',
             dateOfBirth: profile.date_of_birth || '',
             gender: profile.gender || 'other',
             imageLink: profile.image_link || '',
+            // Additional fields - use defaults since not in EdgeFunctionUserProfile
+            emergencyContact: '',
+            bloodType: '',
+            allergies: '',
+            medicalHistory: '',
+            // Preferences - use defaults since not in EdgeFunctionUserProfile
+            emailReminders: false,
+            smsReminders: false,
+            // Status - use default since not in EdgeFunctionUserProfile
+            status: 'inactive' as 'active' | 'inactive',
           };
           this.editdashboard = { ...this.dashboard };
 
@@ -205,7 +262,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
           this.generateCalendarDays();
         },
         error: (error) => {
-          console.error('Error loading edge function profile:', error);
+
           this.edgeProfileError =
             'Failed to load profile from server. Using local data.';
           // Fallback to local profile loading
@@ -240,7 +297,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         confirmedAppointments: completedCount,
       };
 
-      console.log('Dashboard stats updated:', this.dashboardStatistics);
+
     }
   }
 
@@ -252,10 +309,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       return;
     }
 
-    console.log(
-      'Converting edge function appointments to dashboard format:',
-      this.edgeFunctionProfile.appointments
-    );
+
 
     // Convert edge function appointments to dashboard format
     const edgeAppointments: DashboardAppointment[] =
@@ -277,8 +331,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
           schedule: apt.schedule as 'Morning' | 'Afternoon' | 'Evening',
         }));
 
-    console.log('Converted edge appointments:', edgeAppointments);
-
     // Merge with existing appointments (avoid duplicates)
     const existingIds = new Set(this.appointments.map((apt) => apt.id));
     const newAppointments = edgeAppointments.filter(
@@ -288,7 +340,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     // Add new appointments to the existing list
     this.appointments = [...this.appointments, ...newAppointments];
 
-    console.log('Final appointments list:', this.appointments);
+
   }
 
   /**
@@ -1076,6 +1128,34 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.resetAvatarSelection();
   }
 
+  resetForm(): void {
+    // Reset to empty values - no mock data
+    this.dashboard = {
+      name: '',
+      firstName: '',
+      lastName: '',
+      bio: '',
+      phone: '',
+      countryCode: '+1',
+      phoneType: 'mobile',
+      email: '',
+      dateOfBirth: '',
+      gender: 'other' as 'male' | 'female' | 'other',
+      imageLink: '',
+      // Additional fields
+      emergencyContact: '',
+      bloodType: '',
+      allergies: '',
+      medicalHistory: '',
+      // Preferences
+      emailReminders: false,
+      smsReminders: false,
+      // Status
+      status: 'inactive' as 'active' | 'inactive',
+    };
+    this.profileError = null;
+  }
+
   // ========== FORM VALIDATION METHODS ==========
 
   /**
@@ -1320,6 +1400,66 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.loadEdgeFunctionProfile();
     } else {
       console.error('Failed to refresh token');
+    }
+  }
+
+  // Navigation methods - now switch sections within dashboard
+  navigateToHistory(): void {
+    this.currentSection = 'appointments';
+    this.selectedAppointment = null;
+  }
+
+  navigateToProfiles(): void {
+    this.currentSection = 'profile';
+  }
+
+  navigateToBooking(): void {
+    // For booking, we can still navigate to external page or show booking form
+    this.router.navigate(['/appointment']);
+  }
+
+  navigateToSettings(): void {
+    this.currentSection = 'settings';
+  }
+
+  // New method to switch back to main dashboard
+  navigateToDashboard(): void {
+    this.currentSection = 'dashboard';
+    this.selectedAppointment = null;
+  }
+
+  // Method to view appointment details
+  viewAppointmentDetails(appointment: DashboardAppointment): void {
+    this.selectedAppointment = appointment;
+    this.currentSection = 'appointments';
+  }
+
+  // Method to filter appointments
+  setAppointmentFilter(filter: 'all' | 'upcoming' | 'past' | 'cancelled'): void {
+    this.appointmentFilter = filter;
+  }
+
+  // Get filtered appointments
+  get filteredAppointments(): DashboardAppointment[] {
+    const now = new Date();
+
+    switch (this.appointmentFilter) {
+      case 'upcoming':
+        return this.appointments.filter(apt => {
+          if (!apt.date) return false;
+          const aptDate = new Date(apt.date);
+          return aptDate >= now && apt.status !== 'cancelled';
+        });
+      case 'past':
+        return this.appointments.filter(apt => {
+          if (!apt.date) return false;
+          const aptDate = new Date(apt.date);
+          return aptDate < now;
+        });
+      case 'cancelled':
+        return this.appointments.filter(apt => apt.status === 'cancelled');
+      default:
+        return this.appointments;
     }
   }
 }

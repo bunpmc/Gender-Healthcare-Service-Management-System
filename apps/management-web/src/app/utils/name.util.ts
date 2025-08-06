@@ -39,18 +39,18 @@ export class NameUtil {
 
     // Common Vietnamese name prefixes that should be lowercase
     const lowercasePrefixes = ['của', 'và', 'hoặc', 'với'];
-    
+
     return name
       .toLowerCase()
       .split(' ')
       .map((word, index) => {
         if (word.length === 0) return word;
-        
+
         // Keep certain prefixes lowercase unless they're the first word
         if (index > 0 && lowercasePrefixes.includes(word)) {
           return word;
         }
-        
+
         return word.charAt(0).toUpperCase() + word.slice(1);
       })
       .join(' ')
@@ -69,22 +69,23 @@ export class NameUtil {
 
     const words = name.trim().split(' ').filter(word => word.length > 0);
     if (words.length === 0) return 'N/A';
-    
+
     if (words.length === 1) {
       return words[0].charAt(0).toUpperCase();
     }
-    
+
     // Take first letter of first word and first letter of last word
     const firstInitial = words[0].charAt(0).toUpperCase();
     const lastInitial = words[words.length - 1].charAt(0).toUpperCase();
-    
+
     return firstInitial + lastInitial;
   }
 
   /**
-   * Format doctor name with title
-   * @param name - The doctor's name
-   * @param includeTitle - Whether to include "Dr." prefix
+   * Format doctor name with proper "Dr." prefix handling
+   * Prevents duplicate "Dr." prefixes
+   * @param name - The doctor's name (may or may not already include "Dr.")
+   * @param includeTitle - Whether to ensure "Dr." prefix is present
    * @returns Formatted doctor name
    */
   static formatDoctorName(name: string | null | undefined, includeTitle: boolean = true): string {
@@ -92,8 +93,21 @@ export class NameUtil {
       return includeTitle ? 'Dr. Unknown' : 'Unknown';
     }
 
-    const formattedName = this.toTitleCase(name);
-    return includeTitle ? `Dr. ${formattedName}` : formattedName;
+    const trimmedName = name.trim();
+
+    if (!includeTitle) {
+      // Remove "Dr." prefix if it exists
+      return trimmedName.replace(/^Dr\.\s*/i, '');
+    }
+
+    // Check if name already starts with "Dr." (case insensitive)
+    if (/^Dr\.\s*/i.test(trimmedName)) {
+      return trimmedName;
+    }
+
+    // Add "Dr." prefix if it doesn't exist
+    const formattedName = this.toTitleCase(trimmedName);
+    return `Dr. ${formattedName}`;
   }
 
   /**
@@ -158,7 +172,7 @@ export class NameUtil {
     // Common Vietnamese name patterns and characters
     const vietnameseChars = /[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/i;
     const commonVietnameseNames = ['Nguyễn', 'Trần', 'Lê', 'Phạm', 'Hoàng', 'Huỳnh', 'Phan', 'Vũ', 'Võ', 'Đặng', 'Bùi', 'Đỗ', 'Hồ', 'Ngô', 'Dương'];
-    
+
     return vietnameseChars.test(name) || commonVietnameseNames.some(vName => name.includes(vName));
   }
 }

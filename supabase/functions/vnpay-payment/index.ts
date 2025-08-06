@@ -169,9 +169,8 @@ serve(async (req: Request): Promise<Response> => {
   const now = new Date(new Date().toLocaleString("en-US", {
     timeZone: "Asia/Ho_Chi_Minh",
   }));
-  const orderId = `VNP_${Date.now()}_${
-    Math.random().toString(36).substr(2, 9).toUpperCase()
-  }`;
+  const orderId = `VNP_${Date.now()}_${Math.random().toString(36).substr(2, 9).toUpperCase()
+    }`;
   const createDate = formatDate(now);
   const expireDate = formatDate(new Date(now.getTime() + 15 * 60 * 1000));
   const clientIP = getClientIP(req);
@@ -250,6 +249,6 @@ serve(async (req: Request): Promise<Response> => {
   }
 });
 
-// curl -X POST "https://xzxxodxplyetecrsbxmc.supabase.co/functions/v1/vnpay-payment" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh6eHhvZHhwbHlldGVjcnNieG1jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk2MTE2MjAsImV4cCI6MjA2NTE4NzYyMH0.O60A63ihSaQ_2qbLozpU04yy7ZB5h8BUZqEvWWCLnf0"-H "Content-Type: application/json" -d '{"amount":"150000","orderInfo":"Payment for order #12345","patientId":"dfc1b883-47f7-40db-91ee-16424e212b37","services":["Consultation"]}'
+// curl -X POST "http://127.0.0.1:54321/functions/v1/vnpay-payment" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh6eHhvZHhwbHlldGVjcnNieG1jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk2MTE2MjAsImV4cCI6MjA2NTE4NzYyMH0.O60A63ihSaQ_2qbLozpU04yy7ZB5h8BUZqEvWWCLnf0"-H "Content-Type: application/json" -d '{"amount":"150000","orderInfo":"Payment for order #12345","patientId":"dfc1b883-47f7-40db-91ee-16424e212b37","services":["Consultation"]}'
 
 // supabase secrets set VNPAY_HASH_SECRET="AN0RNCIIMYZSJTHU47SJQJWL8IULFP80" VNPAY_URL="https://sandbox.vnpayment.vn/paymentv2/vpcpay.html" VNPAY_RETURN_URL="http://localhost:4200/payment-result"

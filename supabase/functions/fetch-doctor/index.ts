@@ -17,7 +17,7 @@ function createErrorResponse(error: string, status = 400, details: string | null
   });
 }
 
-function createSuccessResponse(data: any, status = 200) {
+function createSuccessResponse(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
     headers: {
@@ -26,8 +26,7 @@ function createSuccessResponse(data: any, status = 200) {
     }
   });
 }
-
-serve(async (req) => {
+serve(async (req)=>{
   if (req.method === "OPTIONS") {
     return new Response("ok", {
       headers: {
@@ -37,7 +36,6 @@ serve(async (req) => {
       }
     });
   }
-
   if (req.method !== "GET") {
     return createErrorResponse("Method not allowed", 405);
   }
@@ -124,7 +122,6 @@ serve(async (req) => {
     );
 
     return createSuccessResponse(responseData);
-
   } catch (error) {
     return createErrorResponse("Internal server error", 500, error.message);
   }

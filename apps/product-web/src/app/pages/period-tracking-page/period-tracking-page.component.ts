@@ -24,7 +24,7 @@ import {
 import { HeaderComponent } from '../../components/header/header.component';
 import { FooterComponent } from '../../components/footer/footer.component';
 import { PeriodCalendarComponent } from '../../components/period-calendar/period-calendar.component';
-import { HealthSuggestionsComponent } from '../../components/health-suggestions/health-suggestions.component';
+
 
 
 @Component({
@@ -37,7 +37,6 @@ import { HealthSuggestionsComponent } from '../../components/health-suggestions/
     HeaderComponent,
     FooterComponent,
     PeriodCalendarComponent,
-    HealthSuggestionsComponent,
   ],
   templateUrl: './period-tracking-page.component.html',
   styleUrl: './period-tracking-page.component.css',

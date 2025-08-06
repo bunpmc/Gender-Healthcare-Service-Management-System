@@ -24,7 +24,7 @@ function createSuccessResponse(data, status = 200) {
     }
   });
 }
-serve(async (req)=>{
+serve(async (req) => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response("ok", {
@@ -105,6 +105,18 @@ serve(async (req)=>{
     if (blogError) {
       return createErrorResponse("Failed to fetch blog data", 500, blogError.message);
     }
+
+    //Extract image link for blogs 
+    const blog_image_link = blogData.image_link;
+    let blogImage = null;
+    if (blog_image_link) {
+      const { data: publicData, error: publicDataError } = await supabase.storage.from("blog-uploads").getPublicUrl(blog_image_link);
+      if (publicDataError) {
+        console.error("Storage error:", publicDataError.message);
+      } else {
+        blogImage = publicData.publicUrl;
+      }
+    }
     // Prepare response data
     const responseData = {
       doctor_id: data.doctor_id,
@@ -124,18 +136,20 @@ serve(async (req)=>{
         years_experience: data.staff_members?.years_experience,
         languages: data.staff_members?.languages
       },
-      blogs: blogData ? blogData.map((blog)=>({
-          blog_id: blog.blog_id,
-          title: blog.blog_title,
-          excerpt: blog.excerpt,
-          image_link: blog.image_link,
-          created_at: blog.created_at,
-          updated_at: blog.updated_at,
-          doctor_id: blog.doctor_id
-        })) : []
+      blogs: blogData ? blogData.map((blog) => ({
+        blog_id: blog.blog_id,
+        title: blog.blog_title,
+        excerpt: blog.excerpt,
+        image_link: blogImage ?? 'https://xzxxodxplyetecrsbxmc.supabase.co/storage/v1/object/public/blog-uploads//blog_bg.webp',
+        created_at: blog.created_at,
+        updated_at: blog.updated_at,
+        doctor_id: blog.doctor_id
+      })) : []
     };
     return createSuccessResponse(responseData);
   } catch (error) {
     return createErrorResponse("Internal server error", 500, error.message);
   }
 });
+
+// curl -X GET "http://127.0.0.1:54321/functions/v1/fetch-doctor-id?doctor_id=550e8400-e29b-41d4-a716-446655440003" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0" -H "Content-Type: application/json"

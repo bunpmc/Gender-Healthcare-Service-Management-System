@@ -13,18 +13,6 @@
   </div>
 
   <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-    <!-- Debug Info (Remove in production) -->
-    <div
-      class="max-w-4xl mx-auto mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm"
-    >
-      <strong>Debug Info:</strong>
-      Step: {{ currentStep }} | Auth: {{ isUserLoggedIn() ? "Yes" : "No" }} |
-      Type: {{ bookingType || "None" }} | Profile Step:
-      {{ shouldShowProfileStep() ? "Show" : "Hide" }} | UseProfile:
-      Direct booking (no profile selection)
-    </div>
-
-    <!-- Error/Success -->
     @if (errorMessage) {
     <div
       class="text-red-500 text-sm mb-4 text-center flex items-center justify-center gap-1"
@@ -167,8 +155,6 @@
     </div>
     }
 
-    <!-- Profile Selection Step Removed - Direct to Patient Info -->
-
     <!-- STEP 1: Patient Information (Profile selection removed) -->
     @if (shouldShowPatientInfoStep()) {
     <form
@@ -182,6 +168,12 @@
       >
         {{ "APPOINTMENT.PATIENT_INFO.TITLE" | translate }}
       </h3>
+
+      <!-- Profile Selector -->
+      <app-profile-selector
+        (profileSelected)="onProfileSelected($event)"
+        (profileCleared)="onProfileCleared()"
+      ></app-profile-selector>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-7 text-black">
         <!-- Full Name -->
         <div>
@@ -321,7 +313,9 @@
             id="gender"
             class="px-4 py-3 w-full rounded-xl border border-gray-200 focus:border-[#4e6688] focus:ring-1 focus:ring-[#4e6688] text-base font-medium outline-none bg-white transition min-w-[120px]"
           >
-            <option value="" selected disabled>--- Select gender ---</option>
+            <option [value]="undefined" selected disabled>
+              --- Select gender ---
+            </option>
             <option value="male">Male</option>
             <option value="female">Female</option>
             <option value="other">Other / Prefer not to say</option>
@@ -385,7 +379,7 @@
         </button>
         <button
           type="submit"
-          class="bg-[#4e6688] text-white font-bold px-10 py-3 rounded-xl shadow-sm hover:shadow-lg transition focus:outline-none focus:ring-2 focus:ring-[#98d2c0] focus:ring-offset-2"
+          class="bg-[#4e6688] text-[#fffff] font-bold px-10 py-3 rounded-xl shadow-sm hover:shadow-lg transition focus:outline-none focus:ring-2 focus:ring-[#98d2c0] focus:ring-offset-2"
         >
           <span class="flex items-center gap-2">
             CONTINUE
@@ -409,8 +403,7 @@
     }
 
     <!-- STEP 2/3: Select Service (serfirst) or Doctor (docfirst) -->
-    @if ((currentStep === 2 && !isUserLoggedIn()) || (currentStep === 3 &&
-    isUserLoggedIn())) {
+    @if (shouldShowServiceStep() || shouldShowDoctorStep()) {
     <form
       class="max-w-7xl mx-auto bg-white rounded-2xl shadow-lg px-8 py-10 space-y-10"
     >
@@ -674,8 +667,7 @@
     }
 
     <!-- STEP 3/4: Second Selection Step -->
-    @if ((currentStep === 3 && !isUserLoggedIn()) || (currentStep === 4 &&
-    isUserLoggedIn())) {
+    @if (shouldShowSecondSelectionStep()) {
     <form
       class="max-w-7xl mx-auto bg-white rounded-2xl shadow-lg px-8 py-10 space-y-10"
     >
@@ -1071,4 +1063,14 @@
 
   <!-- Footer Component -->
   <app-footer></app-footer>
+
+  <!-- Profile Save Dialog -->
+  @if (showProfileSaveDialog && profileSaveData) {
+  <app-profile-save-dialog
+    [profileData]="profileSaveData"
+    [show]="showProfileSaveDialog"
+    (save)="onProfileSaveDialogClose()"
+    (close)="onProfileSaveDialogClose()"
+  ></app-profile-save-dialog>
+  }
 </body>

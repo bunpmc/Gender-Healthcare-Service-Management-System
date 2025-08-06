@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { SupabaseService } from '../../supabase.service';
 import { Patient } from '../../models/patient.interface';
 import { Staff } from '../../models/staff.interface';
+import { FormatNamePipe } from '../../utils/name.util';
 
 interface DashboardStats {
   todayAppointments: number;
@@ -28,7 +29,7 @@ interface RecentAppointment {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormatNamePipe],
   template: `
     <div class="max-w-full overflow-hidden">
       <!-- Header -->
